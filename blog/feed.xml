@@ -1,17 +1,103 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.2.2">Jekyll</generator><link href="https://odra.dev/blog/feed.xml" rel="self" type="application/atom+xml" /><link href="https://odra.dev/blog/" rel="alternate" type="text/html" /><updated>2022-08-03T11:39:51+02:00</updated><id>https://odra.dev/blog/feed.xml</id><title type="html">Odra.dev Blog</title><subtitle>Odra.dev Blog</subtitle><entry><title type="html">Welcome to Jekyll!</title><link href="https://odra.dev/blog/jekyll/update/2022/08/03/welcome-to-jekyll.html" rel="alternate" type="text/html" title="Welcome to Jekyll!" /><published>2022-08-03T10:05:24+02:00</published><updated>2022-08-03T10:05:24+02:00</updated><id>https://odra.dev/blog/jekyll/update/2022/08/03/welcome-to-jekyll</id><content type="html" xml:base="https://odra.dev/blog/jekyll/update/2022/08/03/welcome-to-jekyll.html"><![CDATA[<p>You’ll find this post in your <code class="language-plaintext highlighter-rouge">_posts</code> directory. Go ahead and edit it and re-build the site to see your changes. You can rebuild the site in many different ways, but the most common way is to run <code class="language-plaintext highlighter-rouge">jekyll serve</code>, which launches a web server and auto-regenerates your site when a file is updated.</p>
 
-<p>Jekyll requires blog post files to be named according to the following format:</p>
 
-<p><code class="language-plaintext highlighter-rouge">YEAR-MONTH-DAY-title.MARKUP</code></p>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <id>http://localhost:4000/blog/</id>
+  <title>Odra.dev Blog</title>
+  <subtitle>Odra.dev Blog</subtitle>
+  <updated>2022-08-04T13:35:56+02:00</updated>
+  <author>
+    <name>Odra.dev</name>
+    <uri>http://localhost:4000/blog/</uri>
+  </author>
+  <link rel="self" type="application/atom+xml" href="http://localhost:4000/blog/feed.xml"/>
+  <link rel="alternate" type="text/html" hreflang="en"
+    href="http://localhost:4000/blog/"/>
+  <generator uri="https://jekyllrb.com/" version="4.2.2">Jekyll</generator>
+  <rights> © 2022 Odra.dev </rights>
+  <icon>/blog/assets/img/favicons/favicon.ico</icon>
+  <logo>/blog/assets/img/favicons/favicon-96x96.png</logo>
 
-<p>Where <code class="language-plaintext highlighter-rouge">YEAR</code> is a four-digit number, <code class="language-plaintext highlighter-rouge">MONTH</code> and <code class="language-plaintext highlighter-rouge">DAY</code> are both two-digit numbers, and <code class="language-plaintext highlighter-rouge">MARKUP</code> is the file extension representing the format used in the file. After that, include the necessary front matter. Take a look at the source for this post to get an idea about how it works.</p>
 
-<p>Jekyll also offers powerful support for code snippets:</p>
+  
+  <entry>
+    <title>Welcome to Jekyll!</title>
+    <link href="http://localhost:4000/blog/posts/welcome-to-jekyll/" rel="alternate" type="text/html" title="Welcome to Jekyll!" />
+    <published>2022-08-04T09:10:43+02:00</published>
+  
+    <updated>2022-08-04T09:10:43+02:00</updated>
+  
+    <id>http://localhost:4000/blog/posts/welcome-to-jekyll/</id>
+    <content src="http://localhost:4000/blog/posts/welcome-to-jekyll/" />
+    <author>
+      <name>Odra.dev</name>
+    </author>
 
-<figure class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="k">def</span> <span class="nf">print_hi</span><span class="p">(</span><span class="nb">name</span><span class="p">)</span>
-  <span class="nb">puts</span> <span class="s2">"Hi, </span><span class="si">#{</span><span class="nb">name</span><span class="si">}</span><span class="s2">"</span>
-<span class="k">end</span>
-<span class="n">print_hi</span><span class="p">(</span><span class="s1">'Tom'</span><span class="p">)</span>
-<span class="c1">#=&gt; prints 'Hi, Tom' to STDOUT.</span></code></pre></figure>
+  
+    
+    <category term="jekyll" />
+    
+    <category term="update" />
+    
+  
 
-<p>Check out the <a href="https://jekyllrb.com/docs/home">Jekyll docs</a> for more info on how to get the most out of Jekyll. File all bugs/feature requests at <a href="https://github.com/jekyll/jekyll">Jekyll’s GitHub repo</a>. If you have questions, you can ask them on <a href="https://talk.jekyllrb.com/">Jekyll Talk</a>.</p>]]></content><author><name></name></author><category term="jekyll" /><category term="update" /><summary type="html"><![CDATA[You’ll find this post in your _posts directory. Go ahead and edit it and re-build the site to see your changes. You can rebuild the site in many different ways, but the most common way is to run jekyll serve, which launches a web server and auto-regenerates your site when a file is updated.]]></summary></entry></feed>
+  
+    <summary>
+      
+
+
+
+
+
+      You’ll find this post in your _posts directory. Go ahead and edit it and re-build the site to see your changes. You can rebuild the site in many different ways, but the most common way is to run jekyll serve, which launches a web server and auto-regenerates your site when a file is updated.
+
+Jekyll requires blog post files to be named according to the following format:
+
+YEAR-MONTH-DAY-title.MAR...
+    </summary>
+  
+
+  </entry>
+
+  
+  <entry>
+    <title>Odra 0.0.1 has been released!</title>
+    <link href="http://localhost:4000/blog/posts/odra-release/" rel="alternate" type="text/html" title="Odra 0.0.1 has been released!" />
+    <published>2022-08-03T10:05:24+02:00</published>
+  
+    <updated>2022-08-03T10:05:24+02:00</updated>
+  
+    <id>http://localhost:4000/blog/posts/odra-release/</id>
+    <content src="http://localhost:4000/blog/posts/odra-release/" />
+    <author>
+      <name>kpob</name>
+    </author>
+
+  
+    
+    <category term="news" />
+    
+    <category term="odra" />
+    
+  
+
+  
+    <summary>
+      
+
+
+
+
+
+      We want to introduce you to the very first release of Odra Framework proudly!
+
+Writing smart contracts have never been easier!
+
+Odra is a high-level smart contract framework for Rust, which encourages rapid development and clean, pragmatic design. Built by experienced developers, it takes care of much of the hassle of smart contract development, enabling you to focus on writing your dapp withou...
+    </summary>
+  
+
+  </entry>
+
+</feed>
+
+

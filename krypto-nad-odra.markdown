@@ -1,3 +1,7 @@
+---
+layout: page
+permalink: /krypto-nad-odra
+---
 
 # Krypto Nad Odrą - Sponsor Sheet
 

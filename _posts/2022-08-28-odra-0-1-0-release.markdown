@@ -1,0 +1,55 @@
+---
+layout: post
+title: "Odra 0.1.0 has been released!"
+date: 2022-08-28 10:05:24 +0200
+categories: [ news, odra ]
+tags: [ odra ]
+description:  Writing smart contracts have never been easier!
+author: kpob
+permalink: /blog/odra-0-1-0-released
+---
+We want to introduce you to the very first release of Odra Framework proudly!
+
+Writing smart contracts have never been easier!
+
+Odra is a high-level smart contract framework for Rust, which encourages rapid development and clean, pragmatic design. Built by experienced developers, it takes care of much of the hassle of smart contract development, enabling you to focus on writing your dapp without reinventing the wheel. It's free and open source. 
+
+Odra's goal is to become the go-to smart contract framework for all WebAssembly-based blockchains. 
+
+A smart contract written using Odra can be executed on all integrated systems. We can do it by abstracting over core concepts that all the above systems are built around. These are type system, storage, entry points, execution context, and testing environment. We believe it will bring standardization to the development of Rust-based smart contracts and enable code reusability we have not yet seen in this ecosystem.
+
+Let’s look at a Flipper contract, that holds a boolean value. The contract has a constructor that sets the initial value, and two entry points: `flip()` and `get()`, to change and query the current value, respectively.
+
+```rust
+use odra::Variable;
+
+#[odra::module]
+pub struct Flipper {
+    value: Variable<bool>,
+}
+
+#[odra::module]
+impl Flipper {
+
+    #[odra(init)]
+    pub fn init(&self, value: bool) {
+        self.value.set(value);
+    }
+
+    pub fn flip(&self) {
+        self.value.set(!self.get());
+    }
+
+    pub fn get(&self) -> bool {
+        self.value.get_or_default()
+    }
+}
+```
+Neat and simple, isn't it?
+
+Do you like it? Start flowing with us!
+
+Check out the [Odra's GitHub repo][odra-repo] for more info on how to get the most out of Odra. Should you have questions, join [our Discord][odra-discord].
+
+[odra-repo]:    https://github.com/odradev/odra
+[odra-discord]: https://github.com/odradev/odra

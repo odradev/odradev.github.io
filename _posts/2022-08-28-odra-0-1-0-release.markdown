@@ -7,12 +7,13 @@ tags: [ odra ]
 description:  Writing smart contracts have never been easier!
 author: kpob
 permalink: /blog/odra-0-1-0-released
+excerpt: We want to introduce you to the very first release of Odra Framework proudly!
 ---
 We want to introduce you to the very first release of Odra Framework proudly!
 
 Writing smart contracts have never been easier!
 
-Odra is a high-level smart contract framework for Rust, which encourages rapid development and clean, pragmatic design. Built by experienced developers, it takes care of much of the hassle of smart contract development, enabling you to focus on writing your dapp without reinventing the wheel. It's free and open source. 
+Odra is a high-level smart contract framework for Rust, which encourages rapid development and clean, pragmatic design. Built by experienced developers, it takes care of much of the hassle of smart contract development, enabling you to focus on writing your dapp without reinventing the wheel. It's free and open source.
 
 Odra's goal is to become the go-to smart contract framework for all WebAssembly-based blockchains. 
 

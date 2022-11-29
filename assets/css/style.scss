@@ -1,9 +1,0 @@
----
----
-
-@import
-    "assets/css/odra_style";
-
-@import
-    "minima/skins/{{ site.minima.skin | default: 'classic' }}",
-    "minima/initialize";

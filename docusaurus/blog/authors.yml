@@ -1,0 +1,17 @@
+kubaplas:
+  name: Kuba Płaskonka
+  title: Lead Developer
+  url: https://github.com/kubaplas
+  # image_url: https://github.com/endiliey.png
+
+kpob:
+  name: Krzysztof Pobiarżyn
+  title: Lead Developer
+  url: https://github.com/kpob
+  # image_url: https://github.com/yangshun.png
+
+zie1ony:
+  name: Maciej Zieliński
+  title: CTO
+  url: https://github.com/zie1ony
+  # image_url: https://github.com/slorber.png

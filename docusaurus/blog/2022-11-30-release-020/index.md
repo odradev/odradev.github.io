@@ -2,6 +2,7 @@
 slug: release-020
 title: Odra 0.2.0 Released
 authors: [kubaplas, kpob, zie1ony]
+image: https://github.com/odradev.png
 ---
 
 We want to introduce you to the very first public release of the Odra Framework proudly!

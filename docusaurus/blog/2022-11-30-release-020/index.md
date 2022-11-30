@@ -75,7 +75,7 @@ impl Flipper {
 }
 ```
 
-It comes with the CLI tool [cargo-odra] that makes it easy to use Odra.
+It comes with the CLI tool [cargo-odra][cargo-odra] that makes it easy to use Odra.
 
 ![cargo-odra](./cargo_odra.gif)
 
@@ -97,6 +97,7 @@ Should you have questions, join [our Discord][odra-discord], [our Twitter][odra-
 
 [casperlabs]:      https://casperlabs.io
 [odra-repo]:       https://github.com/odradev/odra
+[cargo-odra]:      https://github.com/odradev/cargo-odra
 [odra-discord]:    https://discord.gg/Mm5ABc9P8k
 [odra-twitter]:    https://twitter.com/odradev
 [casper-contract]: https://crates.io/crates/casper-contract

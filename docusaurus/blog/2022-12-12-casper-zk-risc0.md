@@ -174,8 +174,8 @@ The cost of running the `verify` method is `2324 CSPR`. That's a lot, but
 we have to start somewhere.
 
 ## What next
-I think it is a good place to outline Casper ZK goals for moving this forward.
-The community should discuss: 
+I think it is a good place to outline possible Casper ZK goals for moving
+this forward. The community should discuss: 
 1. Building more examples. Risc Zero has a nice battleship game to port over
 to Casper.
 2. Rethink including floating-point arithmetic. The argument for not having

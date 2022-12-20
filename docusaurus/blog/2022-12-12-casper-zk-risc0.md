@@ -28,7 +28,6 @@ Yes! We can prove any program, produce proof, and send it to Casper's
 smart contract for verification.
 
 ## Example
-
 Let's dive into the example to see how it works.
 [The full example code](https://github.com/odradev/casper-zk-with-risc0)
 you can find on our GitHub. 
@@ -37,7 +36,6 @@ example. So make sure you understand it first.
 [Guest](#guest) and [Prover](#prover) sections are taken from this example.
 
 ### Guest
-
 The program we are proving is called a **guest** in Risc Zero.
 Our goal is to prove we know the factors of an arbitrary number.
 Given `a` and `b` below guest program computes `a * b` and produces
@@ -60,7 +58,6 @@ pub fn main() {
 ```
 
 ### Prover
-
 It's time to run the guest program and build the proof for 
 a specific `a` and `b` values.
 
@@ -111,7 +108,6 @@ fn main() {
 ```
 
 ### Verifier
-
 Now the verification step.
 Given the proof (journal + seal) and the guest program definition (method),
 Casper's smart contract checks its correctness. This one is written
@@ -156,15 +152,6 @@ fn verify(journal: &[u32], seal: &[u32], method_id: &[u8]) -> String {
 }
 ```
 
-There is one more thing. After the compilation, the WASM file contains 
-floating-point arithmetic opcodes. Unfortunately, Casper's WASM VM doesn't
-support that. To overcome that I used
-[wasm-float-transpiler](https://github.com/chipshort/wasm-float-transpiler).
-It converts a wasm file with floating point instructions (f32, f64) to one 
-without such instructions.
-The instructions are replaced with deterministic software implementations
-of these instructions.
-
 ### Livenet results
 I have deployed it to the testnet and called the `verify` method.
 The `result` was `Ok`. Wow, first-ever ZK proof verification on Casper.
@@ -178,15 +165,11 @@ I think it is a good place to outline possible Casper ZK goals for moving
 this forward. The community should discuss: 
 1. Building more examples. Risc Zero has a nice battleship game to port over
 to Casper.
-2. Rethink including floating-point arithmetic. The argument for not having
-those, was always non-determinism, but there are
-[other voices](https://medium.com/haderech-dev/determinism-wasm-40e0a03a9b45).
-3. Adding Risc Zero verification method to Casper's FFI.
-4. Supporting Risc Zero team. We should help develop this awesome
+2. Adding Risc Zero verification method to Casper's FFI.
+3. Supporting Risc Zero team. We should help develop this awesome
 open-source project and gain the ZK expertise.
 
 ## Join us
-
 Interested in zero knowledge on Casper?
 
 Join [our Discord][odra-discord], [our Twitter][odra-twitter] or write us

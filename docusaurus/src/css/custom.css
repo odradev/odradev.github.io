@@ -4,18 +4,15 @@
  * work well for content-centric websites.
  */
 
- @import url('https://fonts.googleapis.com/css2?family=Helvetica+Neue&display=swap');
-
 /* You can override the default Infima variables here. */
 :root {
   --ifm-font-size-base: 19px;
-  --ifm-font-family-base: 'Helvetica Neue';
+  --ifm-font-family-base: "Gill Sans", Arial, sans-serif;
 }
 
 [data-theme='dark'] {
   --ifm-color-primary: #509ef2;
   --ifm-background-color: #191922 !important;
-  
 }
 
 article {
@@ -23,4 +20,3 @@ article {
   margin-left: auto;
   margin-right: auto;
 }
-

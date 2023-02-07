@@ -13,3 +13,12 @@ serve:
 
 develop:
     cd docusaurus && npm run start
+
+ci-build-and-commit:
+    just install
+    just build
+    git config --local user.email "action@github.com"
+    git config --local user.name "GitHub Action"
+    git add docs/
+    git commit -m "Automatic site build"
+    git config --global --add safe.directory /github/workspace

@@ -79,4 +79,4 @@ the installation process, feel free to ask for help on our [Discord](https://dis
 ## What's next?
 If you want to see the code that you just tested, continue to the description of [Flipper example](flipper).
 
-If you want to know what exactly happened behind the scenes, take a look at the [Architecture](/category/architecture) chapter.
+If you want to know what exactly happened behind the scenes, take a look at the [Architecture](../architecture/code-structure.md) chapter.

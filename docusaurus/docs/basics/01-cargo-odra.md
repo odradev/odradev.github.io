@@ -4,10 +4,10 @@ sidebar_position: 1
 
 # Cargo Odra
 If you followed the [Installation](../getting-started/installation.md) tutorial properly,
-you should already be set up with Cargo Odra tool. It is an executable that will help you with
-managing your smart contracts project, testing and running them on multiple backends.
+you should already be set up with the Cargo Odra tool. It is an executable that will help you with
+managing your smart contracts project, testing and running them on multiple backends (blockchains).
 
-Let's take a look on all the possibilities that cargo odra gives you.
+Let's take a look on all the possibilities that Cargo Odra gives you.
 
 ## Managing projects
 
@@ -65,18 +65,18 @@ Most used command during the development of your project should be this one:
 cargo odra test
 ```
 It will run your tests against Odra's MockVM. It is substantially faster than virtual machines
-provided by blockchains developers and implements all features that Odra uses.
+provided by blockchains developers and implements all the features Odra uses.
 
-When you want to run the tests against a "real" VM, just provide the name of the backend using `-b`
+When you want to run tests against a "real" VM, just provide the name of the backend using `-b`
 option: 
 
 ```bash
 cargo odra test -b casper
 ```
 
-In example above, cargo odra will build the project, the casper builder, generate the wasm files,
-spin up casperVM instance, deploy the contracts onto it and run the tests against it. Pretty neat.
-Keep in mind that this is a lot slower that MockVM and you cannot (at least easily) use the debugger.
+In example above, Cargo Odra will build the project, the casper builder, generate the wasm files,
+spin up CasperVM instance, deploy the contracts onto it and run the tests against it. Pretty neat.
+Keep in mind that this is a lot slower that MockVM and you cannot use the debugger.
 This is why MockVM was created and should be your first choice when developing contracts.
 Of course testing all of your code against blockchain VM is a must in the end.
 

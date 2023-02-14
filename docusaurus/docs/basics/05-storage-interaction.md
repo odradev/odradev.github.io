@@ -8,7 +8,7 @@ through all of them and explain their pros and cons.
 
 ## Variable
 The Variable is the simplest storage type available in the Odra framework. It serializes the data and stores it under a single key in the blockchain storage. To use it, just wrap your
-variable in `Variable` type. Let's look at "real world" example of a contract that represents a Dog:
+variable in `Variable` type. Let's look at "real world" example of a contract that represents a dog:
 
 ```rust title="examples/src/docs/variable.rs"
 #[odra::module]
@@ -49,9 +49,9 @@ impl DogContract {
         self.name.get_or_default()
     }
 
-    pub fn walks_amount(&self) -> usize {
+    pub fn walks_amount(&self) -> u32 {
         let walks = self.walks.get_or_default();
-        walks.len()
+        walks.len() as u32
     }
 
     pub fn walks_total_length(&self) -> u32 {
@@ -137,10 +137,10 @@ pub fn visits(&self, friend_name: FriendName) -> u32 {
 }
 ```
 
-The biggest improvement over a Variable is that we can model a functionality of a HashMap using Mapping.
-The amount of data written to and read from the storage is minimal. However, we cannot iterate over Mapping.
+The biggest improvement over a `Variable` is that we can model a functionality of a `HashMap` using `Mapping`.
+The amount of data written to and read from the storage is minimal. However, we cannot iterate over `Mapping`.
 We could implement such a behaviour by using a numeric type key and saving length of the set in a
-separate variable. Thankfully Odra comes with a prepared solution - the List type.
+separate variable. Thankfully Odra comes with a prepared solution - the `List` type.
 
 :::note
 If you take a look into List implementation in Odra, you'll see that in fact it is just a Mapping with

@@ -39,9 +39,9 @@ impl MathEngine {
     }
 }
 ```
-MathEngine contract can add two numbers. CrossContract takes an Address in its init function and saves it in
-storage for later use. If we deploy the MathEngine first and take note its address, we can then deploy
-CrossContract and use MathEngine to perform complicated calculations for us!
+`MathEngine` contract can add two numbers. `CrossContract` takes an `Address` in its init function and saves it in
+storage for later use. If we deploy the `MathEngine` first and take note its address, we can then deploy
+`CrossContract` and use `MathEngine` to perform complicated calculations for us!
 
 To call the external contract, we use the `Ref` that was created for us by Odra:
 
@@ -66,4 +66,3 @@ fn test_cross_calls() {
 
 Only thing to remind here is that we can get the address of the deployed contract by calling the `address()`
 function on the `Ref`.
-

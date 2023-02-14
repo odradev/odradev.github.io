@@ -5,7 +5,7 @@ sidebar_position: 9
 # Events
 
 Different blockchains implement events in different ways. Odra lets you forget about it by introducing
-OdraEvents. Take a look:
+Odra Events. Take a look:
 
 ```rust title="examples/src/docs/events.rs"
 use odra::{Event, contract_env};
@@ -56,7 +56,7 @@ PartyStarted {
 
 ## Testing events
 
-Odra's test_env comes with a handy macro `assert_events!` which lets you easily test the events that given
+Odra's `test_env` comes with a handy macro `assert_events!` which lets you easily test the events that given
 contract has emitted:
 
 ```rust title="examples/src/docs/events.rs"

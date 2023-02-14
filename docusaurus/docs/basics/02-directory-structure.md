@@ -4,7 +4,7 @@ sidebar_position: 2
 
 # Directory structure
 
-After creating a new project using Odra and running the tests, you will be presented with the 
+After creating a new project using Odra and running the tests, you will be presented with the
 following files and directories:
 
 ```
@@ -55,11 +55,12 @@ name = "flipper"
 fqn = "sample::Flipper"
 ```
 
-As we can see, we have a single contract, it's fqn corresponds to the contract located in `src/flipper.rs`.
+As we can see, we have a single contract, it's `fqn` (Fully Qualified Name) corresponds to
+the contract located in `src/flipper.rs`.
 More contracts can be added here by hand, or by using `cargo odra generate` command.
 
 ## .builder_* folders
-Those folders will be created and managed automatically by cargo odra. They contain project files necessary
+Those folders will be created and managed automatically by Cargo Odra. They contain project files necessary
 for building wasm files and running them against blockchain VM's. As it is not necessary to modify
 files in those folders in any way, by default they are hidden (hence the `.` at the beginning of the
 folder name).
@@ -76,4 +77,4 @@ and deploy them on the blockchain of your choosing.
 
 # What's next
 Now, let's take a look at one of the files mentioned above in more detail,
-namely the Odra.toml file.
+namely the `Odra.toml` file.

@@ -44,7 +44,7 @@ We are also using the `Balance` - an Odra type that wraps around the type that u
 for counting tokens.
 
 ## Testing
-To be able to test how many tokens a contract (or any address) has, test_env comes with a function -
+To be able to test how many tokens a contract (or any address) has, `test_env` comes with a function -
 `token_balance`:
 
 ```rust title="examples/src/docs/native_token.rs"

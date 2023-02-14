@@ -34,7 +34,7 @@ impl HostContract {
 ```
 
 As you can see, we are calling functions from `odra::contract_env`. `get_block_time()` will return
-the current BlockTime wrapped in Odra type `Blocktime`. `caller()` will return an Odra `Address` of
+the current block time wrapped in Odra type `Blocktime`. `caller()` will return an Odra `Address` of
 a caller (this can be an external caller or another contract).
 
 :::info

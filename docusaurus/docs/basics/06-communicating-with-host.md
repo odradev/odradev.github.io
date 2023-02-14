@@ -12,14 +12,14 @@ use odra::Variable;
 use odra::types::{BlockTime, Address};
 
 #[odra::module]
-pub struct MyContract {
+pub struct HostContract {
     name: Variable<String>,
     created_at: Variable<BlockTime>,
     created_by: Variable<Address>,
 }
 
 #[odra::module]
-impl MyContract {
+impl HostContract {
     #[odra(init)]
     pub fn init(&mut self, name: String) {
         self.name.set(name);

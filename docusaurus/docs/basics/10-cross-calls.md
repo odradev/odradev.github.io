@@ -11,12 +11,12 @@ use odra::Variable;
 use odra::types::{Address};
 
 #[odra::module]
-pub struct MyContract {
+pub struct CrossContract {
     pub math_engine: Variable<Address>,
 }
 
 #[odra::module]
-impl MyContract {
+impl CrossContract {
     #[odra(init)]
     pub fn init(&mut self, math_engine_address: Address) {
         self.math_engine.set(math_engine_address);
@@ -39,9 +39,9 @@ impl MathEngine {
     }
 }
 ```
-MathEngine contract can add two numbers. MyContract takes an Address in its init function and saves it in
+MathEngine contract can add two numbers. CrossContract takes an Address in its init function and saves it in
 storage for later use. If we deploy the MathEngine first and take note its address, we can then deploy
-MyContract and use MathEngine to perform complicated calculations for us!
+CrossContract and use MathEngine to perform complicated calculations for us!
 
 To call the external contract, we use the `Ref` that was created for us by Odra:
 
@@ -53,14 +53,14 @@ MathEngineRef::at(math_engine_address).add(3, 5)
 Let's see how we can test this:
 
 ```rust title="examples/src/docs/cross_calls.rs"
-use super::{MyContractDeployer, MathEngineDeployer};
+use super::{CrossContractDeployer, MathEngineDeployer};
 
 #[test]
 fn test_cross_calls() {
     let math_engine_contract = MathEngineDeployer::default();
-    let my_contract = MyContractDeployer::init(math_engine_contract.address());
+    let cross_contract = CrossContractDeployer::init(math_engine_contract.address());
 
-    assert_eq!(my_contract.add_using_another(), 8);
+    assert_eq!(cross_contract.add_using_another(), 8);
 }
 ```
 

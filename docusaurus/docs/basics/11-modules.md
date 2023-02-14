@@ -12,17 +12,16 @@ example from previous article, to use a single contract, but still separate our 
 use crate::docs::cross_calls::MathEngine;
 
 #[odra::module]
-pub struct MyContract {
+pub struct ModulesContract {
     pub math_engine: MathEngine,
 }
 
 #[odra::module]
-impl MyContract {
+impl ModulesContract {
     pub fn add_using_module(&self) -> u32 {
         self.math_engine.add(3, 5)
     }
 }
-
 ```
 
 Note that we didn't need to rewrite the MathEngine - we are using the contract from cross calls example as
@@ -36,12 +35,12 @@ To see how modules can be used in real world scenario, check out the ERC20 examp
 As we don't need to hold addresses, the test is really simple:
 
 ```rust title="examples/src/docs/modules.rs"
-use super::MyContractDeployer;
+use super::ModulesContractDeployer;
 
 #[test]
 fn test_modules() {
-    let my_contract = MyContractDeployer::default();
-    assert_eq!(my_contract.add_using_module(), 8);
+    let modules_contract = ModulesContractDeployer::default();
+    assert_eq!(modules_contract.add_using_module(), 8);
 }
 ```
 

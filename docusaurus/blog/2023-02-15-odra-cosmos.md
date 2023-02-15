@@ -243,7 +243,7 @@ The `Counter` contract is just a POC, and there is still a long road ahead of us
 This simple example shows that features like storage, events, and cross-contract calls
 can be unified in a simple readable interface.
 
-Cosmwasm integration hasn't been published yet, but if you want to experiment by yourself, 
+CosmWasm integration hasn't been published yet, but if you want to experiment by yourself, 
 check our GitHub (don't forget to update cargo-odra as well).
 
 [the first version]: ../blog/2022-11-30-release-020/index.md

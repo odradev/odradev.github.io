@@ -1,10 +1,11 @@
 ---
 sidebar_position: 6
+description: How to get information from the Host
 ---
 
-# Communicating with the Host
+# Host Communication
 
-One of the things that your contract will probably do is to query the host for some information - 
+One of the things that your contract will probably do is to query the host for some information -
 what is the current time? Who called me? Following example shows how to do this:
 
 ```rust title="examples/src/docs/host.rs"

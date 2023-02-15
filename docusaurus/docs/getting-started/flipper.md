@@ -79,3 +79,6 @@ mod tests {
     }
 }
 ```
+
+## What's next
+In the next category of articles, we will go through basic concepts of Odra.

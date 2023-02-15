@@ -1,5 +1,6 @@
 ---
 sidebar_position: 1
+description: The internals of the Odra framework
 ---
 
 # Code structure
@@ -7,7 +8,3 @@ sidebar_position: 1
 
 
 ## Show code structure
-
-```bash
-tree
-```

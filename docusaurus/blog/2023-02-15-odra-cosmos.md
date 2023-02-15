@@ -5,7 +5,7 @@ authors: [kpob]
 image: https://github.com/odradev.png
 ---
 
-In November 2022 we released [the first version] of the Odra Framework. It's time for the next big step in our framework development - a new platform integration. Meet Odra + CosmWasm.
+In November 2022 we released [the first version](../blog/2022-11-30-release-020/index.md) of the Odra Framework. It's time for the next big step in our framework development - a new platform integration. Meet Odra + CosmWasm.
 
 <!--truncate-->
 
@@ -246,7 +246,6 @@ can be unified in a simple readable interface.
 CosmWasm integration hasn't been published yet, but if you want to experiment by yourself, 
 check our GitHub (don't forget to update cargo-odra as well).
 
-[the first version]: ../blog/2022-11-30-release-020/index.md
 [Secret Network]: https://scrt.network/
 [Osmosis]: https://docsosmosis.zone/
 [Juno]: https://www.junonetwork.io/

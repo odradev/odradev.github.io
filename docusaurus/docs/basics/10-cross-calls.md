@@ -1,10 +1,11 @@
 ---
 sidebar_position: 10
+description: Contracts calling contracts
 ---
 
 # Cross calls
 
-To show how to handle calls between contracts, first let's implement two of them:
+To show how to handle calls between contracts, first, let's implement two of them:
 
 ```rust title="examples/src/docs/cross_calls.rs"
 use odra::Variable;
@@ -40,7 +41,7 @@ impl MathEngine {
 }
 ```
 `MathEngine` contract can add two numbers. `CrossContract` takes an `Address` in its init function and saves it in
-storage for later use. If we deploy the `MathEngine` first and take note its address, we can then deploy
+storage for later use. If we deploy the `MathEngine` first and take note of its address, we can then deploy
 `CrossContract` and use `MathEngine` to perform complicated calculations for us!
 
 To call the external contract, we use the `Ref` that was created for us by Odra:
@@ -64,5 +65,5 @@ fn test_cross_calls() {
 }
 ```
 
-Only thing to remind here is that we can get the address of the deployed contract by calling the `address()`
+The only thing to remind here is that we can get the address of the deployed contract by calling the `address()`
 function on the `Ref`.

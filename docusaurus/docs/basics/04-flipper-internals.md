@@ -1,11 +1,12 @@
 ---
 sidebar_position: 4
+description: Detailed explanation of the Flipper contract
 ---
 
 # Flipper Internals
-In this article we take a deep dive into the code shown in the
+In this article, we take a deep dive into the code shown in the
 [Flipper example](../getting-started/flipper.md), where we will explain in more detail all
-the Odra specific sections of the code.
+the Odra-specific sections of the code.
 
 ## Header
 
@@ -14,14 +15,14 @@ use odra::Variable;
 ```
 
 Pretty straightforward. Odra wraps the code of the specific blockchains SDKs into its own implementation
-that can be reused between targets. In above case we're importing `Variable`, which is responsible
-for storing simple values on blockchain's storage.
+that can be reused between targets. In the above case, we're importing `Variable`, which is responsible
+for storing simple values on the blockchain's storage.
 
 ## Struct
 
 ```rust title="flipper.rs"
-/// A module definition. Each module struct consists Variables and Mappings
-/// or/and another modules.
+/// A module definition. Each module struct consists of Variables and Mappings
+/// or/and other modules.
 #[odra::module]
 pub struct Flipper {
     /// The module itself does not store the value,
@@ -30,12 +31,12 @@ pub struct Flipper {
 }
 ```
 
-In Odra all contracts are also modules, which can be reused between contracts. That's why we need
-to mark the struct with the `#[odra::module]` macro. In the struct definition itself we state all
+In Odra, all contracts are also modules, which can be reused between contracts. That's why we need
+to mark the struct with the `#[odra::module]` macro. In the struct definition itself, we state all
 the fields of the contract. Those fields can be regular Rust data types, however - those will not
 be persisted on the blockchain. They can also be Odra modules - defined in your project or coming
 from Odra itself. Finally, to make the data persistent on the blockchain, you can use something like
-`Variable<T>` shown above. To learn more about storage interaction, take a look at the
+`Variable<T>` showed above. To learn more about storage interaction, take a look at the
 [next article](05-storage-interaction.md).
 
 ## Impl
@@ -55,13 +56,13 @@ impl Flipper {
     }
     ...
 ```
-Similarly to struct, we mark the `impl` section with the `#[odra::module]` macro. Odra will take all
+Similarly to the struct, we mark the `impl` section with the `#[odra::module]` macro. Odra will take all
 `pub` functions from this section and create contract endpoints from them. So, if you wish to have
 functions that are not available for calling outside the contract, do not make them public. Alternatively,
 you can create a separate `impl` section without the macro - all functions defined there, even marked
 with `pub` will be not callable.
 
-The `#[odra(init)]` macro marks the constructor of the contract. This function will be limited only
+The `#[odra(init)]` macro marks the constructor of the contract. This function will be limited to only
 to a single call, all further calls to it will result in an error.
 
 ```rust title="flipper.rs"
@@ -77,7 +78,7 @@ to a single call, all further calls to it will result in an error.
     }
     ...
 ```
-Endpoints above show you how to interact with the simplest type of storage - `Variable<T>`. The data
+The endpoints above show you how to interact with the simplest type of storage - `Variable<T>`. The data
 saved there using `set` function will be persisted in the blockchain.
 
 ## Tests
@@ -96,7 +97,7 @@ mod tests {
     }
     ...
 ```
-You can write tests in any way you prefer and know in Rust. In example above we are deploying the
+You can write tests in any way you prefer and know in Rust. In the example above we are deploying the
 contract using `FlipperDeployer` - a piece of code generated automatically thanks to the macros.
 The contract will be deployed on the VM you chose while running `cargo odra test`.
 

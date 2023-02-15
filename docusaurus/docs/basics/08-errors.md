@@ -1,10 +1,11 @@
 ---
 sidebar_position: 8
+description: Causing and handling errors
 ---
 
 # Errors
 
-Odra comes with tools that allows you to throw, handle and test for errors in execution. Take a look at the
+Odra comes with tools that allow you to throw, handle and test for errors in execution. Take a look at the
 following example of a simple owned contract:
 
 ```rust title="examples/src/docs/errors.rs"
@@ -60,7 +61,7 @@ throw. Then, you can use those errors in your code - for example, instead of unw
 self.owner.get().unwrap_or_revert_with(Error::OwnerNotSet)
 ```
 
-You and users of your contract will be thankful for a meaningful error message!
+You and the users of your contract will be thankful for a meaningful error message!
 
 You can also throw the error directly, by using `revert`:
 
@@ -93,7 +94,7 @@ fn test_owner_error() {
 }
 ```
 
-In example above, because we are calling the `change_name` method as an address which is not an "owner",
+In the example above, because we are calling the `change_name` method as an address which is not an "owner",
 we are expecting that "NotAnOwner" error will be thrown.
 
 :::note

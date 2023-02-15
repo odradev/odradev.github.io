@@ -1,5 +1,6 @@
 ---
 sidebar_position: 5
+description: How to write data into blockchain's storage
 ---
 
 # Storage interaction
@@ -8,7 +9,7 @@ through all of them and explain their pros and cons.
 
 ## Variable
 The Variable is the simplest storage type available in the Odra framework. It serializes the data and stores it under a single key in the blockchain storage. To use it, just wrap your
-variable in `Variable` type. Let's look at "real world" example of a contract that represents a dog:
+variable in the `Variable` type. Let's look at a "real world" example of a contract that represents a dog:
 
 ```rust title="examples/src/docs/variable.rs"
 #[odra::module]
@@ -22,7 +23,7 @@ pub struct DogContract {
 
 You can see the `Variable` wrapping the data. Even complex types like `Vec` can be wrapped (with some caveats)!
 
-Let's make this contract usable, by providing constructor and some getter functions:
+Let's make this contract usable, by providing a constructor and some getter functions:
 
 ```rust title="examples/src/docs/variable.rs"
 use odra::Variable;
@@ -80,11 +81,11 @@ To modify the data, use the `set()` function:
 self.barks.set(barks);
 ```
 
-Variable is easy to use and efficient for simple data types. One of its downsides is that it
+A Variable is easy to use and efficient for simple data types. One of its downsides is that it
 serializes the data as a whole, so when you're using complex types like `Vec` or `HashMap`,
 each time you `get` or `set` the whole data is read and written to the blockchain storage.
 
-In example above, if we want to see how many walks our dog had, we would use the function:
+In the example above, if we want to see how many walks our dog had, we would use the function:
 ```rust title="examples/src/docs/variable.rs"
 pub fn walks_amount(&self) -> usize {
     let walks = self.walks.get_or_default();
@@ -98,8 +99,8 @@ To tackle this issue following two types were created.
 
 ## Mapping
 
-The Mapping is used to store and access data as a key-value pairs. To define a Mapping, you need to
-pass two values - the key type and value type. Let's look at the variation of the Dog contract, that
+The Mapping is used to store and access data as key-value pairs. To define a Mapping, you need to
+pass two values - the key type and the value type. Let's look at the variation of the Dog contract, that
 uses Mapping to store information about our dog's friends and how many times they visited:
 
 ```rust title="examples/src/docs/mapping.rs"
@@ -115,8 +116,8 @@ pub struct DogContract2 {
 }
 ```
 
-In the example above, our key is a string (hidden behind "FriendName" type) and we are storing Visits
-(which really are u32). To read and write values from and into a Mapping we use similar approach
+In the example above, our key is a string (hidden behind the "FriendName" type) and we are storing Visits
+(which are u32). To read and write values from and into a Mapping we use a similar approach
 to the one shown in the Variables section with one difference - we need to pass a key:
 
 ```rust title="examples/src/docs/mapping.rs"
@@ -137,9 +138,9 @@ pub fn visits(&self, friend_name: FriendName) -> u32 {
 }
 ```
 
-The biggest improvement over a `Variable` is that we can model a functionality of a `HashMap` using `Mapping`.
+The biggest improvement over a `Variable` is that we can model functionality of a `HashMap` using `Mapping`.
 The amount of data written to and read from the storage is minimal. However, we cannot iterate over `Mapping`.
-We could implement such a behaviour by using a numeric type key and saving length of the set in a
+We could implement such behaviour by using a numeric type key and saving the length of the set in a
 separate variable. Thankfully Odra comes with a prepared solution - the `List` type.
 
 :::note
@@ -169,7 +170,7 @@ pub struct DogContract3 {
 ```
 
 As you can see, the notation is very similar to the `Vec`. To understand the usage, take a look
-at the reimplementation of the functions with additional function that takes our dog for a walk
+at the reimplementation of the functions with an additional function that takes our dog for a walk
 (it writes the data to the storage):
 
 ```rust title="examples/src/docs/list.rs"
@@ -203,7 +204,7 @@ We need to do this to sum the length of all the walks, but the Odra framework ca
 the cases for you.
 
 :::info
-All of the above examples, alongside the tests are available in the odra repository in the `examples/src/docs/` folder.
+All of the above examples, alongside the tests, are available in the odra repository in the `examples/src/docs/` folder.
 :::
 
 ## What's next

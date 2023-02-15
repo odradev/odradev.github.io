@@ -1,5 +1,6 @@
 ---
 sidebar_position: 9
+description: Creating and emitting Events
 ---
 
 # Events
@@ -49,15 +50,14 @@ as that:
 
 ```rust title="examples/src/docs/events.rs"
 PartyStarted {
-    caller: contract_env::caller(),
-    block_time: contract_env::get_block_time(),
+caller: contract_env::caller(),
+block_time: contract_env::get_block_time(),
 }.emit();
 ```
 
 ## Testing events
 
-Odra's `test_env` comes with a handy macro `assert_events!` which lets you easily test the events that given
-contract has emitted:
+Odra's `test_env` comes with a handy macro `assert_events!` which lets you easily test the events that a given contract has emitted:
 
 ```rust title="examples/src/docs/events.rs"
 use odra::{assert_events, test_env};

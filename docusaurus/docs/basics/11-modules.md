@@ -1,12 +1,13 @@
 ---
 sidebar_position: 11
+description: Divide your code into modules
 ---
 
 # Modules
 
 Simply put, modules in Odra let you reuse your code between contracts or even projects. Every contract you
 write is also a module, thanks to a macro `#[odra::module]`. This means that we can easily rewrite our math
-example from previous article, to use a single contract, but still separate our "math" code:
+example from the previous article, to use a single contract, but still separate our "math" code:
 
 ```rust title="examples/src/docs/modules.rs"
 use crate::docs::cross_calls::MathEngine;
@@ -28,7 +29,7 @@ Note that we didn't need to rewrite the MathEngine - we are using the contract f
 a module!
 
 :::info
-To see how modules can be used in real world scenario, check out the ERC20 example in main odra repository!
+To see how modules can be used in a real-world scenario, check out the ERC20 example in the main odra repository!
 :::
 
 ## Testing

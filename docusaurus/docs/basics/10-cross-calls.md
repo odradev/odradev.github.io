@@ -50,8 +50,23 @@ To call the external contract, we use the `Ref` that was created for us by Odra:
 MathEngineRef::at(math_engine_address).add(3, 5)
 ```
 
+## Contract Ref
+We mentioned `Ref` already in our [Testing](07-testing.md) article.
+It is a reference to already deployed - running contract.
+Here we are going to take a deeper look at it.
+
+Similarly to a `Deployer`, the `Ref` is generated automatically, thanks to the `#[odra::module]` macro.
+To get an instance of a reference, we can either deploy a contract (using `Deployer`) or by building it
+directly, using `::at(address: Address)` method, as shown above.
+The reference implements all the public endpoints to the contract (those marked as `pub` in `#[odra::module]`
+impl), alongside couple methods:
+
+- `at(Address) -> Self` - points the reference to an Address
+- `address() -> Address` - returns the Address the reference is currently pointing at
+- `with_tokens(Amount) -> Self` - attaches Amount of native tokens to the next call
+
 ## Testing
-Let's see how we can test this:
+Let's see how we can test our cross calls using this knowledge:
 
 ```rust title="examples/src/docs/cross_calls.rs"
 use super::{CrossContractDeployer, MathEngineDeployer};
@@ -64,6 +79,3 @@ fn test_cross_calls() {
     assert_eq!(cross_contract.add_using_another(), 8);
 }
 ```
-
-The only thing to remind here is that we can get the address of the deployed contract by calling the `address()`
-function on the `Ref`.

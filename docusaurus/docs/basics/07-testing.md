@@ -90,5 +90,17 @@ Each test env comes with a set of functions that will let you write better tests
 
 Again, we'll see those used in the next articles.
 
+## Deployer
+You may be wondering what is the `TestingContractDeployer` and where did it come from.
+It is a piece of code generated automatically for you, thanks to the `#[odra::module]` macro.
+If you used the `#[odra(init)]` on one of the methods, it will be the constructor of your contract.
+Odra will make sure that it is called only once, so you can use it to initialize your data structures etc.
+
+If you do not provide the init method, you can deploy the contract using `::default()` method.
+In the end, you will get a `Ref` instance (in our case the `TestingContractRef`) which reimplements all
+the methods you defined in the contract, but executes them on a blockchain!
+
+To learn more about the `Ref` contract, visit the [Cross calls](10-cross-calls.md) article.
+
 ## What's next
 We take a look at how Odra handles errors!

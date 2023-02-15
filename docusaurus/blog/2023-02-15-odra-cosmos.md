@@ -1,6 +1,6 @@
 ---
 slug: odra-cosmwasm
-title: Odra + Cosmwasm
+title: Odra + CosmWasm
 authors: [kpob]
 image: https://github.com/odradev.png
 ---

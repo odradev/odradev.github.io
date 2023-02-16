@@ -190,7 +190,7 @@ query-get-value juno1k7x82...
 ```
 
 ## Show me your transaction
-I get it, you don't want to do it all by yourself. Let me proof you it worked by showing one of my transactions.
+I get it, you don't want to do it all by yourself. Let me prove to you it worked by showing one of my transactions.
 
 ```bash
 junod q tx 4E500E27FAB3C38CF15066C3246F67AC8A73DE9948B762561EFE665F38B40923 --node https://rpc.uni.juno.deuslabs.fi:443 --chain-id uni-6

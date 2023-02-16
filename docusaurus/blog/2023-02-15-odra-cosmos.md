@@ -54,11 +54,11 @@ impl Counter {
         let new_value = old_value + 1;
         self.value.set(new_value);
         
-        <ValueUpdated as OdraEvent>::emit(ValueUpdated {
+        ValueUpdated {
             old_value,
             new_value,
             operator: contract_env::caller()
-        });
+        }.emit();
     }
 
     pub fn cross_increment(&mut self, counter_address: Address) {
@@ -122,7 +122,7 @@ As a battlefield let's choose [Juno Network] (if you would like to read more abo
 
 Assuming you already know how to interact with Juno testnet, let's move to the fun part.
 
-But before we go, to keep things simple, let's prepare a [justfile]. It'll make our interactions with the blockchain much  easier. See [full version].
+But before we go, to keep things simple, let's prepare a [justfile]. It'll make our interactions with the blockchain much easier. See [full version].
 
 ```justfile title=justfile
 NODE := "--node https://rpc.uni.juno.deuslabs.fi:443"
@@ -171,35 +171,69 @@ Now, let's take a look at how to do it using the tools we have just prepared.
 
 ```bash
 # args: 
-#   the path to a wasm file,
-#   the name under we store the private key.
+# the path to a wasm file,
+# the name under we store the private key.
 just store-wasm counter.wasm odra
+
+...
+raw_log: '[{"events":[{"type":"message","attributes":[{"key":"action","value":"/cosmwasm.wasm.v1.MsgStoreCode"},{"key":"module","value":"wasm"},{"key":"sender","value":"juno1le848rjac00nezzq46v5unxujaltdf270vhtfh"}]},{"type":"store_code","attributes":[{"key":"code_checksum","value":"9fb9e7f39170de2628892ed5eecc556e2487267b30bb2c9656f8c7d1cd9f9a59"},{"key":"code_id","value":"286"}]}]}]'
+...
+txhash: 1A8BA520E980C5ABCBCFA6F62D68B6BB82E780544605DE4DD5C6B1C5E966441B
+```
+
+Great, our code is successfully stored. Form the logs we can read now the `code_id` which we will use to initialize the contract.
+
+```bash
 # args: 
 # code id taken from the previous tx, 
 # counter initial value, 
 # named private key,
 # contract label.
-just init-contract 200 1 odra "My Counter"
+just init-contract 286 1 odra "My Counter"
+
+...
+raw_log: '[{"events":[{"type":"instantiate","attributes":[{"key":"_contract_address","value":"juno10yszsgq4460a57ztuw943h5j3c9l0eyx3algzq080gatl0thecls5ttk7g"},{"key":"code_id","value":"286"}]},{"type":"message","attributes":[{"key":"action","value":"/cosmwasm.wasm.v1.MsgInstantiateContract"},{"key":"module","value":"wasm"},{"key":"sender","value":"juno1le848rjac00nezzq46v5unxujaltdf270vhtfh"}]},{"type":"wasm","attributes":[{"key":"_contract_address","value":"juno10yszsgq4460a57ztuw943h5j3c9l0eyx3algzq080gatl0thecls5ttk7g"},{"key":"value","value":"1"}]},{"type":"wasm-Init","attributes":[{"key":"_contract_address","value":"juno10yszsgq4460a57ztuw943h5j3c9l0eyx3algzq080gatl0thecls5ttk7g"},{"key":"value","value":"1"}]}]}]'
+...
+txhash: 8DC53F95805349C3763CF4AF9527CAB2AEBEC77B240EFD3801C61231D8748F26
+```
+
+Fantastic, the contract has been initialized and we have its address - `juno10yszsgq4460a57ztuw943h5j3c9l0eyx3algzq080gatl0thecls5ttk7g`.
+It's time to increment the counter.
+
+```bash
 # args:
 # contract address taken from the previous tx,
 # named private key
-just exec-increment juno1k7x82... odra
-# args:
-# contract address
-query-get-value juno1k7x82...
+just exec-increment juno10yszsgq4460a57ztuw943h5j3c9l0eyx3algzq080gatl0thecls5ttk7g odra
+
+...
+raw_log: '[{"events":[{"type":"execute","attributes":[{"key":"_contract_address","value":"juno10yszsgq4460a57ztuw943h5j3c9l0eyx3algzq080gatl0thecls5ttk7g"}]},{"type":"message","attributes":[{"key":"action","value":"/cosmwasm.wasm.v1.MsgExecuteContract"},{"key":"module","value":"wasm"},{"key":"sender","value":"juno1le848rjac00nezzq46v5unxujaltdf270vhtfh"}]},{"type":"wasm","attributes":[{"key":"_contract_address","value":"juno10yszsgq4460a57ztuw943h5j3c9l0eyx3algzq080gatl0thecls5ttk7g"},{"key":"action","value":"increment"}]},{"type":"wasm-ValueUpdated","attributes":[{"key":"_contract_address","value":"juno10yszsgq4460a57ztuw943h5j3c9l0eyx3algzq080gatl0thecls5ttk7g"},{"key":"old_value","value":"1"},{"key":"new_value","value":"2"},{"key":"operator","value":"juno1le848rjac00nezzq46v5unxujaltdf270vhtfh"}]}]}]'
+...
+txhash: 52141844321B8321DA71D073D4FA0865E73C3940153373CA7EF832D15BC3C2B2
 ```
 
+Finally, we expected, the value to be equal to 2 (the initial value was 1 and we incremented it once).
+
+``` bash
+# args:
+# contract address
+just query-get-value juno10yszsgq4460a57ztuw943h5j3c9l0eyx3algzq080gatl0thecls5ttk7g
+
+data: 2
+```
+Indeed, as expected the current counter value is 2.
+
 ## Show me your transaction
-I get it, you don't want to do it all by yourself. Let me prove to you it worked by showing one of my transactions.
+I get it, you don't want to do it all by yourself. So let's take a closer look at one of my transactions.
 
 ```bash
-junod q tx 4E500E27FAB3C38CF15066C3246F67AC8A73DE9948B762561EFE665F38B40923 --node https://rpc.uni.juno.deuslabs.fi:443 --chain-id uni-6
+junod q tx 52141844321B8321DA71D073D4FA0865E73C3940153373CA7EF832D15BC3C2B2 --node https://rpc.uni.juno.deuslabs.fi:443 --chain-id uni-6
 ...
 logs:
 - events:
   - attributes:
     - key: _contract_address
-      value: juno1k7x82egskkug8f2f03zhdlzs9tuexgjv7cqgg7mpyaxqkw4clgjq9mlat8
+      value: juno10yszsgq4460a57ztuw943h5j3c9l0eyx3algzq080gatl0thecls5ttk7g
     type: execute
   - attributes:
     - key: action
@@ -211,22 +245,22 @@ logs:
     type: message
   - attributes:
     - key: _contract_address
-      value: juno1k7x82egskkug8f2f03zhdlzs9tuexgjv7cqgg7mpyaxqkw4clgjq9mlat8
+      value: juno10yszsgq4460a57ztuw943h5j3c9l0eyx3algzq080gatl0thecls5ttk7g
     - key: action
       value: increment
     type: wasm
   - attributes:
     - key: _contract_address
-      value: juno1k7x82egskkug8f2f03zhdlzs9tuexgjv7cqgg7mpyaxqkw4clgjq9mlat8
+      value: juno10yszsgq4460a57ztuw943h5j3c9l0eyx3algzq080gatl0thecls5ttk7g
     - key: old_value
-      value: "33"
+      value: "1"
     - key: new_value
-      value: "34"
+      value: "2"
     - key: operator
       value: juno1le848rjac00nezzq46v5unxujaltdf270vhtfh
     type: wasm-ValueUpdated
 ...
-txhash: 4E500E27FAB3C38CF15066C3246F67AC8A73DE9948B762561EFE665F38B40923
+txhash: 52141844321B8321DA71D073D4FA0865E73C3940153373CA7EF832D15BC3C2B2
 ```
 
 If you are familiar Cosmos ecosystem, you can see that there is an attribute containing
@@ -246,6 +280,14 @@ can be unified in a simple readable interface.
 CosmWasm integration hasn't been published yet, but if you want to experiment by yourself, 
 check our GitHub (don't forget to update cargo-odra as well).
 
+## Join us
+Interested?
+
+Join [our Discord][odra-discord], [our Twitter][odra-twitter] or write us
+at contact@odra.dev.
+
+[odra-discord]: https://discord.gg/Mm5ABc9P8k
+[odra-twitter]: https://twitter.com/odradev
 [Secret Network]: https://scrt.network/
 [Osmosis]: https://docsosmosis.zone/
 [Juno]: https://www.junonetwork.io/

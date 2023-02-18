@@ -6,6 +6,7 @@ build:
     rm -rf docs
     cp -r docusaurus/build docs
     cp odra.dev.index.html docs/index.html
+    cp *.ttf docs
     cp CNAME docs
 
 serve:

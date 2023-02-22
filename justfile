@@ -10,7 +10,7 @@ build:
     cp CNAME docs
 
 serve:
-    cd docs && python3 -m http.server
+    python3 -m http.server
 
 develop:
     cd docusaurus && npm run start

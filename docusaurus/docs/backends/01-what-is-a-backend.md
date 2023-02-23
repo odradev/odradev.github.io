@@ -2,7 +2,7 @@
 sidebar_position: 1
 ---
 
-# What is a backend
+# What is a backend?
 
 You can think of a backend as a target platform for your smart contract.
 This can be a piece of code allowing you to quickly check your code - like [MockVM](02-mock-vm.md),

@@ -4,71 +4,107 @@ sidebar_position: 3
 
 # OwnedToken
 
+This tutorial shows the great power of modulurization-focused of the Odra Framework design. We are going to use the modules we built in the last two tutorials to build a new one.
 
-```rust title=ownable.rs
-use odra::{
-    contract_env, execution_error, types::event::OdraEvent, types::Address, Event, Variable
-};
+## Module definition
+What does our module should be capable of?
+
+1. Conform the Erc20 interface.
+2. Allow minting tokens but only but the module owner.
+3. The current owner should be able to designate a new owner.
+
+
+## Code
+
+
+### Module definition
+
+Let's define a module called `OwnedToken` that is a composition of `Ownable` and `Erc20` modules.
+
+```rust title=owned_token.rs {5-6} showLineNumbers
+use crate::{erc20::Erc20, ownable::Ownable};
 
 #[odra::module]
-pub struct Ownable {
-    owner: Variable<Address>
+pub struct OwnedToken {
+    ownable: Ownable,
+    erc20: Erc20
 }
+```
+
+As you can see, we do not need any storage definition - we just take advantage of the already-defined modules!
+
+### Delegation
+
+```rust title=owned_token.rs {10-11,14-16,50-52,58-61} showLineNumbers
+use odra::types::{Address, Balance}
+
+...
 
 #[odra::module]
-impl Ownable {
+impl OwnedToken {
     #[odra(init)]
-    pub fn init(&mut self, owner: Address) {
-        if self.owner.get().is_some() {
-            contract_env::revert(Error::OwnerIsAlreadyInitialized)
-        }
-        self.owner.set(owner);
-        OwnershipChanged {
-            prev_owner: None,
-            new_owner: owner
-        }
-        .emit();
+    pub fn init(&mut self, name: String, symbol: String, decimals: u8, initial_supply: Balance) {
+        let deployer = contract_env::caller();
+        self.ownable.init(deployer);
+        self.erc20.init(name, symbol, decimals, initial_supply);
     }
 
-    pub fn change_ownership(&mut self, new_owner: Address) {
-        self.ensure_ownership(contract_env::caller());
-        let current_owner = self.get_owner();
-        self.owner.set(new_owner);
-        OwnershipChanged {
-            prev_owner: Some(current_owner),
-            new_owner
-        }
-        .emit();
+    pub fn name(&self) -> String {
+        self.erc20.name()
     }
 
-    pub fn ensure_ownership(&self, address: Address) {
-        if Some(address) != self.owner.get() {
-            contract_env::revert(Error::NotOwner)
-        }
+    pub fn symbol(&self) -> String {
+        self.erc20.symbol()
+    }
+
+    pub fn decimals(&self) -> u8 {
+        self.erc20.decimals()
+    }
+
+    pub fn total_supply(&self) -> Balance {
+        self.erc20.total_supply()
+    }
+
+    pub fn balance_of(&self, address: Address) -> Balance {
+        self.erc20.balance_of(address)
+    }
+
+    pub fn allowance(&self, owner: Address, spender: Address) -> Balance {
+        self.erc20.allowance(owner, spender)
+    }
+
+    pub fn transfer(&mut self, recipient: Address, amount: Balance) {
+        self.erc20.transfer(recipient, amount);
+    }
+
+    pub fn transfer_from(&mut self, owner: Address, recipient: Address, amount: Balance) {
+        self.erc20.transfer_from(owner, recipient, amount);
+    }
+
+    pub fn approve(&mut self, spender: Address, amount: Balance) {
+        self.erc20.approve(spender, amount);
     }
 
     pub fn get_owner(&self) -> Address {
-        match self.owner.get() {
-            Some(owner) => owner,
-            None => contract_env::revert(Error::OwnerIsNotInitialized)
-        }
+        self.ownable.get_owner()
     }
-}
 
-execution_error! {
-    pub enum Error {
-        NotOwner => 3,
-        OwnerIsAlreadyInitialized => 4,
-        OwnerIsNotInitialized => 5,
+    pub fn change_ownership(&mut self, new_owner: Address) {
+        self.ownable.change_ownership(new_owner);
     }
-}
 
-#[derive(Debug, PartialEq, Eq, Event)]
-pub struct OwnershipChanged {
-    pub prev_owner: Option<Address>,
-    pub new_owner: Address
+    pub fn mint(&mut self, address: Address, amount: Balance) {
+        self.ownable.ensure_ownership(contract_env::caller());
+        self.erc20.mint(address, amount);
+    }
 }
 ```
-## Summary
 
-## What's next
+Easy. However, there are a few worth mentioning subtleness:
+
+* **L10-11** - A constructor is a great place to init both modules at once. 
+* **L14-16** - Most of the entrypoints do not need any modification, so we simply delegates them to the `erc20` module.
+* **L50-52** - The same we do with the `ownable` module.
+* **L58-61** - Minting should not be unconditional, we need some control over it. First, using `onwnable` we make sure the `caller` really is the owner.
+
+## Summary

@@ -3,10 +3,17 @@ sidebar_position: 3
 ---
 
 # ERC-20
-It's time for something that every smart contract developer has done at once. Let's try to implement [Erc20][erc20] standard using the Odra Framework. 
+It's time for something that every smart contract developer has done at least once. Let's try to implement [Erc20][erc20] standard. Of course, we are going to use the Odra Framework. 
 
 The ERC-20 standard establishes a uniform specification for fungible tokens. This implies that each token possesses an attribute that renders it indistinguishable from another token of the same type and value. 
 
+## Framework features
+A module we will write in a minute, will help you master a few Odra features:
+
+* advanced storage - key-value pairs, 
+* Odra types like `Address` or `Balance`, 
+* advanced events assertion.
+  
 ## Code
 
 Our module has a pretty complex storage layout in comparison to the previous example.
@@ -32,7 +39,7 @@ pub struct Erc20 {
 }
 ```
 
-1. For the first time, we need to store key-value pairs. In order to do that, we use `Mapping`. The name is taken after Solidity's native type `mapping`.
+1. For the first time, we need to store key-value pairs. In order to do that, we use `Mapping`. The name is taken after Solidity's native type `mapping`. You may notice the `balances` property maps `Address` to `Balance`. If you deal with addresses or you operate on tokens, you should always choose `Address` over `String` and `Balance` over any numeric type. Each blockchain may handle these values differently. Using Odra types guarantees proper behavior on each target platform.
 2. Odra does not allow nested `Mapping`s, but you can overcome it using a tuple as a key.
 
 ### Metadata
@@ -195,7 +202,7 @@ Now, compare the code we have written, with [Open Zeppelin code][erc20-open-zepp
 
 ### Test
 
-```rust title=erc20rs {111-123} showLineNumbers
+```rust title=erc20rs {111-123,125} showLineNumbers
 #[cfg(test)]
 pub mod tests {
     use super::{Approval, Erc20Deployer, Erc20Ref, Error, Transfer};
@@ -319,6 +326,8 @@ pub mod tests {
                 amount: transfer_amount
             }
         );
+        
+        assert_events!(erc20, Approval, Transfer);
     }
 
     #[test]
@@ -339,7 +348,12 @@ pub mod tests {
 }
 ```
 
-**L111-123** - `assert_events!()` macro accepts multiple events. You must pass them in the order they were emitted. 
+* **L111-123** - `assert_events!()` macro accepts multiple events. You must pass them in the order they were emitted. 
+* **L125** - Alternatively, if you don't want to check the entire event, you may assert only its type.
+
+:::warning
+You can not mix both approaches, you pass full events or types only.
+:::
 
 ## What's next
 Having two modules: `Ownable` and `Erc20`, let's combine them, and create an ERC-20 on steroids.

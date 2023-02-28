@@ -4,17 +4,14 @@ sidebar_position: 3
 
 # OwnedToken
 
-This tutorial shows the great power of modulurization-focused of the Odra Framework design. We are going to use the modules we built in the last two tutorials to build a new one.
-
-## Module definition
-What does our module should be capable of?
-
-1. Conform the Erc20 interface.
-2. Allow minting tokens but only but the module owner.
-3. The current owner should be able to designate a new owner.
-
+This tutorial shows the great power of the modularization-focused design of the Odra Framework. We are going to use the modules we built in the last two tutorials to build a new one.
 
 ## Code
+What should our module be capable of?
+
+1. Conform the Erc20 interface.
+2. Allow minting tokens but only the module owner.
+3. The current owner should be able to designate a new owner.
 
 
 ### Module definition
@@ -105,6 +102,8 @@ Easy. However, there are a few worth mentioning subtleness:
 * **L10-11** - A constructor is a great place to init both modules at once. 
 * **L14-16** - Most of the entrypoints do not need any modification, so we simply delegates them to the `erc20` module.
 * **L50-52** - The same we do with the `ownable` module.
-* **L58-61** - Minting should not be unconditional, we need some control over it. First, using `onwnable` we make sure the `caller` really is the owner.
+* **L58-61** - Minting should not be unconditional, we need some control over it. First, using `ownable` we make sure the `caller` really is the owner.
 
 ## Summary
+
+The Odra Framework encourages a modularized design of your smart contracts. You can encapsulate features in smaller units and test them in isolation, ensuring your project is easy to maintain. Finally, unleash their full potential by combining modules. You do not need any magic bindings for that. 

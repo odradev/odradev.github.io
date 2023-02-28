@@ -6,13 +6,15 @@ sidebar_position: 1
 In this tutorial, we will write a simple module that allows us to set its owner. Later, it can be reused to limit access to the contract's critical features.
 
 ## Framework features
-A module we will write in a minute, will help you master the following Odra features:
+A module we will write in a minute, will help you master a few Odra features:
 
-* Storage - storing a single value.
-* Constructors.
-* Events.
-* Error handling.
-* Testing - basic assertions, events assertions, errors assertions.
+* storing a single value,
+* defining constructors,
+* error handling,
+* defining and emitting `events`.
+* registering a contact in a test environment,
+* interactions with the test environment,
+* assertions (value, events, errors assertions).
 
 ## Code
 

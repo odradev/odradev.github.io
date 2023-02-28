@@ -50,8 +50,8 @@ as that:
 
 ```rust title="examples/src/docs/events.rs"
 PartyStarted {
-caller: contract_env::caller(),
-block_time: contract_env::get_block_time(),
+    caller: contract_env::caller(),
+    block_time: contract_env::get_block_time(),
 }.emit();
 ```
 

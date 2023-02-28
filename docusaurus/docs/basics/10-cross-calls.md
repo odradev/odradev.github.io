@@ -65,6 +65,26 @@ impl), alongside couple methods:
 - `address() -> Address` - returns the Address the reference is currently pointing at
 - `with_tokens(Amount) -> Self` - attaches Amount of native tokens to the next call
 
+# External Contracts
+Sometimes in our contract, we would like to interact with a someone else's contract, already deployed onto the blockchain. The only thing we know about the contract is the ABI.
+
+For that purpose, we use `#[odra:external_contract]` macro. This macro should be applied to a trait. The trait defines the part of the ABI we would like to take advantage of.
+
+Let's pretend the `MathEngine` we defined is an external contract. There is a contract with `add()` function that adds two numbers somewhere.
+
+```rust title="examples/src/docs/cross_calls.rs"
+#[odra::external_contract]
+pub trait Adder {
+    fn add(&self, n1: u32, n2: u32) -> u32;
+}
+```
+
+Analogously to modules, Odra creates the `AdderRef` struct (but do not create the `AdderDeployer`). Having an address we can call:
+
+```rust title="examples/src/docs/cross_calls.rs"
+AdderRef::at(address).add(3, 5)
+```
+
 ## Testing
 Let's see how we can test our cross calls using this knowledge:
 
@@ -77,5 +97,27 @@ fn test_cross_calls() {
     let cross_contract = CrossContractDeployer::init(math_engine_contract.address());
 
     assert_eq!(cross_contract.add_using_another(), 8);
+}
+```
+
+Each test start with a fresh instance of blockchain - no contracts are deployed. To test an external contract we deploy a `MathEngine` contract first, but we are not going to use it directly. We take only its address. Let's keep pretending, there is a contract with the `add()` function we want to use.
+
+```rust title="examples/src/docs/cross_calls.rs"
+#[cfg(test)]
+mod tests {
+    use odra::types::Address;
+    use crate::docs::cross_calls::{Adder, AdderRef};
+    
+    #[test]
+    fn test_ext() {
+        let adder = AdderRef::at(get_adder_address());
+
+        assert_eq!(adder.add(1, 2), 3);
+    }
+
+    fn get_adder_address() -> Address {
+        let contract = MathEngineDeployer::default();
+        contract.address()
+    }
 }
 ```

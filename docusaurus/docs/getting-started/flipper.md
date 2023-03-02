@@ -11,7 +11,7 @@ For further explanation of how this code works, see [Flipper Internals](../basic
 
 ## Let's flip
 
-```rust title="flipper.rs"
+```rust title="flipper.rs" showLineNumbers
 use odra::Variable;
 
 /// A module definition. Each module struct consists Variables and Mappings

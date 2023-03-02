@@ -25,30 +25,26 @@ We need to store the following data:
 4. Allowances - in other words: who is allowed to spend whose tokens on his/her behalf.
    
 ## Module definition
-```rust
+```rust showLineNumbers
 #[odra::module]
 pub struct Erc20 {
     decimals: Variable<u8>,
     symbol: Variable<String>,
     name: Variable<String>,
     total_supply: Variable<Balance>,
-    // 1
     balances: Mapping<Address, Balance>,
-    // 2
     allowances: Mapping<(Address, Address), Balance>
 }
 ```
 
-1. For the first time, we need to store key-value pairs. In order to do that, we use `Mapping`. The name is taken after Solidity's native type `mapping`. You may notice the `balances` property maps `Address` to `Balance`. If you deal with addresses or you operate on tokens, you should always choose `Address` over `String` and `Balance` over any numeric type. Each blockchain may handle these values differently. Using Odra types guarantees proper behavior on each target platform.
-2. Odra does not allow nested `Mapping`s, but you can overcome it using a tuple as a key.
+* **L6** - For the first time, we need to store key-value pairs. In order to do that, we use `Mapping`. The name is taken after Solidity's native type `mapping`. You may notice the `balances` property maps `Address` to `Balance`. If you deal with addresses or you operate on tokens, you should always choose `Address` over `String` and `Balance` over any numeric type. Each blockchain may handle these values differently. Using Odra types guarantees proper behavior on each target platform.
+* **L7** - Odra does not allow nested `Mapping`s, but you can overcome it using a tuple as a key.
 
 ### Metadata
 
-```rust
-// 1
+```rust showLineNumbers
 #[odra::module]
 impl Erc20 {
-    // 2
     #[odra(init)]
     pub fn init(&mut self, name: String, symbol: String, decimals: u8, initial_supply: Balance) {
         let caller = contract_env::caller();
@@ -58,7 +54,6 @@ impl Erc20 {
         self.mint(caller, initial_supply);
     }
 
-    // 2
     pub fn name(&self) -> String {
         self.name.get_or_default()
     }
@@ -76,9 +71,7 @@ impl Erc20 {
     }
 }
 
-// 3
 impl Erc20 {
-    // 4
     pub fn mint(&mut self, address: Address, amount: Balance) {
         self.balances.add(&address, amount);
         self.total_supply.add(amount);
@@ -99,11 +92,11 @@ pub struct Transfer {
 }
 ```
 
-1. The first `impl` block, marked as a module, contains functions defined in the ERC-20 standard.
-2. A constructor sets the token metadata and mints the initial supply.
-3. Getter functions are straightforward, but there is one worth-mentioning subtleness. In the `Ownable` example, we used the `get()` function returning an `Option<T>`. If the type implements `Default` trait, you can call `get_or_default()` function and the contract does not fail even if the value is not initialized.
-4. The second `impl` is not an odra module, in other words these function will not be a part of contract's ABI.
-5. Mint function is public, so like in a regular rust code will be accessible from the outside. `mint()` use notation `self.balances.add(&address, amount);`, which it is syntactic sugar for:
+* **L1** - The first `impl` block, marked as a module, contains functions defined in the ERC-20 standard.
+* **L3-L10** - A constructor sets the token metadata and mints the initial supply.
+* **L12-L14** - Getter functions are straightforward, but there is one worth-mentioning subtleness. In the `Ownable` example, we used the `get()` function returning an `Option<T>`. If the type implements `Default` trait, you can call `get_or_default()` function and the contract does not fail even if the value is not initialized.
+* **L29** - The second `impl` is not an odra module, in other words these function will not be a part of contract's ABI.
+* **L30-L39** - Mint function is public, so like in a regular rust code will be accessible from the outside. `mint()` use notation `self.balances.add(&address, amount);`, which it is syntactic sugar for:
 ```rust
 let current_balance = self.balances.get(&address).unwrap_or_default();
 let new_balance = current_balance.overflowing_add(current_balance).unwrap_or_revert();
@@ -202,7 +195,7 @@ Now, compare the code we have written, with [Open Zeppelin code][erc20-open-zepp
 
 ### Test
 
-```rust title=erc20rs {111-123,125} showLineNumbers
+```rust title=erc20rs showLineNumbers
 #[cfg(test)]
 pub mod tests {
     use super::{Approval, Erc20Deployer, Erc20Ref, Error, Transfer};

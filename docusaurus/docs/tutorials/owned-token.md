@@ -18,7 +18,7 @@ What should our module be capable of?
 
 Let's define a module called `OwnedToken` that is a composition of `Ownable` and `Erc20` modules.
 
-```rust title=owned_token.rs {5-6} showLineNumbers
+```rust title=owned_token.rs showLineNumbers
 use crate::{erc20::Erc20, ownable::Ownable};
 
 #[odra::module]
@@ -32,7 +32,7 @@ As you can see, we do not need any storage definition - we just take advantage o
 
 ### Delegation
 
-```rust title=owned_token.rs {10-11,14-16,50-52,58-61} showLineNumbers
+```rust title=owned_token.rs showLineNumbers
 use odra::types::{Address, Balance}
 
 ...
@@ -99,10 +99,10 @@ impl OwnedToken {
 
 Easy. However, there are a few worth mentioning subtleness:
 
-* **L10-11** - A constructor is a great place to init both modules at once. 
-* **L14-16** - Most of the entrypoints do not need any modification, so we simply delegates them to the `erc20` module.
-* **L50-52** - The same we do with the `ownable` module.
-* **L58-61** - Minting should not be unconditional, we need some control over it. First, using `ownable` we make sure the `caller` really is the owner.
+* **L10-L11** - A constructor is a great place to init both modules at once. 
+* **L14-L16** - Most of the entrypoints do not need any modification, so we simply delegates them to the `erc20` module.
+* **L50-L52** - The same we do with the `ownable` module.
+* **L58-L61** - Minting should not be unconditional, we need some control over it. First, using `ownable` we make sure the `caller` really is the owner.
 
 ## Summary
 

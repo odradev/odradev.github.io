@@ -27,7 +27,7 @@ Before we write any code, we define functionalities we would like to implement.
 
 ### Define a module
 
-```rust {3,5} showLineNumbers
+```rust showLineNumbers
 use odra::{types::Address, Variable};
 
 #[odra::module]
@@ -42,7 +42,7 @@ That was easy, but it is crucial to understand the basic before we move on.
 
 ### Init the module
 
-```rust {5,7,9-11,13,15-19,23,29-33} showLineNumbers
+```rust showLineNumbers
 use odra::{execution_error, contract_env, Event, types::{Address, event::OdraEvent};
 
 ...
@@ -82,14 +82,14 @@ Ok, we have done a couple of things, let's analyze them one by one:
 * **L5** - The `impl` should be an odra module, so add `#[odra::module]`.
 * **L7** - The `init` function is marked as `#[odra(init)]` making it a constructor. It matters if we would like to deploy the `Ownable` module as a standalone contract.
 * **L23** - Before we set a new owner, we must assert there was no owner before and raise an error otherwise. For that purpose we defined an `Error` enum. Notice that the `Error` enum is defined inside the `execution_error` macro. It generates, among others, the required `Into<ExecutionError>` binding.
-* **L9-11** - If the owner has been set already, we call `contract_env::revert()` function. As an argument we pass `Error::OwnerIsNotInitialized`. 
+* **L9-L11** - If the owner has been set already, we call `contract_env::revert()` function. As an argument we pass `Error::OwnerIsNotInitialized`. 
 * **L13** - Then we write the owner passed as an argument to the storage. To do so we call the `set()` on `Variable`.
-* **L29-33** - Once the owner is set, we would like to inform the outside world. First step is to define an event struct. The struct must derive from `odra::Event`. We highly recommend to derive `Debug`, `PartialEq` and `Eq` for testing purpose.
-* **L23**  Finally, we create the `OwnershipChanged` struct and call `emit()` function on it (import `odra::types::event::OdraEvent` trait). Hence we set the first owner, we set the `prev_owner` value to `None`.
+* **L29-L33** - Once the owner is set, we would like to inform the outside world. First step is to define an event struct. The struct must derive from `odra::Event`. We highly recommend to derive `Debug`, `PartialEq` and `Eq` for testing purpose.
+* **L23** - Finally, we create the `OwnershipChanged` struct and call `emit()` function on it (import `odra::types::event::OdraEvent` trait). Hence we set the first owner, we set the `prev_owner` value to `None`.
 
 ### Features implementation
 
-``` rust {5,11,22,32,34} showLineNumbers
+``` rust showLineNumbers
 #[odra::module]
 impl Ownable {
     ...
@@ -135,7 +135,7 @@ The above implementation relies on the concepts we have already used in this tut
 
 ### Test
 
-```rust {6,7,8,12,14-15,17-23,29,31,49-55} showLineNumbers
+```rust showLineNumbers
 #[cfg(test)]
 mod tests {
     use super::*;

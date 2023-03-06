@@ -67,6 +67,11 @@ const config = {
             position: 'left'
           },
           {
+            to: '/docs',
+            label: 'Docs',
+            position: 'left'
+          },
+          {
             href: 'https://github.com/odradev/odra',
             label: 'GitHub',
             position: 'right',

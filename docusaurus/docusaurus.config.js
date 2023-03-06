@@ -3,7 +3,7 @@
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
-  title: 'Odra Blog',
+  title: 'Odra',
   tagline: 'Writing smart contracts have never been easier!',
   url: 'https://odra.dev',
   baseUrl: '/',

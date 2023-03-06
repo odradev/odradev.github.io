@@ -1,6 +1,8 @@
 ---
 sidebar_position: 0
 slug: /
+image: "./docs-cover.png"
+description: Odra Docs
 ---
 
 # Odra framework

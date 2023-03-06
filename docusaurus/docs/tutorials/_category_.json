@@ -1,8 +1,8 @@
 {
   "label": "Tutorials",
-  "position": 6,
+  "position": 5,
   "link": {
     "type": "generated-index",
-    "description": "Tutorials"
+    "description": "The theory is good, but the practice is even better. Let's go through a few examples summing up all the Odra concepts."
   }
 }

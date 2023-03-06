@@ -41,6 +41,12 @@ const config = {
     ],
   ],
 
+  markdown: {
+    mermaid: true,
+  },
+  themes: ['@docusaurus/theme-mermaid'],
+
+
   themeConfig:
     /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
     ({
@@ -58,6 +64,11 @@ const config = {
           {
             to: '/blog',
             label: 'Blog',
+            position: 'left'
+          },
+          {
+            to: '/docs',
+            label: 'Docs',
             position: 'left'
           },
           {
@@ -90,3 +101,4 @@ const config = {
 };
 
 module.exports = config;
+

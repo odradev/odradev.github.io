@@ -106,27 +106,24 @@ uses Mapping to store information about our dog's friends and how many times the
 ```rust title="examples/src/docs/mapping.rs"
 use odra::{Mapping, Variable};
 
-type FriendName = String;
-type Visits = u32;
-
 #[odra::module]
 pub struct DogContract2 {
     name: Variable<String>,
-    friends: Mapping<FriendName, Visits>,
+    friends: Mapping<String, u32>,
 }
 ```
 
-In the example above, our key is a string (hidden behind the "FriendName" type) and we are storing Visits
-(which are u32). To read and write values from and into a Mapping we use a similar approach
+In the example above, our key is a String (it is a name of the friend) and we are storing u32 values
+(amount of visits). To read and write values from and into a Mapping we use a similar approach
 to the one shown in the Variables section with one difference - we need to pass a key:
 
 ```rust title="examples/src/docs/mapping.rs"
-pub fn visit(&mut self, friend_name: FriendName) {
+pub fn visit(&mut self, friend_name: String) {
     let visits = self.visits(friend_name.clone());
     self.friends.set(&friend_name, visits + 1);
 }
 
-pub fn visits(&self, friend_name: FriendName) -> u32 {
+pub fn visits(&self, friend_name: String) -> u32 {
     match self.friends.get(&friend_name) {
         None => {
             0

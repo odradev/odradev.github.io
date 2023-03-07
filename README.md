@@ -1,8 +1,18 @@
 # Odra.dev webiste
 
-This website is built using [Docusaurus 2](https://docusaurus.io/), a modern static website generator.
+Source for:
+- https://odra.dev
+- https://odra.dev/blog 
+- https://odra.dev/docs 
 
-### Install
+## Publishing
+The code is automatically published after push to the `master` branch.
+
+## Local development
 ```
 $ just install
+$ just develop
 ```
+
+## Contact
+You can reach us at **contact@odra.dev**.

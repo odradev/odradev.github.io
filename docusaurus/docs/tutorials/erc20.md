@@ -195,7 +195,7 @@ Now, compare the code we have written, with [Open Zeppelin code][erc20-open-zepp
 
 ### Test
 
-```rust title=erc20rs showLineNumbers
+```rust title=erc20.rs showLineNumbers
 #[cfg(test)]
 pub mod tests {
     use super::{Approval, Erc20Deployer, Erc20Ref, Error, Transfer};

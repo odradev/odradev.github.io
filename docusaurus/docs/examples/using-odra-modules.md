@@ -104,3 +104,35 @@ impl OwnedToken {
 :::info
 All available modules are placed in the main Odra repository.
 :::
+
+## Available modules
+
+Odra modules comes with couple of ready-to-use modules and reusable extensions.
+
+### Erc20
+
+The `Erc20` module implements the [ERC20](https://eips.ethereum.org/EIPS/eip-20) standard.
+
+### Erc721
+
+The `Erc721Base` module implements the [ERC721](https://eips.ethereum.org/EIPS/eip-721) standard, adjusted for the Odra framework.
+
+The `Erc721Token` module implements the `ERC721Base` and additionally uses
+the `Erc721Metadata` and `Ownable` extensions.
+
+The `Erc721Receiver` trait lets you implement your own logic for receiving NFTs.
+
+The `OwnedErc721WithMetadata` trait is a combination of `Erc721Token`, `Erc721Metadata` and `Ownable` modules.
+
+### Erc1155
+
+The `Erc1155Base` module implements the [ERC1155](https://eips.ethereum.org/EIPS/eip-1155) standard, adjusted for the Odra framework.
+
+The `Erc1155Token` module implements the `ERC1155Base` and additionally uses the `Ownable` extension.
+
+The `OwnedErc1155` trait is a combination of `Erc1155Token` and `Ownable` modules.
+
+### Wrapped native token
+
+The `WrappedNativeToken` module implements the Wrapper for the native token,
+it was inspired by the WETH.

@@ -34,6 +34,24 @@ const config = {
           blogSidebarCount: 0,
           postsPerPage: 'ALL',
         },
+        docs: {
+          sidebarPath: require.resolve('./sidebars.js'),
+          lastVersion: 'current',
+          versions: {
+            current: {
+              label: '0.3.1',
+              path: '',
+            },
+            '0.3.0': {
+              label: '0.3.0',
+              path: '0.3.0',
+            },
+            '0.2.0': {
+              label: '0.2.0',
+              path: '0.2.0',
+            },
+          },
+        },
         theme: {
           customCss: require.resolve('./src/css/custom.css'),
         },
@@ -70,6 +88,11 @@ const config = {
             to: '/docs',
             label: 'Docs',
             position: 'left'
+          },
+          {
+            type: 'docsVersionDropdown',
+            position: 'right',
+            dropdownActiveClassDisabled: true,
           },
           {
             href: 'https://github.com/odradev/odra',

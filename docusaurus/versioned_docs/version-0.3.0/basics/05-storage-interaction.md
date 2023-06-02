@@ -124,20 +124,13 @@ pub fn visit(&mut self, friend_name: String) {
 }
 
 pub fn visits(&self, friend_name: String) -> u32 {
-    match self.friends.get(&friend_name) {
-        None => {
-            0
-        },
-        Some(v) => {
-            v
-        }
-    }
+    self.friends.get_or_default(&friend_name)
 }
 ```
 
 The biggest improvement over a `Variable` is that we can model functionality of a `HashMap` using `Mapping`.
 The amount of data written to and read from the storage is minimal. However, we cannot iterate over `Mapping`.
-We could implement such behaviour by using a numeric type key and saving the length of the set in a
+We could implement such behavior by using a numeric type key and saving the length of the set in a
 separate variable. Thankfully Odra comes with a prepared solution - the `List` type.
 
 :::note

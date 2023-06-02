@@ -136,3 +136,11 @@ The `OwnedErc1155` trait is a combination of `Erc1155Token` and `Ownable` module
 
 The `WrappedNativeToken` module implements the Wrapper for the native token,
 it was inspired by the WETH.
+
+### AccessControl
+
+### Ownable
+
+### Ownable2Step
+
+### Pauseable

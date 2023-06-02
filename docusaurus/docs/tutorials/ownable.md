@@ -185,10 +185,6 @@ mod tests {
         ownable.change_ownership(new_owner);
         
         test_env::assert_exception(Error::NotOwner, || {
-            // If we don't create a new ref, an error occurs:
-            // cannot borrow `ownable` as mutable, as it is 
-            // a captured variable in a `Fn` closure cannot borrow as mutable
-            let mut ownable = OwnableRef::at(ownable.address());
             ownable.change_ownership(new_owner);
         });
     }
@@ -210,10 +206,6 @@ You may have noticed, we use here the term `module` interchangeably with `contra
 The caller switch applies only the next contract interaction, the second call will be done as the default account.
 ::: 
 * **L49-55** - If a non-owner account tries to change ownership we expect it to fail. To capture the error, call `test_env::assert_exception()` with the error you expect and a failing block of code.
-:::note
-In the test we create a second contract reference `let mut ownable = OwnableRef::at(ownable.address());`. As the name stands, it is just a reference, we interact with the same contract - only the address matters.
-:::
-
 
 ## Summary
 The `Ownable` module is ready, and we can test it against any defined backend. Theoretically it can be deployed as a standalone contract, but in upcoming tutorials you will see how to use it to compose a more complex contract.

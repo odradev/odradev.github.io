@@ -33,12 +33,12 @@ pub struct Erc20 {
     name: Variable<String>,
     total_supply: Variable<Balance>,
     balances: Mapping<Address, Balance>,
-    allowances: Mapping<(Address, Address), Balance>
+    allowances: Mapping<Address, Mapping<Address, U256>>
 }
 ```
 
 * **L6** - For the first time, we need to store key-value pairs. In order to do that, we use `Mapping`. The name is taken after Solidity's native type `mapping`. You may notice the `balances` property maps `Address` to `Balance`. If you deal with addresses or you operate on tokens, you should always choose `Address` over `String` and `Balance` over any numeric type. Each blockchain may handle these values differently. Using Odra types guarantees proper behavior on each target platform.
-* **L7** - Odra does not allow nested `Mapping`s, but you can overcome it using a tuple as a key.
+* **L7** - Odra allows nested `Mapping`s, what we utilize to store allowances.
 
 ### Metadata
 
@@ -124,7 +124,7 @@ impl Erc20 {
 
     pub fn approve(&mut self, spender: Address, amount: U256) {
         let owner = contract_env::caller();
-        self.allowances.set(&(owner, spender), amount);
+        self.allowances.get_instance(&owner).set(&spender, amount);
         Approval {
             owner,
             spender,
@@ -138,7 +138,9 @@ impl Erc20 {
     }
 
     pub fn allowance(&self, owner: Address, spender: Address) -> U256 {
-        self.allowances.get_or_default(&(owner, spender))
+        self.allowances
+            .get_instance(&owner)
+            .get_or_default(&spender)
     }
 }
 
@@ -161,12 +163,16 @@ impl Erc20 {
     }
 
     fn spend_allowance(&mut self, owner: Address, spender: Address, amount: U256) {
-        let key = (owner, spender);
-        let allowance = self.allowances.get_or_default(&key);
+        let allowance = self
+            .allowances
+            .get_instance(&owner)
+            .get_or_default(&spender);
         if allowance < amount {
             contract_env::revert(Error::InsufficientAllowance)
         }
-        self.allowances.set(&key, allowance - amount);
+        self.allowances
+            .get_instance(&owner)
+            .set(&spender, allowance - amount);
         Approval {
             owner,
             spender,

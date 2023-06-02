@@ -49,10 +49,10 @@ If everything went fine, we can proceed to the next step.
 To create a new project, simply execute:
 
 ```bash
-cargo odra new --name my-project && cd my-project
+cargo odra new --name my-project && cd my_project
 ```
 
-This will create a new folder called "my-project" and initialize Odra there. Cargo Odra
+This will create a new folder called "my_project" and initialize Odra there. Cargo Odra
 will create a sample contract for you in src directory. You can run the tests of this contract
 by executing:
 

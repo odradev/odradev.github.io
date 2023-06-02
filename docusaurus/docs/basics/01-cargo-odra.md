@@ -19,12 +19,12 @@ You need to pass one parameter, namely `--name {PROJECT_NAME}`:
 cargo odra new --name my-project
 ```
 
-This will create a new project in the `my-project` folder and name it `my-project`. You can see it
+This will create a new project in the `my_project` folder and name it `my_project`. You can see it
 for yourself, for example by taking a look into a `Cargo.toml` file created in your project's folder:
 
 ```toml
 [package]
-name = "my-project"
+name = "my_project"
 version = "0.1.0"
 edition = "2021"
 ```

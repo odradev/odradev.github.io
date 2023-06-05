@@ -197,5 +197,26 @@ the cases for you.
 All of the above examples, alongside the tests, are available in the odra repository in the `examples/src/docs/` folder.
 :::
 
+## Custom Types
+
+By default you can store only built-in types like numbers, Options, Results, Strings, Vectors.
+
+Implementing custom types is straightforward, your type must derive from `OdraType`: 
+
+```rust
+use odra::{Address, OdraType};
+
+#[derive(OdraType)]
+pub struct Dog {
+    pub name: String,
+    pub age: u8,
+    pub owner: Option<Address>
+}
+```
+
+:::note
+Each field of your struct must be an OdraType.
+:::
+
 ## What's next
 In the next article, we'll see how to query the host for information about the world and our contract.

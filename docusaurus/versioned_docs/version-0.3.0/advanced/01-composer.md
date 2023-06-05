@@ -9,7 +9,7 @@ By default, each instance of a module has its own namespace, ensuring each inter
 Additionally, the Module Composer shortens the storage key - a handy side effect of shared storage. For each module, Odra generates a corresponding Composer struct (e.g., `MyContractComposer` for `MyContract` module), which aids in manual module composition.
 
 ## Usage
-By default, the #[odra::module] macro generates an implementation of the odra::Instance trait, prefixing the storage key of child modules with the parent namespace. To disable this behavior, pass the skip_instance argument to the #[odra::module] macro.
+By default, the #[odra::module] macro generates an implementation of the odra::Instance trait, prefixing the storage key of child modules with the parent namespace. To disable this behavior, pass the `skip_instance` argument to the #[odra::module] macro.
 
 Let's write a simple code example. The example provided below introduces some additional complexity by featuring deeper module nesting.
 

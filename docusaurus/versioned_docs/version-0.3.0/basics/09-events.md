@@ -12,7 +12,7 @@ Odra Events. Take a look:
 use odra::{Event, contract_env};
 use odra::types::{Address, BlockTime, event::OdraEvent};
 
-#[odra::module]
+#[odra::module(events = [PartyStarted])]
 pub struct PartyContract {
 }
 
@@ -54,6 +54,10 @@ PartyStarted {
     block_time: contract_env::get_block_time(),
 }.emit();
 ```
+
+Some backends may need to know all the events at compilation time to register them once the contract is deployed. To register events, add an `events` attribute to the struct's `#[odra::module]` macro and use array-like syntax to list events your module emits. 
+
+The event collection process is recursive; if your module consists of other modules, and they have already registered their events, you don't need to add them to the parent module.
 
 ## Testing events
 

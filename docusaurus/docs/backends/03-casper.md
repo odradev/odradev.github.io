@@ -33,9 +33,17 @@ As with any other backend, Casper Backend must implement the same features, but 
 An event is not a first-class citizen in Casper like in Ethereum, so Odra mimics it. As you've
 already learned from the [events article](../basics/09-events.md), in Odra you emit an event, similarly, you would do it in [Solidity][events_sol].
 
-Under the hood, Odra creates two [`URef`s][uref] in the global state:
+Under the hood, Odra integrates with [Casper Event Standard] and creates a few [`URef`s][uref] in the global state when a contract is being installed:
 1. `__events` - a dictionary that stores events' data.
 2. `__events_length` - the evens count.
+3. `__events_ces_version` - the version of `Casper Event Standard`. 
+4. `__events_schema` -  a dictionary that stores event schemas.
+   
+Besides that, all the events the contract emits are registered - events schemas are written to the storage under the `__events_schema` key.
+
+:::note
+Don't forget to expose events in the module using `#[odra::module(events = [...])]`. 
+:::
 
 So, `Events` are nothing different from any other data stored by a contract.
 
@@ -122,3 +130,4 @@ graph TD;
 [contract_package_hash]: https://docs.rs/casper-types/latest/casper_types/struct.ContractPackageHash.html
 [api_error]: https://docs.rs/casper-types/latest/casper_types/enum.ApiError.html
 [deploy]: https://docs.rs/casper-execution-engine/latest/casper_execution_engine/core/engine_state/deploy_item/struct.DeployItem.html
+[Casper Event Standard]: https://github.com/make-software/casper-event-standard

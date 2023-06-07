@@ -108,6 +108,42 @@ If you want to just generate a wasm file, simply run:
 cargo odra build -b casper
 ```
 
+## Constructors
+
+Let's define a basic Odra module that includes a constructor:
+
+
+```rust
+#[odra::module]
+struct Counter {
+    value: Variable<u32>
+}
+
+#[odra::module]
+impl Counter {
+    #[odra(init)]
+    pub initialize(&mut self, value: u32) {
+        self.value.set(value);
+    }
+}
+```
+Read more about constructors [here](../advanced/04-attributes.md#init).
+
+To deploy your contract with a constructor using `casper-client`, you need to pass the `constructor` argument with a value of `initialize`  - this represents the name of the constructor function. Additionally, you need to pass the `value` argument, which sets the arbitrary initial value for the counter.
+
+```
+casper-client put-deploy \
+  --node-address [NODE_ADDRESS] \
+  --chain-name casper-test \
+  --secret-key [PATH_TO_YOUR_KEY]/secret_key.pem \
+  --payment-amount 5000000000000 \
+  --session-path ./wasm/counter.wasm \
+  --session-arg "constructor:string:'initialize'" \
+  --session-arg "value:u32:42" 
+```
+
+For a more in-depth tutorial, please refer to the [Casper's 'Writing On-Chain Code'].
+
 ## Execution
 
 First thing Odra does with your code, is similar to the one used in [MockVM](02-mock-vm.md) - 
@@ -130,3 +166,4 @@ graph TD;
 [contract_package_hash]: https://docs.rs/casper-types/latest/casper_types/struct.ContractPackageHash.html
 [api_error]: https://docs.rs/casper-types/latest/casper_types/enum.ApiError.html
 [deploy]: https://docs.rs/casper-execution-engine/latest/casper_execution_engine/core/engine_state/deploy_item/struct.DeployItem.html
+[Casper's 'Writing On-Chain Code']: https://docs.casper.network/writing-contracts/

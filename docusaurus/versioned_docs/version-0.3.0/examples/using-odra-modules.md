@@ -109,11 +109,13 @@ All available modules are placed in the main Odra repository.
 
 Odra modules comes with couple of ready-to-use modules and reusable extensions.
 
-### Erc20
+### Tokens
+
+#### Erc20
 
 The `Erc20` module implements the [ERC20](https://eips.ethereum.org/EIPS/eip-20) standard.
 
-### Erc721
+#### Erc721
 
 The `Erc721Base` module implements the [ERC721](https://eips.ethereum.org/EIPS/eip-721) standard, adjusted for the Odra framework.
 
@@ -124,7 +126,7 @@ The `Erc721Receiver` trait lets you implement your own logic for receiving NFTs.
 
 The `OwnedErc721WithMetadata` trait is a combination of `Erc721Token`, `Erc721Metadata` and `Ownable` modules.
 
-### Erc1155
+#### Erc1155
 
 The `Erc1155Base` module implements the [ERC1155](https://eips.ethereum.org/EIPS/eip-1155) standard, adjusted for the Odra framework.
 
@@ -132,15 +134,29 @@ The `Erc1155Token` module implements the `ERC1155Base` and additionally uses the
 
 The `OwnedErc1155` trait is a combination of `Erc1155Token` and `Ownable` modules.
 
-### Wrapped native token
+#### Wrapped native token
 
 The `WrappedNativeToken` module implements the Wrapper for the native token,
 it was inspired by the WETH.
 
-### AccessControl
+### Access
 
-### Ownable
+#### AccessControl
+This module enables the implementation of role-based access control mechanisms for children
+modules. Roles are identified by their 32-bytes identifier, which should be unique and exposed in the external API.
 
-### Ownable2Step
+#### Ownable
+This module provides a straightforward access control feature that enables exclusive access to particular functions by an account, known as the owner.
 
-### Pauseable
+The account that initiates the module is automatically assigned as the owner. However, ownership can be transferred later by using the
+`transfer_ownership()` function.
+
+#### Ownable2Step
+An extension of the `Ownable` module. 
+
+Ownership can be transferred in a two-step process by using `transfer_ownership()` and `accept_ownership()` functions.
+
+### Security
+
+#### Pauseable
+A module allowing to implement an emergency stop mechanism that can be triggered by any account.

@@ -1,12 +1,27 @@
 # Module Composer
 
-## Introduction
 The Module Composer is a feature of the Odra Framework designed to enhance the reusability and modularity of your smart contracts. It empowers developers to reuse modules and override custom namespaces. This guide provides an in-depth look at the Module Composer feature, complete with practical code examples.
 
 ## Conceptual Overview
-By default, each instance of a module has its own namespace, ensuring each internal value has a unique storage key. While this isolation often proves useful, there are scenarios where shared storage is beneficial. Here, the Module Composer comes to the fore.
+By default, each instance of a module has its own namespace, ensuring each internal value has a unique storage key.
 
-Additionally, the Module Composer shortens the storage key - a handy side effect of shared storage. For each module, Odra generates a corresponding Composer struct (e.g., `MyContractComposer` for `MyContract` module), which aids in manual module composition.
+```rust
+#[odra::module]
+struct Contract {
+    value: Variable<u8>, // the default namespace would be "contract_value"
+    module: Module
+}
+
+#[odra::module]
+struct Module {
+    secret: Variable<String> // the default namespace would be "contract_module_secret"
+}
+```
+While this isolation often proves useful, there are scenarios where shared storage is beneficial. Here, the Module Composer comes in.
+
+Additionally, the Module Composer shortens the storage key - a handy side effect of shared storage. 
+
+For each module, Odra generates a corresponding Composer struct (e.g., `MyContractComposer` for `MyContract` module), which aids in manual module composition.
 
 ## Usage
 By default, the #[odra::module] macro generates an implementation of the odra::Instance trait, prefixing the storage key of child modules with the parent namespace. To disable this behavior, pass the `skip_instance` argument to the #[odra::module] macro.
@@ -93,6 +108,10 @@ mod test {
 
 In this example, we've introduced a new module, `MoreStorage`, which nests `MyStorage` and includes an extra value. The `ComplexContract` contains `SharedStorage` and `MoreStorage`, creating a deeper nesting. Our test ensures that values can be successfully retrieved from different storage levels.
 
+If we had used the default behavior, would have been created (so, they would no longer be shared), each having distinct namespaces:
+1. On the contract level - `contract_shared_value`.
+2. On the `MyStorage` module level - `contract_more_storage_shared_value`.
+   
 This example showcases how you can effectively use the Module Composer feature to build intricate and efficient smart contracts.
 
 ## Conclusion

@@ -60,14 +60,7 @@ by executing:
 cargo odra test
 ```
 
-This will run tests using Odra's internal MockVM. You can run those tests against a real backend, to do so
-we need to add a new backend. Let's use CasperVM:
-
-```bash
-cargo odra backend add -p casper
-```
-
-Now we can run the tests against it:
+This will run tests using Odra's internal MockVM. You can run those tests against a real backend, let's use CasperVM:
 
 ```bash
 cargo odra test -b casper

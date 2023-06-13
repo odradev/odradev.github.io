@@ -38,7 +38,7 @@ pub struct Erc20 {
 ```
 
 * **L6** - For the first time, we need to store key-value pairs. In order to do that, we use `Mapping`. The name is taken after Solidity's native type `mapping`. You may notice the `balances` property maps `Address` to `Balance`. If you deal with addresses or you operate on tokens, you should always choose `Address` over `String` and `Balance` over any numeric type. Each blockchain may handle these values differently. Using Odra types guarantees proper behavior on each target platform.
-* **L7** - Odra allows nested `Mapping`s, so you can map `Address` to `Mapping` of `Address` to `Balance`.
+* **L7** - Odra allows nested `Mapping`s, what we utilize to store allowances.
 
 ### Metadata
 
@@ -197,7 +197,7 @@ Now, compare the code we have written, with [Open Zeppelin code][erc20-open-zepp
 
 ### Test
 
-```rust title=erc20rs showLineNumbers
+```rust title=erc20.rs showLineNumbers
 #[cfg(test)]
 pub mod tests {
     use super::{Approval, Erc20Deployer, Erc20Ref, Error, Transfer};

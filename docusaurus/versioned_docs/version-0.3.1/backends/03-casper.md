@@ -129,23 +129,7 @@ impl Counter {
 ```
 Read more about constructors [here](../advanced/04-attributes.md#init).
 
-### WASM arguments
-
-When deploying a new contract you have to specify following arguments.
-
-Required arguments:
-- `odra_cfg_package_hash_key_name` - `String` type. The key under which the package hash of the contract will be stored.
-- `odra_cfg_allow_key_override` - `Bool` type. If `true` and the key specified in `odra_cfg_package_hash_key_name` already exists, it will be overwritten.
-- `odra_cfg_is_upgradable` - `Bool` type. If `true`, the contract will be deployed as upgradable.
-
-Optional arguments:
-- `odra_cfg_constructor` - `String` type. If the contract has the constructor entry point marked with `#[odra(init)]`, this should be set to the constructor name.
-- constructor arguments that match entry point set in `odra_cfg_constructor`.
-
-### Example usage
-
-To deploy your contract with a constructor using `casper-client`, you need to pass the above arguments.
-Additionally, you need to pass the `value` argument, which sets the arbitrary initial value for the counter.
+To deploy your contract with a constructor using `casper-client`, you need to pass the `constructor` argument with a value of `initialize`  - this represents the name of the constructor function. Additionally, you need to pass the `value` argument, which sets the arbitrary initial value for the counter.
 
 ```
 casper-client put-deploy \
@@ -154,45 +138,11 @@ casper-client put-deploy \
   --secret-key [PATH_TO_YOUR_KEY]/secret_key.pem \
   --payment-amount 5000000000000 \
   --session-path ./wasm/counter.wasm \
-  --session-arg "odra_cfg_package_hash_key_name:string:'counter_package_hash'" \
-  --session-arg "odra_cfg_allow_key_override:bool:'true'" \
-  --session-arg "odra_cfg_is_upgradable:bool:'true'" \
-  --session-arg "odra_cfg_constructor:string:'initialize'" \
+  --session-arg "constructor:string:'initialize'" \
   --session-arg "value:u32:42" 
 ```
 
 For a more in-depth tutorial, please refer to the [Casper's 'Writing On-Chain Code'].
-
-## Sending CSPR to a contract
-
-Defining payable entry points is described in [Native Token](../basics/12-native-token.md) section.
-
-What is happening under the hood is that Odra creates a new `cargo_purse` argument for each payable
-entry point. The `cargo_purse` needs to be top-upped with CSPR before calling the contract.
-When a contract adds CSPR to another contract call, Odra handles it for you.
-The problem arises when you want to call an entry point and attach CSPR as an account.
-The only way of doing that is by executing code in the sessions context, that
-top-ups the `cargo_purse` and then calls the contract.
-
-Odra provides a generic `proxy_caller.wasm` that does exactly that.
-You can build it by yourself from the main Odra repository, or use the [proxy_caller.wasm]
-we maintain.
-
-### Using proxy_caller.wasm
-
-To use the `proxy_caller.wasm` you need to attach the following arguments:
-
-- `contract_package_hash` - `BytesArray(32)` type. The package hash of the contract you want to call.
-Result of `to_bytes` on [CasperPackageHash].
-- `entry_point` - `String` type. The name of the entry point you want to call.
-- `args` - `Bytes` type. It is a serialized [RuntimeArgs] with the arguments you want to pass
-to the entry point. To be specific it is the result of `to_bytes` method wrapped with [Bytes] type.
-- `attached_value`. `Option<U512>` type. The amount of CSPR you want to attach to the call.
-- `amount`. `U512` type. Should be the same value as `attached_value` if not `None`.
-It is a special Casper argument that enables the access to account's main purse.
-
-Currently `casper-client` doesn't allow building such arguments.
-You have to build it using your SDK.
 
 ## Execution
 
@@ -218,7 +168,3 @@ graph TD;
 [deploy]: https://docs.rs/casper-execution-engine/latest/casper_execution_engine/core/engine_state/deploy_item/struct.DeployItem.html
 [Casper Event Standard]: https://github.com/make-software/casper-event-standard
 [Casper's 'Writing On-Chain Code']: https://docs.casper.network/writing-contracts/
-[proxy_caller.wasm]: https://github.com/odradev/odra/blob/release/0.4.0/odra-casper/livenet/resources/proxy_caller.wasm
-[CasperPackageHash]: https://docs.rs/casper-types/latest/casper_types/contracts/struct.ContractPackageHash.html
-[RuntimeArgs]: https://docs.rs/casper-types/latest/casper_types/runtime_args/struct.RuntimeArgs.html
-[Bytes]: https://docs.rs/casper-types/latest/casper_types/bytesrepr/struct.Bytes.html

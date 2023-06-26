@@ -25,7 +25,7 @@ pub fn init(&mut self, name: String, symbol: String, decimals: u8, initial_suppl
 
 ## Payable
 
-When writing a smart contract, you need to make sure that money can be both sent to and extracted from the contract. The 'payable' attribute helps wit this. Any function, except for a constructor, with the #[odra(payable)] attribute can send and take money in the form of native tokens. 
+When writing a smart contract, you need to make sure that money can be both sent to and extracted from the contract. The 'payable' attribute helps wit this. Any function, except for a constructor, with the `#[odra(payable)]` attribute can send and take money in the form of native tokens. 
 
 ### Example
 

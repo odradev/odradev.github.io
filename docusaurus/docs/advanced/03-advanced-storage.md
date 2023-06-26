@@ -100,7 +100,7 @@ Accessing Odra Modules and Mapping is a bit different from accessing regular val
 Instead of using the `get()` function, call `get_instance()`, which sets the correct namespace for nested modules.
 :::
 
-If the terminal value is deeply nested, a long chain of get_instance() calls is required.
+If the terminal value is deeply nested, a long chain of `get_instance()` calls is required.
 
 To keep the codebase consistent, a `map!` macro can be used:
 

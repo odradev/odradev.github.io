@@ -124,20 +124,13 @@ pub fn visit(&mut self, friend_name: String) {
 }
 
 pub fn visits(&self, friend_name: String) -> u32 {
-    match self.friends.get(&friend_name) {
-        None => {
-            0
-        },
-        Some(v) => {
-            v
-        }
-    }
+    self.friends.get_or_default(&friend_name)
 }
 ```
 
 The biggest improvement over a `Variable` is that we can model functionality of a `HashMap` using `Mapping`.
 The amount of data written to and read from the storage is minimal. However, we cannot iterate over `Mapping`.
-We could implement such behaviour by using a numeric type key and saving the length of the set in a
+We could implement such behavior by using a numeric type key and saving the length of the set in a
 separate variable. Thankfully Odra comes with a prepared solution - the `List` type.
 
 :::note
@@ -202,6 +195,27 @@ the cases for you.
 
 :::info
 All of the above examples, alongside the tests, are available in the odra repository in the `examples/src/docs/` folder.
+:::
+
+## Custom Types
+
+By default you can store only built-in types like numbers, Options, Results, Strings, Vectors.
+
+Implementing custom types is straightforward, your type must derive from `OdraType`: 
+
+```rust
+use odra::{Address, OdraType};
+
+#[derive(OdraType)]
+pub struct Dog {
+    pub name: String,
+    pub age: u8,
+    pub owner: Option<Address>
+}
+```
+
+:::note
+Each field of your struct must be an OdraType.
 :::
 
 ## What's next

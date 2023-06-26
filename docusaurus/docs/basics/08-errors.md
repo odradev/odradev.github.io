@@ -88,7 +88,6 @@ fn test_owner_error() {
 
     odra::test_env::set_caller(not_an_owner);
     odra::test_env::assert_exception(Error::NotAnOwner, || {
-        let mut owned_contract = OwnedContractRef::at(owned_contract.address());
         owned_contract.change_name("NewName".to_string());
     })
 }

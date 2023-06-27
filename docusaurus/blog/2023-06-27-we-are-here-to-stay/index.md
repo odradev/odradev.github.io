@@ -46,7 +46,7 @@ You can always reach out to us on [Discord] or [Github].
 ## We will help with your project
 
 Whether you are a Rust developer or not, you can start using Odra today.
-We have prepared a few [examples and docs] that will help you get started.
+We have prepared a few [examples and docs] to help you get started.
 Rust knowledge required to use Odra is minimal.
 That was always the goal.
 

@@ -9,7 +9,7 @@ Over the past months,
 we have been working hard on bringing Odra to the Casper world.
 While we are proud of what we have achieved so far,
 the hard part is just beginning.
-Smart contract developers from the outside of our team are starting to use Odra.
+Smart contract developers from outside of our team are starting to use Odra.
 We are thrilled about it and here is how we are going to support the community.
 
 <!--truncate-->

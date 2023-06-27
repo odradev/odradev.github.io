@@ -75,7 +75,7 @@ It is a good balance between predictability and flexibility.
 We will release new versions approximately every 1-2 months or as needed.
 Everyone is encouraged to propose a new Odra feature or enhancement.
 New proposals need to be discussed and approved by the core team.
-When the feature is ready, we assign it to the one of the future release.
+When the feature is ready, we assign it to one of the future releases.
 
 ![Odra Roadmap](./roadmap.png)
 

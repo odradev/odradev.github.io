@@ -34,7 +34,7 @@ We will always have tons of tests and examples.
 - **Simplicity** - The simplest solution is the best solution.
 Odra's API needs to be simple and easy to use.
 Always!
-We are not afraid of taking a few steps back and rethinking our design.
+We are not afraid to take a few steps back and rethink our design.
 We believe in short feedback loops and fast iterations.
 - **Reusability** - No one likes to repeat itself.
 We see a huge potential in Odra Modules.

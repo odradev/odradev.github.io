@@ -5,7 +5,7 @@ authors: [zie1ony]
 image: ./roadmap.png
 ---
 
-Over past months,
+Over the past months,
 we have been working hard on bringing Odra to the Casper world.
 While we are proud of what we have achieved so far,
 the hard part is just beginning.

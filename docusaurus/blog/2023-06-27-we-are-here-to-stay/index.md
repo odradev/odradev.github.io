@@ -38,7 +38,7 @@ We are not afraid to take a few steps back and rethink our design.
 We believe in short feedback loops and fast iterations.
 - **Reusability** - No one likes to repeat itself.
 We see a huge potential in Odra Modules.
-In time it can become a standard library of Casper smart contracts,
+In time, it can become a standard library of Casper smart contracts,
 that are battle-tested and ready to use.
 - **Community** - We are here to help you.
 You can always reach out to us on [Discord] or [Github].

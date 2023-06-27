@@ -69,9 +69,9 @@ Point taken. Now we answer: __We are here to stay.__
 We got the support from the Casper Association and some projects of our own
 to keep us funded. We play the long game.
 
-To systematize our work we have prepared the [roadmap].
-As of now we maintain plans for at least three future releases.
-We think it is a good balance between predictability and flexibility.
+To systematize our work, we have prepared the [roadmap].
+As of now, we maintain plans for at least three future releases.
+It is a good balance between predictability and flexibility.
 We will release new versions approximately every 1-2 months or as needed.
 Everyone is encouraged to propose a new Odra feature or enhancement.
 New proposals need to be discussed and approved by the core team.

@@ -8,7 +8,7 @@ Different blockchains come with different implementations of their native tokens
 in easy-to-use code. Let's write a simple example of a public wallet - a contract where anyone can deposit
 their funds and anyone can withdraw them:
 
-```rust title="examples/src/docs/native_token.rs"
+```rust title="examples/src/features/native_token.rs"
 use odra::types::Balance;
 use odra::contract_env;
 
@@ -48,7 +48,7 @@ for counting tokens.
 To be able to test how many tokens a contract (or any address) has, `test_env` comes with a function -
 `token_balance`:
 
-```rust title="examples/src/docs/native_token.rs"
+```rust title="examples/src/features/native_token.rs"
 use odra::types::Balance;
 use odra::test_env;
 use super::PublicWalletDeployer;

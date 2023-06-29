@@ -12,7 +12,7 @@ It's important to note that a constructor function should not be invoked in any 
 
 ### Example
 
-```rust title=examples/erc20.rs
+```rust title=examples/src/contracts/erc20.rs
 #[odra(init)]
 pub fn init(&mut self, name: String, symbol: String, decimals: u8, initial_supply: &U256) {
     let caller = contract_env::caller();
@@ -29,7 +29,7 @@ When writing a smart contract, you need to make sure that money can be both sent
 
 ### Example
 
-```rust title=examples/tlw.rs
+```rust title=examples/src/contracts/tlw.rs
 #[odra(payable)]
 pub fn deposit(&mut self) {
     // Extract values

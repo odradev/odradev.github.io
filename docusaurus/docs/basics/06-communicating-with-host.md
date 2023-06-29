@@ -8,7 +8,7 @@ description: How to get information from the Host
 One of the things that your contract will probably do is to query the host for some information -
 what is the current time? Who called me? Following example shows how to do this:
 
-```rust title="examples/src/docs/host.rs"
+```rust title="examples/src/features/host_functions.rs"
 use odra::Variable;
 use odra::types::{BlockTime, Address};
 

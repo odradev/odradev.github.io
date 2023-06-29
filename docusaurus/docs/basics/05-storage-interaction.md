@@ -11,7 +11,7 @@ through all of them and explain their pros and cons.
 The Variable is the simplest storage type available in the Odra framework. It serializes the data and stores it under a single key in the blockchain storage. To use it, just wrap your
 variable in the `Variable` type. Let's look at a "real world" example of a contract that represents a dog:
 
-```rust title="examples/src/docs/variable.rs"
+```rust title="examples/src/features/storage/variable.rs"
 #[odra::module]
 pub struct DogContract {
     barks: Variable<bool>,
@@ -25,7 +25,7 @@ You can see the `Variable` wrapping the data. Even complex types like `Vec` can 
 
 Let's make this contract usable, by providing a constructor and some getter functions:
 
-```rust title="examples/src/docs/variable.rs"
+```rust title="examples/src/features/storage/variable.rs"
 use odra::Variable;
 
 #[odra::module]
@@ -64,7 +64,7 @@ impl DogContract {
 
 As you can see, you can access the data, by using `get_or_default` function:
 
-```rust title="examples/src/docs/variable.rs"
+```rust title="examples/src/features/storage/variable.rs"
 ...
 self.barks.get_or_default()
 ...
@@ -77,7 +77,7 @@ doesn't have to be initialized!
 
 To modify the data, use the `set()` function:
 
-```rust title="examples/src/docs/variable.rs"
+```rust title="examples/src/features/storage/variable.rs"
 self.barks.set(barks);
 ```
 
@@ -86,7 +86,7 @@ serializes the data as a whole, so when you're using complex types like `Vec` or
 each time you `get` or `set` the whole data is read and written to the blockchain storage.
 
 In the example above, if we want to see how many walks our dog had, we would use the function:
-```rust title="examples/src/docs/variable.rs"
+```rust title="examples/src/features/storage/variable.rs"
 pub fn walks_amount(&self) -> usize {
     let walks = self.walks.get_or_default();
     walks.len()
@@ -103,7 +103,7 @@ The Mapping is used to store and access data as key-value pairs. To define a Map
 pass two values - the key type and the value type. Let's look at the variation of the Dog contract, that
 uses Mapping to store information about our dog's friends and how many times they visited:
 
-```rust title="examples/src/docs/mapping.rs"
+```rust title="examples/src/features/storage/mapping.rs"
 use odra::{Mapping, Variable};
 
 #[odra::module]
@@ -117,7 +117,7 @@ In the example above, our key is a String (it is a name of the friend) and we ar
 (amount of visits). To read and write values from and into a Mapping we use a similar approach
 to the one shown in the Variables section with one difference - we need to pass a key:
 
-```rust title="examples/src/docs/mapping.rs"
+```rust title="examples/src/features/storage/mapping.rs"
 pub fn visit(&mut self, friend_name: String) {
     let visits = self.visits(friend_name.clone());
     self.friends.set(&friend_name, visits + 1);
@@ -151,7 +151,7 @@ pub struct List<T> {
 Going back to our DogContract example - let's revisit the walk case. This time, instead of `Vec`,
 we'll use the list:
 
-```rust title="examples/src/docs/list.rs"
+```rust title="examples/src/features/storage/list.rs"
 #[odra::module]
 pub struct DogContract3 {
     name: Variable<String>,
@@ -163,7 +163,7 @@ As you can see, the notation is very similar to the `Vec`. To understand the usa
 at the reimplementation of the functions with an additional function that takes our dog for a walk
 (it writes the data to the storage):
 
-```rust title="examples/src/docs/list.rs"
+```rust title="examples/src/features/storage/list.rs"
 #[odra::module]
 impl DogContract3 {
     #[odra(init)]

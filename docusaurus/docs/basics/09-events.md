@@ -8,7 +8,7 @@ description: Creating and emitting Events
 Different blockchains implement events in different ways. Odra lets you forget about it by introducing
 Odra Events. Take a look:
 
-```rust title="examples/src/docs/events.rs"
+```rust title="examples/src/features/events.rs"
 use odra::{Event, contract_env};
 use odra::types::{Address, BlockTime, event::OdraEvent};
 
@@ -37,7 +37,7 @@ impl PartyContract {
 We defined a new contract, which emits an event called `PartyStarted` when the contract is deployed.
 To define an event, we derive an `Event` macro like this:
 
-```rust title="examples/src/docs/events.rs"
+```rust title="examples/src/features/events.rs"
 #[derive(Event, PartialEq, Eq, Debug)]
 pub struct PartyStarted {
     pub caller: Address,
@@ -48,7 +48,7 @@ pub struct PartyStarted {
 Among other things, it adds an `emit()` function to the struct, which allows you to emit the event simply
 as that:
 
-```rust title="examples/src/docs/events.rs"
+```rust title="examples/src/features/events.rs"
 PartyStarted {
     caller: contract_env::caller(),
     block_time: contract_env::get_block_time(),
@@ -63,9 +63,9 @@ The event collection process is recursive; if your module consists of other modu
 
 Odra's `test_env` comes with a handy macro `assert_events!` which lets you easily test the events that a given contract has emitted:
 
-```rust title="examples/src/docs/events.rs"
+```rust title="examples/src/features/events.rs"
 use odra::{assert_events, test_env};
-use crate::docs::events::PartyStarted;
+use crate::features::events::PartyStarted;
 use super::PartyContractDeployer;
 
 #[test]

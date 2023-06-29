@@ -28,16 +28,21 @@ name = "my_project"
 version = "0.1.0"
 edition = "2021"
 ```
-The project is created using an existing template located in
-[https://github.com/odradev/odra-template](https://github.com/odradev/odra-template).
-If you want, you can use your own template, by passing `-r` parameter:
+The project is created using the template located in [Odra's main repository](https://github.com/odradev/odra).
+By default it uses `full` template, if you want, you can use minimalistic `blank` by running:
 
 ```bash
-cargo odra new -r https://github.com/my-repo/my-odra-template --name my-project
+cargo odra new -t blank --name my-project
 ```
 
-Additionally, you can pass a branch name you want to use using `-g`, otherwise, the default
-branch will be used. To see an example of a template, take a look at the repository linked above.
+By default, the latest release of Odra will be used for the template and as a dependency.
+You can pass a source of Odra you want to use, by using `-s` parameter:
+
+```bash
+cargo odra new -n my-project -s ../odra # will use local folder of odra
+cargo odra new -n my-project -s release/0.5.0 # will use github branch, e.g. if you want to test new release
+cargo odra new -n my-project -s 0.3.1 # will use a version released on crates.io
+```
 
 The second way of creating a project is by using `init` command:
 

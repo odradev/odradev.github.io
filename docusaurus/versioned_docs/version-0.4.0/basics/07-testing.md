@@ -8,7 +8,7 @@ Thanks to the Odra framework, you can test your code in any way you are used to.
 regular Rust unit and integration tests. Have a look at how we test the Dog Contract we created in the
 previous article:
 
-```rust title="examples/src/features/storage/list.rs"
+```rust title="examples/src/docs/list.rs"
 use odra::{Variable, List};
 
 #[cfg(test)]
@@ -31,14 +31,14 @@ mod tests {
 The `#[odra(module)]` macro created a Deployer code for us, which will deploy the contract on the
 VM:
 
-```rust title="examples/src/features/storage/list.rs"
+```rust title="examples/src/docs/list.rs"
 let mut dog_contract = DogContract3Deployer::init("Mantus".to_string());
 ```
 
 From now on, we can use `dog_contract` to interact with our deployed contract - in particular, all
 `pub` functions from the impl section that was annotated with a macro are available to us:
 
-```rust title="examples/src/features/storage/list.rs"
+```rust title="examples/src/docs/list.rs"
 // Impl
 pub fn walk_the_dog(&mut self, length: u32) {
     self.walks.push(length);
@@ -56,7 +56,7 @@ Odra gives us some additional functions that we can use to communicate with the 
 and to configure how the contracts are deployed and called. Let's revisit the example from the previous
 article about host communication and implement the tests that prove it works:
 
-```rust title="examples/src/features/testing.rs"
+```rust title="examples/src/docs/testing.rs"
 #[cfg(test)]
 mod tests {
     use super::TestingContractDeployer;

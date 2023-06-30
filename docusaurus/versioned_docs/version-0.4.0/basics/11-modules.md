@@ -9,8 +9,8 @@ Simply put, modules in Odra let you reuse your code between contracts or even pr
 write is also a module, thanks to a macro `#[odra::module]`. This means that we can easily rewrite our math
 example from the previous article, to use a single contract, but still separate our "math" code:
 
-```rust title="examples/src/features/modules.rs"
-use crate::features::cross_calls::MathEngine;
+```rust title="examples/src/docs/modules.rs"
+use crate::docs::cross_calls::MathEngine;
 
 #[odra::module]
 pub struct ModulesContract {
@@ -35,7 +35,7 @@ To see how modules can be used in a real-world scenario, check out the ERC20 exa
 ## Testing
 As we don't need to hold addresses, the test is really simple:
 
-```rust title="examples/src/features/modules.rs"
+```rust title="examples/src/docs/modules.rs"
 use super::ModulesContractDeployer;
 
 #[test]

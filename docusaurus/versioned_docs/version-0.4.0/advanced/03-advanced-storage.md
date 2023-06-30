@@ -37,7 +37,7 @@ In Odra, the Mapping is a key-value storage system where the key is associated w
 
 Let's consider the following example:
 
-```rust title="examples/src/features/storage/mapping.rs"
+```rust title="examples/mapping.rs"
 use odra::{map, types::U256, Mapping, UnwrapOrRevert};
 
 use crate::owned_token::OwnedToken;
@@ -104,7 +104,7 @@ If the terminal value is deeply nested, a long chain of `get_instance()` calls i
 
 To keep the codebase consistent, a `map!` macro can be used:
 
-```rust title="examples/src/features/storage/mapping.rs"
+```rust title="examples/mapping.rs"
 ...
 
 pub fn set_string(&mut self, key1: String, key2: u32, key3: String, value: String) {

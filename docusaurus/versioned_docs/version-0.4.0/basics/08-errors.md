@@ -8,7 +8,7 @@ description: Causing and handling errors
 Odra comes with tools that allow you to throw, handle and test for errors in execution. Take a look at the
 following example of a simple owned contract:
 
-```rust title="examples/src/features/handling_errors.rs"
+```rust title="examples/src/docs/errors.rs"
 use odra::{execution_error, Variable, UnwrapOrRevert};
 use odra::types::Address;
 
@@ -57,7 +57,7 @@ Firstly, we are using `execution_error!` macro to define our own set of Errors t
 throw. Then, you can use those errors in your code - for example, instead of unwrapping Options, you can use
 `unwrap_or_revert_with` and pass an error as an argument:
 
-```rust title="examples/src/features/handling_errors.rs"
+```rust title="examples/src/docs/errors.rs"
 self.owner.get().unwrap_or_revert_with(Error::OwnerNotSet)
 ```
 
@@ -65,7 +65,7 @@ You and the users of your contract will be thankful for a meaningful error messa
 
 You can also throw the error directly, by using `revert`:
 
-```rust title="examples/src/features/handling_errors.rs"
+```rust title="examples/src/docs/errors.rs"
 odra::contract_env::revert(Error::NotAnOwner)
 ```
 
@@ -74,7 +74,7 @@ odra::contract_env::revert(Error::NotAnOwner)
 Okay, but how about testing it? We've already mentioned a function - `assert_exception`. This is how you will
 use it:
 
-```rust title="examples/src/features/handling_errors.rs"
+```rust title="examples/src/docs/errors.rs"
 use super::{OwnedContractDeployer, OwnedContractRef};
 use super::Error;
 

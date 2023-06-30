@@ -74,7 +74,7 @@ cargo odra test -b casper
 ```
 
 **Congratulations!** Now you are ready to create contracts using Odra framework! If you had any problems during 
-the installation process, feel free to ask for help on our [Discord](https://discord.gg/8DuTpH6H).
+the installation process, feel free to ask for help on our [Discord](https://discord.com/invite/Mm5ABc9P8k).
 
 ## What's next?
 If you want to see the code that you just tested, continue to the description of [Flipper example](flipper).

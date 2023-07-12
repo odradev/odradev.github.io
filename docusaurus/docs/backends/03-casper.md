@@ -142,12 +142,14 @@ Optional arguments:
 - `odra_cfg_constructor` - `String` type. If the contract has the constructor entry point marked with `#[odra(init)]`, this should be set to the constructor name.
 - constructor arguments that match entry point set in `odra_cfg_constructor`.
 
-### Example usage
+## Contract Deploys
+
+### Example: Deploy Counter
 
 To deploy your contract with a constructor using `casper-client`, you need to pass the above arguments.
 Additionally, you need to pass the `value` argument, which sets the arbitrary initial value for the counter.
 
-```
+```bash
 casper-client put-deploy \
   --node-address [NODE_ADDRESS] \
   --chain-name casper-test \
@@ -162,6 +164,69 @@ casper-client put-deploy \
 ```
 
 For a more in-depth tutorial, please refer to the [Casper's 'Writing On-Chain Code'].
+
+### Example: Deploy ERC721
+
+Odra comes with a standard ERC721 token implementation.
+Clone the main Odra repo and navigate to the `modules` directory.
+
+Firstly contract needs to be compiled.
+```bash
+cargo odra build -b casper -c erc721_token
+```
+
+It produces the `erc721_token.wasm` file in the `wasm` directory.
+
+Now it's time to deploy the contract.
+```bash
+casper-client put-deploy \
+  --node-address [NODE_ADDRESS] \
+  --chain-name casper-test \
+  --secret-key [PATH_TO_YOUR_KEY]/secret_key.pem \
+  --payment-amount 300000000000 \
+  --session-path ./wasm/erc721_token.wasm \
+  --session-arg "odra_cfg_package_hash_key_name:string:'my_nft'" \
+  --session-arg "odra_cfg_allow_key_override:bool:'false'" \
+  --session-arg "odra_cfg_is_upgradable:bool:'true'" \
+  --session-arg "odra_cfg_constructor:string:'init'" \
+  --session-arg "name:string:'MyNFT'" \
+  --session-arg "symbol:string:'NFT'" \
+  --session-arg "base_uri:string:'https://example.com/'"
+```
+
+It's done.
+The contract is deployed and ready to use.
+Your account is the owner of the contract and you can mint and burn tokens.
+For more details see the code of the [ERC721] module.
+
+To obtain the package hash of the contract search for `my_nft` key
+in your account's named keys.
+
+### Example: Deploy ERC1155
+
+The process is similar to the one described in the previous section.
+
+Contract compilation:
+```bash
+cargo odra build -b casper -c erc1155_token
+```
+
+Contract deployment:
+```bash
+casper-client put-deploy \
+  --node-address [NODE_ADDRESS] \
+  --chain-name casper-test \
+  --secret-key [PATH_TO_YOUR_KEY]/secret_key.pem \
+  --payment-amount 300000000000 \
+  --session-path ./wasm/erc1155_token.wasm \
+  --session-arg "odra_cfg_package_hash_key_name:string:'my_tokens'" \
+  --session-arg "odra_cfg_allow_key_override:bool:'false'" \
+  --session-arg "odra_cfg_is_upgradable:bool:'true'" \
+  --session-arg "odra_cfg_constructor:string:'init'" \
+```
+
+As previously, your account is the owner and can mint and burn tokens.
+For more details see the code of the [ERC1155] module.
 
 ## Sending CSPR to a contract
 
@@ -222,3 +287,5 @@ graph TD;
 [CasperPackageHash]: https://docs.rs/casper-types/latest/casper_types/contracts/struct.ContractPackageHash.html
 [RuntimeArgs]: https://docs.rs/casper-types/latest/casper_types/runtime_args/struct.RuntimeArgs.html
 [Bytes]: https://docs.rs/casper-types/latest/casper_types/bytesrepr/struct.Bytes.html
+[ERC721]: https://github.com/odradev/odra/blob/release/0.5.0/modules/src/erc721_token.rs
+[ERC1155]: https://github.com/odradev/odra/blob/release/0.5.0/modules/src/erc1155_token.rs

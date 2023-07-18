@@ -69,6 +69,7 @@ The transferred amount can be read inside the contract by calling `contract_env:
 
 :::note
 Odra expects the `cargo_purse` runtime argument to be attached to a contract call.
+In case of its absence, the `contract_env::attached_value()` returns zero.
 :::
 
 ### Revert

@@ -23,6 +23,41 @@ pub fn init(&mut self, name: String, symbol: String, decimals: u8, initial_suppl
 }
 ```
 
+## Using
+
+An attribute applicable to struct fields. The `using` attribute accepts multiple values, separated by `,`.
+Each value attribute must point at an existing field.
+
+### Example
+
+```rust
+#[odra::module]
+struct Contract {
+  access_control: AccessControl,
+  meta: Metadata,
+  #[odra(using = "access_control, meta")]
+  // #[odra(using = "access_control, metadata")] - would not compile - `metadata` field does not exist
+  storage: Storage
+}
+
+#[odra::module]
+struct AccessControl {
+  owner: Variable<Address>
+}
+
+#[odra::module]
+struct Metadata {
+  version: Variable<String>
+}
+
+#[odra::module]
+struct Storage {
+  value: Variable<u8>,
+  access_control: AccessControl,
+  meta: Metadata
+}
+```
+
 ## Payable
 
 When writing a smart contract, you need to make sure that money can be both sent to and extracted from the contract. The 'payable' attribute helps wit this. Any function, except for a constructor, with the `#[odra(payable)]` attribute can send and take money in the form of native tokens. 

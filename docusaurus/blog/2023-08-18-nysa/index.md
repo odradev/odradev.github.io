@@ -2,6 +2,7 @@
 slug: Nysa
 title: Nysa
 authors: [kpob]
+image: "./twitter-card.png"
 ---
 
 The Oder River, known as "Odra" in Polish, is one of the major rivers in Poland. It flows for approximately 854 kilometers, originating in the Czech Republic and flowing through southwestern Poland before emptying into the Baltic Sea. The river is a vital transportation route, connecting several Polish cities, including Wrocław, Szczecin, and Gdańsk, to international waterways. The Oder also plays a significant role in the region's ecology, supporting diverse habitats and species. Its watershed area spans multiple countries, making it a part of various international cooperation initiatives aimed at water management and environmental conservation.
@@ -322,7 +323,7 @@ Finally, we compare the costs of Solidity-to-Odra contract and a native CEP-18 i
 
 ## Conclusion
 
-Nysa is at early stage of development, but already has shown a huge potential. In a few simple steps, you can take advantage of an existing smart contract and convert it an Odra module. The module can be a standalone contract, or a building block of a bigger contract.
+Nysa is at early stage of development, but already has shown a huge potential. In a few simple steps, you can take advantage of an existing smart contract and convert it into an Odra module. The module can be a standalone contract, or a building block of a bigger contract.
 
 [lalrpop]: https://github.com/lalrpop/lalrpop
 [c3]: https://en.wikipedia.org/wiki/C3_linearization

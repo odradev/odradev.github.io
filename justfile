@@ -15,6 +15,9 @@ serve:
 develop:
     cd docusaurus && npm run start
 
+docs-new-version version:
+    cd docusaurus && npm run docusaurus docs:version {{version}}
+
 ci-build-and-commit:
     just install
     just build

@@ -102,46 +102,6 @@ They can also use reentrancy guards to block recursive calls to sensitive functi
 
 In Odra you can just apply the `#[odra(non_reentrant)]` attribute to your function.
 
-### Example
-
-```rust
-#[odra::module]
-pub struct NonReentrantCounter {
-    counter: Variable<u32>
-}
-
-#[odra::module]
-impl NonReentrantCounter {
-    #[odra(non_reentrant)]
-    pub fn count_ref_recursive(&mut self, n: u32) {
-        if n > 0 {
-            self.count();
-            ReentrancyMockRef::at(&contract_env::self_address()).count_ref_recursive(n - 1);
-        }
-    }
-}
-
-impl NonReentrantCounter {
-    fn count(&mut self) {
-        let c = self.counter.get_or_default();
-        self.counter.set(c + 1);
-    }
-}
-
-#[cfg(test)]
-mod test {
-    use odra::{test_env, types::ExecutionError};
-
-    #[test]
-    fn ref_recursion_not_allowed() {
-        test_env::assert_exception(ExecutionError::reentrant_call(), || {
-            let mut contract = super::NonReentrantCounterDeployer::default();
-            contract.count_ref_recursive(11);
-        });
-    }
-}
-```
-
 ## Mixing attributes
 
 A function can accept more than one attribute. The only exclusion is a constructor cannot be payable.

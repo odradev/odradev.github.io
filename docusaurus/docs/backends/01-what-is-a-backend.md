@@ -5,7 +5,7 @@ sidebar_position: 1
 # What is a backend?
 
 You can think of a backend as a target platform for your smart contract.
-This can be a piece of code allowing you to quickly check your code - like [MockVM](02-mock-vm.md),
+This can be a piece of code allowing you to quickly check your code - like [OdraVM](02-mock-vm.md),
 or a complete virtual machine, spinning up a blockchain for you - like [CasperVM](03-casper.md).
 
 Each backend has to come with two parts that Odra requires - the Contract Env and the Test Env.
@@ -23,7 +23,7 @@ instead of messing with the blockchain internals.
 
 Other functions from Contract Env include handling transfers, addresses, block time, errors and events.
 
-## Test Env
+## Host Env
 Similarly to the Contract Env, the Test Env exposes a set of functions that allows the communication with
 the backend from the outside world - really useful for implementing tests.
 

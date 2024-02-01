@@ -42,7 +42,7 @@ casper = ["odra/casper"]
 ```
 
 By default, your project will use the latest odra version available at crates.io. We are using two features:
-- `odra/mock-vm` - it is responsible for running tests on Odra's MockVM
+- `odra/mock-vm` - it is responsible for running tests on Odra's OdraVM
 - `odra/casper` - backend implementation of Casper blockchain
   More backends will be released as features that will be possible to enable here.
 

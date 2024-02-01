@@ -22,7 +22,7 @@ rustup target add wasm32-unknown-unknown
 ```
 
 :::note
-`wasm32-unknown-uknown` is a target that will be used by Odra to compile your smart contracts to WASM files.
+`wasm32-unknown-unknown` is a target that will be used by Odra to compile your smart contracts to WASM files.
 :::
 
 ## Installing Cargo Odra
@@ -33,7 +33,7 @@ It is not required to use Odra, but the documentation will assume that you have 
 To install it, simply execute the following command:
 
 ```bash
-cargo install cargo-odra
+cargo install cargo-odra --locked
 ```
 
 To check if it was installed correctly and see available commands, type:
@@ -52,15 +52,15 @@ To create a new project, simply execute:
 cargo odra new --name my-project && cd my_project
 ```
 
-This will create a new folder called "my_project" and initialize Odra there. Cargo Odra
-will create a sample contract for you in src directory. You can run the tests of this contract
+This will create a new folder called `my_project` and initialize Odra there. Cargo Odra
+will create a sample contract for you in `src` directory. You can run the tests of this contract
 by executing:
 
 ```bash
 cargo odra test
 ```
 
-This will run tests using Odra's internal MockVM. You can run those tests against a real backend, let's use CasperVM:
+This will run tests using Odra's internal OdraVM. You can run those tests against a real backend, let's use CasperVM:
 
 ```bash
 cargo odra test -b casper

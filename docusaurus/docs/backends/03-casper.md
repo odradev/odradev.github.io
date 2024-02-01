@@ -262,7 +262,7 @@ You have to build it using your SDK.
 
 ## Execution
 
-First thing Odra does with your code, is similar to the one used in [MockVM](02-mock-vm.md) - 
+First thing Odra does with your code, is similar to the one used in [OdraVM](02-mock-vm.md) - 
 a list of entrypoints is generated, thanks to the `#[odra::module]` macro.
 
 ```mermaid

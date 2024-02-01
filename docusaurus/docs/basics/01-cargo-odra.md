@@ -6,20 +6,20 @@ description: A tool for managing Odra projects
 # Cargo Odra
 If you followed the [Installation](../getting-started/installation.md) tutorial properly,
 you should already be set up with the Cargo Odra tool. It is an executable that will help you with
-managing your smart contracts project, testing and running them on multiple backends (blockchains).
+managing your smart contracts project, testing and running them with various configurations.
 
 Let's take a look at all the possibilities that Cargo Odra gives you.
 
 ## Managing projects
 
-Two commands will help you create a new project. The first one is `cargo odra new`.
+Two commands help you create a new project. The first one is `cargo odra new`.
 You need to pass one parameter, namely `--name {PROJECT_NAME}`:
 
 ```bash
 cargo odra new --name my-project
 ```
 
-This will create a new project in the `my_project` folder and name it `my_project`. You can see it
+This creates a new project in the `my_project` folder and name it `my_project`. You can see it
 for yourself, for example by taking a look into a `Cargo.toml` file created in your project's folder:
 
 ```toml
@@ -35,13 +35,16 @@ By default it uses `full` template, if you want, you can use minimalistic `blank
 cargo odra new -t blank --name my-project
 ```
 
+The third available template is `workspace`, which creates a workspace with two projects, similar to the one created 
+with the `full` template.
+
 By default, the latest release of Odra will be used for the template and as a dependency.
 You can pass a source of Odra you want to use, by using `-s` parameter:
 
 ```bash
 cargo odra new -n my-project -s ../odra # will use local folder of odra
 cargo odra new -n my-project -s release/0.5.0 # will use github branch, e.g. if you want to test new release
-cargo odra new -n my-project -s 0.3.1 # will use a version released on crates.io
+cargo odra new -n my-project -s 0.7.1 # will use a version released on crates.io
 ```
 
 The second way of creating a project is by using `init` command:
@@ -50,7 +53,7 @@ The second way of creating a project is by using `init` command:
 cargo odra init --name my-project
 ```
 
-It works in the same way as `new`, but instead of creating a new folder, it will create a project
+It works in the same way as `new`, but instead of creating a new folder, it creates a project
 in the current, empty directory.
 
 ## Generating code
@@ -60,18 +63,18 @@ If you want to quickly create a new contract code, you can use the `generate` co
 cargo odra generate -c counter 
 ```
 
-This will create a new file `src/counter.rs` with sample code, add appropriate `use` and `mod` sections
+This creates a new file `src/counter.rs` with sample code, add appropriate `use` and `mod` sections
 to `src/lib.rs` and update the `Odra.toml` file accordingly. To learn more about `Odra.toml` file,
 visit [Odra.toml](03-odra-toml.md).
 
 ## Testing
-Most used command during the development of your project should be this one:
+The most used command during the development of your project should be this one:
 
 ```bash
 cargo odra test
 ```
-It will run your tests against Odra's MockVM. It is substantially faster than virtual machines
-provided by blockchains developers and implements all the features Odra uses.
+It runs your tests against Odra's `MockVM`. It is substantially faster than `CasperVM`
+and implements all the features Odra uses.
 
 When you want to run tests against a "real" VM, just provide the name of the backend using `-b`
 option:
@@ -80,10 +83,11 @@ option:
 cargo odra test -b casper
 ```
 
-In the example above, Cargo Odra will build the project, the Casper builder, generate the wasm files,
-spin up CasperVM instance, deploy the contracts onto it and run the tests against it. Pretty neat.
-Keep in mind that this is a lot slower than MockVM and you cannot use the debugger.
-This is why MockVM was created and should be your first choice when developing contracts.
+In the example above, Cargo Odra builds the project, generates the wasm files,
+spin up `CasperVM` instance, deploys the contracts onto it and runs the tests against it. Pretty neat.
+
+Keep in mind that this is a lot slower than `OdraVM` and you cannot use the debugger.
+This is why `OdraVM` was created and should be your first choice when developing contracts.
 Of course, testing all of your code against a blockchain VM is a must in the end.
 
 If you want to run only some of the tests, you can pass arguments to the `cargo test` command
@@ -111,20 +115,22 @@ You can also build the code itself and generate the output contracts without run
 To do so, simply run:
 
 ```bash
-cargo odra build -b casper
+cargo odra build
 ```
 
-Where `casper` is the name of the backend we are using in this example. If the build process
-finishes successfully, wasm files will be located in `wasm` folder.
+If the build process finishes successfully, wasm files will be located in `wasm` folder.
+Notice, that this command does not require the `-b` option.
 
-## Updating dependencies
-You will learn later, that the project using Odra contains more than one Rust project - your own and
-one or more builders. To run `cargo update` on all of them at once instead of traversing all the folders
-you can use this command:
+## Generating contract schema
+
+If you want to generate a schema (including the name, entrypoints, events, etc.) for your contract, you can use the `schema` command:
 
 ```bash
-cargo odra update
+cargo odra schema -c Counter
 ```
+
+This generates a schema file in JSON format for the `Counter` contract and places it in the `resources` folder. 
+If the `resources` folder does not exist, it creates the folder for you.
 
 ## What's next
 In the next section, we will take a look at all the files and directories that `cargo odra` created

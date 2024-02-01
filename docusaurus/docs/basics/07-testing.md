@@ -17,7 +17,7 @@ mod tests {
 
     #[test]
     fn init_test() {
-        let mut dog_contract = DogContract3Deployer::init("Mantus".to_string());
+        let mut dog_contract = DogContract3Deployer::init(&odra_test::env(), "Mantus".to_string());
         assert_eq!(dog_contract.walks_amount(), 0);
         assert_eq!(dog_contract.walks_total_length(), 0);
         dog_contract.walk_the_dog(5);
@@ -32,7 +32,7 @@ The `#[odra(module)]` macro created a Deployer code for us, which will deploy th
 VM:
 
 ```rust title="examples/src/features/storage/list.rs"
-let mut dog_contract = DogContract3Deployer::init("Mantus".to_string());
+let mut dog_contract = DogContract3Deployer::init(&odra_test::env(), "Mantus".to_string());
 ```
 
 From now on, we can use `dog_contract` to interact with our deployed contract - in particular, all
@@ -60,15 +60,18 @@ article about host communication and implement the tests that prove it works:
 #[cfg(test)]
 mod tests {
     use super::TestingContractDeployer;
+    use odra::prelude::*;
 
     #[test]
-    fn test_env() {
-        let testing_contract = TestingContractDeployer::init("MyContract".to_string());
+    fn env() {
+        let test_env = odra_test::env();
+        test_env.set_caller(test_env.get_account(0));
+        let testing_contract = TestingContractDeployer::init(&test_env, "MyContract".to_string());
         let creator = testing_contract.created_by();
-        odra::test_env::set_caller(odra::test_env::get_account(1));
-        let testing_contract2 = TestingContractDeployer::init("MyContract2".to_string());
+        test_env.set_caller(test_env.get_account(1));
+        let testing_contract2 = TestingContractDeployer::init(&test_env, "MyContract2".to_string());
         let creator2 = testing_contract2.created_by();
-        assert!(creator != creator2);
+        assert_ne!(creator, creator2);
     }
 }
 ```

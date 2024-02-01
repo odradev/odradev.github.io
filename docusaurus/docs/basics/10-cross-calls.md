@@ -8,30 +8,28 @@ description: Contracts calling contracts
 To show how to handle calls between contracts, first, let's implement two of them:
 
 ```rust title="examples/src/features/cross_calls.rs"
-use odra::Variable;
-use odra::types::{Address};
+use odra::prelude::*;
+use odra::{module::Module, Address, UnwrapOrRevert, Variable};
 
 #[odra::module]
 pub struct CrossContract {
-    pub math_engine: Variable<Address>,
+    pub math_engine: Variable<Address>
 }
 
 #[odra::module]
 impl CrossContract {
-    #[odra(init)]
     pub fn init(&mut self, math_engine_address: Address) {
         self.math_engine.set(math_engine_address);
     }
 
     pub fn add_using_another(&self) -> u32 {
-        let math_engine_address = self.math_engine.get().unwrap();
-        MathEngineRef::at(math_engine_address).add(3, 5)
+        let math_engine_address = self.math_engine.get().unwrap_or_revert(&self.env());
+        MathEngineContractRef::new(self.env(), math_engine_address).add(3, 5)
     }
 }
 
 #[odra::module]
-pub struct MathEngine {
-}
+pub struct MathEngine {}
 
 #[odra::module]
 impl MathEngine {
@@ -47,7 +45,7 @@ storage for later use. If we deploy the `MathEngine` first and take note of its 
 To call the external contract, we use the `Ref` that was created for us by Odra:
 
 ```rust title="examples/src/features/cross_calls.rs"
-MathEngineRef::at(math_engine_address).add(3, 5)
+MathEngineContractRef::new(self.env(), math_engine_address).add(3, 5)
 ```
 
 ## Contract Ref
@@ -82,19 +80,21 @@ pub trait Adder {
 Analogously to modules, Odra creates the `AdderRef` struct (but do not create the `AdderDeployer`). Having an address we can call:
 
 ```rust title="examples/src/features/cross_calls.rs"
-AdderRef::at(address).add(3, 5)
+AdderRef::new(self.env(), address).add(3, 5)
 ```
 
 ## Testing
 Let's see how we can test our cross calls using this knowledge:
 
 ```rust title="examples/src/features/cross_calls.rs"
-use super::{CrossContractDeployer, MathEngineDeployer};
+ use super::{CrossContractDeployer, MathEngineDeployer};
 
 #[test]
 fn test_cross_calls() {
-    let math_engine_contract = MathEngineDeployer::default();
-    let cross_contract = CrossContractDeployer::init(math_engine_contract.address());
+    let test_env = odra_test::env();
+    let math_engine_contract = MathEngineDeployer::init(&test_env);
+    let cross_contract =
+        CrossContractDeployer::init(&test_env, *math_engine_contract.address());
 
     assert_eq!(cross_contract.add_using_another(), 8);
 }
@@ -106,18 +106,17 @@ Each test start with a fresh instance of blockchain - no contracts are deployed.
 #[cfg(test)]
 mod tests {
     use odra::types::Address;
-    use crate::features::cross_calls::{Adder, AdderRef};
+    use crate::features::cross_calls::{Adder, AdderHostRef};
     
     #[test]
     fn test_ext() {
-        let adder = AdderRef::at(get_adder_address());
-
+        let adder = AdderHostRef::new(get_adder_address(), test_env).add(3, 5)
         assert_eq!(adder.add(1, 2), 3);
     }
 
     fn get_adder_address() -> Address {
-        let contract = MathEngineDeployer::default();
-        contract.address()
+        let contract = MathEngineDeployer::init(&odra_test::env());
+        *contract.address()
     }
 }
 ```

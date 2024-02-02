@@ -5,13 +5,13 @@ sidebar_position: 3
 # Livenet
 
 The Livenet backend let us deploy and test the contracts on the real blockchain. It can be a local
-test node, a testnet or even the mainnet. It is possible and even recommended to use the Livenet backend
+test node, a testnet or even the mainnet. It is possible and even recommended using the Livenet backend
 to handle the deployment of your contracts to the real blockchain.
 
-It is implemented in a similar way as Casper or OdraVM,
+Furthermore, it is implemented in a similarly to Casper or OdraVM,
 however, it uses a real blockchain to deploy contracts and store the state.
 This lets us use Odra to deploy and test contracts on a real blockchain, but
-on the other hand it comes with some limitations on what can be done in the tests.
+on the other hand, it comes with some limitations on what can be done in the tests.
 
 The main differences between Livenet and e.g. Casper test backend are:
 - Real CSPR tokens are used to deploy and call contracts. This also means that we need to
@@ -20,18 +20,18 @@ to get some tokens for testing purposes, but we still need to specify the amount
 for each action.
 - The contract state is stored on the real blockchain, so we can't just reset the state - 
 we can redeploy the contract, but we can't remove the old one.
-- We have no control over the block time. This means that for example `advance_block_time` function
+- We have no control over the block time. This means that for example, `advance_block_time` function
 is implemented by waiting for the real time to pass.
 
 This is also a cause for the fact that the Livenet backend cannot be (yet) used for running
-the regular odra tests. Instead, we can create integration tests or binaries which will
+the regular Odra tests. Instead, we can create integration tests or binaries which will
 use a slightly different workflow to test the contracts.
 
 ## Setup
 
 To use Livenet backend, we need to provide Odra with some information - the network address, our private
 key and the name of the chain we want to use. Optionally, we can add multiple private keys to use
-more than one account in our tests. Those values are passed using enviroment variables. We can use .env
+more than one account in our tests. Those values are passed using environment variables. We can use .env
 file to store them - let's take a look at an example .env file, created from the [.env.sample] file from
 examples folder:
 
@@ -49,7 +49,7 @@ ODRA_CASPER_LIVENET_NODE_ADDRESS=localhost:7777
 # - integration-test
 ODRA_CASPER_LIVENET_CHAIN_NAME=integration-test
 
-# Paths to the secret keys of the additional acccounts.
+# Paths to the secret keys of the additional accounts.
 # Main secret key will be 0th account.
 ODRA_CASPER_LIVENET_KEY_1=.keys/secret_key_1.pem
 ODRA_CASPER_LIVENET_KEY_2=.keys/secret_key_2.pem
@@ -157,9 +157,33 @@ can be seen [here](https://integration.cspr.live/deploy/65b1a5d21174a62c675f8968
 :::
 
 ## How Livenet backend works
+All calls of entrypoints executed on a Casper blockchain cost gas - even if they do not change the state.
+It is possible however to query the state of the blockchain for free.
 
+This principle is used in the Livenet backend - all calls that do not change the state of the blockchain are really executed offline - the only thing that is requested from the
+node is the current state. This is why the `balance_of` call was almost instant and free.
+
+Basically, if the entrypoint function is not mutable or does not make an external call, it is executed offline and
+node is used for the state query only.
+
+Take note, that even if the function is not mutable, but the contract is not deployed or loaded, the Livenet backend will 
+not know which code to execute - and a deployment will be executed.
 
 ## Multiple enviroments
+
+It is possible to have multiple environments for the Livenet backend. This is useful if we want to easily switch between multiple accounts,
+multiple nodes or even multiple chains.
+
+To do this, simply create a new `.env` file with a different prefix - for example, `integration.env` and `mainnet.env`.
+Then, pass the `ODRA_CASPER_LIVENET_ENV` variable with value either `integration` or `mainnet` to select which file
+has to be used first. If your `integration.env` file has a value that IS present in the `.env` file, it will
+override the value from the `.env` file.
+
+```bash
+ODRA_CASPER_LIVENET_ENV=integration cargo run --bin erc20_on_livenet --features=livene
+```
+
+To sum up - this command will firstly load the `integration.env` file and then load the missing values from `.env` file.
 
 [.env.sample]: https://github.com/odradev/odra/blob/release/0.8.0/examples/.env.sample
 [erc20_on_livenet.rs]: https://github.com/odradev/odra/blob/release/0.8.0/examples/bin/erc20_on_livenet.rs

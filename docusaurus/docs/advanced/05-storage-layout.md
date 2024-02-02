@@ -1,13 +1,13 @@
 # Storage Layout
 
-Odra's innovative modular design necessitates a distinctive storage layout. This
-article elucidates the step-by-step workings of Odra's storage layout.
+Odra's innovative modular design necessitates a unique storage layout. This
+article explains step-by-step Odra's storage layout.
 
 ## Casper VM Perspective
 The Casper Execution Engine (VM) enables the storage of data in named keys or
 dictionaries. However, a smart contract has a limited number of named keys,
 making it unsuitable for storing substantial data volumes. Odra resolves this
-issue by storing all user-generated data in a dictionary called `storage`. This
+issue by storing all user-generated data in a dictionary called `state`. This
 dictionary operates as a key-value store, where keys are strings with a maximum
 length of 64 characters, and values are arbitrary byte arrays.
 
@@ -49,12 +49,13 @@ pub struct Loans {
 }
 ```
 
-The `Loans` module encompasses two fields: `lenders` and `borrowers`, both of
-which have the same storage layout as defined by the `Token` module. Odra
-guarantees that `lenders` and `borrowers` are stored under distinct keys within
-the storage dictionary.
+The `Loans` module has two fields: `lenders` and `borrowers`, both of which have
+the same storage layout as defined by the `Token` module. Odra guarantees that
+`lenders` and `borrowers` are stored under distinct keys within the storage
+dictionary.
 
-Both `Token` and `Loans` serve as examples to show how Odra's storage layout operates.
+Both `Token` and `Loans` serve as examples to show how Odra's storage layout
+operates.
 
 ## Key generation.
 

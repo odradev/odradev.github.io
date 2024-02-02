@@ -43,8 +43,8 @@ You can pass a source of Odra you want to use, by using `-s` parameter:
 
 ```bash
 cargo odra new -n my-project -s ../odra # will use local folder of odra
-cargo odra new -n my-project -s release/0.5.0 # will use github branch, e.g. if you want to test new release
-cargo odra new -n my-project -s 0.7.1 # will use a version released on crates.io
+cargo odra new -n my-project -s release/0.9.0 # will use github branch, e.g. if you want to test new release
+cargo odra new -n my-project -s 0.8.0 # will use a version released on crates.io
 ```
 
 The second way of creating a project is by using `init` command:
@@ -121,16 +121,24 @@ cargo odra build
 If the build process finishes successfully, wasm files will be located in `wasm` folder.
 Notice, that this command does not require the `-b` option.
 
+If you want to build specific contract, you can use `-c` option:
+
+```bash
+cargo odra build -c counter # you pass many comma separated contracts
+```
+
 ## Generating contract schema
 
 If you want to generate a schema (including the name, entrypoints, events, etc.) for your contract, you can use the `schema` command:
 
 ```bash
-cargo odra schema -c Counter
+cargo odra schema 
 ```
 
-This generates a schema file in JSON format for the `Counter` contract and places it in the `resources` folder. 
+This generates a schema file in JSON format for all your contracts and places them in the `resources` folder. 
 If the `resources` folder does not exist, it creates the folder for you.
+
+Like with the `build` command, you can use the `-c` option to generate a schema for a specific contract.
 
 ## What's next
 In the next section, we will take a look at all the files and directories that `cargo odra` created

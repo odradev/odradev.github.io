@@ -22,7 +22,6 @@ The other exposed types are:
 
 * `CallArgs` - wraps around casper's [`RuntimeArgs`][runtime_args];
 * `Balance` - U512 type alias;
-* `BlockTime` - u64 type alias;
 * `Address` - an enum that encapsulates casper's [`AccountHash`][account_hash] and [`ContractPackageHash`][contract_package_hash]
 
 ## Contract Env
@@ -41,21 +40,9 @@ Under the hood, Odra integrates with [Casper Event Standard] and creates a few [
    
 Besides that, all the events the contract emits are registered - events schemas are written to the storage under the `__events_schema` key.
 
-:::note
-Don't forget to expose events in the module using `#[odra::module(events = [...])]`. 
-:::
-
 So, `Events` are nothing different from any other data stored by a contract.
 
-A struct to be an event must implement `SerializableEvent` which is defined as follow:
-
-```rust
-pub trait SerializableEvent: 
-    odra_types::event::OdraEvent + 
-    casper_types::CLTyped + 
-    casper_types::bytesrepr::ToBytes + 
-    casper_types::bytesrepr::FromBytes {}
-```
+A struct to be an event must implement traits defined by [Casper Event Standard], thankfully you can derive them using `#[derive(Event)]`.
 
 ### Payable
 The first Odra idiom is a `Contract Main Purse`. It is a purse associated with a contract. The purse is created lazily - when the first transfer to the contract occurs, a proper `URef` and a purse are created and stored under the `__contract_main_purse` key.
@@ -65,7 +52,7 @@ Casper does not allow direct transfers from an account to a contract, so Odra co
 Behind the scenes, Odra handles an account-contract transfer via a cargo purse when a function is marked as payable.
 If under the way something goes wrong with the transfer, the contract reverts.
 
-The transferred amount can be read inside the contract by calling `contract_env::attached_value()`.
+The transferred amount can be read inside the contract by calling `self.env().attached_value()`.
 
 :::note
 Odra expects the `cargo_purse` runtime argument to be attached to a contract call.
@@ -80,11 +67,12 @@ Odra adds an extra abstraction layer - in a contract `ExecutionError`s are defin
 Casper equips developers with very low-level tooling, which can be cumbersome for newcomers.
 If you want to check who called the contract or its address, you can not do it off-hand - you must analyze the call stack.
 
-The `contract_env::self_address()` function takes the first element of the callstack ([`runtime::get_call_stack()`][callstack]) and casts it to `Address`.
+The `self.env().self_address()` function takes the first element of the callstack ([`runtime::get_call_stack()`][callstack]) and casts it to `Address`.
 
-The `contract_env::caller()` function takes the second element of the call stack (`runtime::get_call_stack()`) and casts it to `Address`.
+The `self.env().caller()` function takes the second element of the call stack (`runtime::get_call_stack()`) and casts it to `Address`.
 
-As mentioned in the [Payable] section, to store CSPR, each contract creates its purse. To read the contract balance, you call `contract_env::self_balance`, which checks the balance of the purse stored under `__contract_main_purse`.
+As mentioned in the [Payable] section, to store CSPR, each contract creates its purse. To read the contract balance,
+you call `self.env().self_balance()`, which checks the balance of the purse stored under `__contract_main_purse`.
 
 ## Test Env
 Test environment allows you to test wasm contracts before you deploy them onto the testnet or livenet. It is built on top of the `Casper Execution Engine`.
@@ -109,41 +97,32 @@ If you want to just generate a wasm file, simply run:
 cargo odra build -b casper
 ```
 
-## Constructors
+## Deploying a contract to Casper network
 
-Let's define a basic Odra module that includes a constructor:
+There would be no point in writing a contract if you couldn't deploy it to the blockchain.
+You can do it in two ways: provided by the Casper itself: using the `casper-client` tool
+or using the Odra's Livenet integration.
 
+Let's explore the first option to better understand the process.
 
-```rust
-#[odra::module]
-struct Counter {
-    value: Variable<u32>
-}
-
-#[odra::module]
-impl Counter {
-    #[odra(init)]
-    pub initialize(&mut self, value: u32) {
-        self.value.set(value);
-    }
-}
-```
-Read more about constructors [here](../advanced/04-attributes.md#init).
+:::note
+If you wish, you can skip the following section and jump to the [Livenet integration](04-livenet.md).
+:::
 
 ### WASM arguments
 
-When deploying a new contract you have to specify following arguments.
+When deploying a new contract you can pass some arguments to it.
+Every contract written in Odra expects those arguments to be set:
 
-Required arguments:
 - `odra_cfg_package_hash_key_name` - `String` type. The key under which the package hash of the contract will be stored.
 - `odra_cfg_allow_key_override` - `Bool` type. If `true` and the key specified in `odra_cfg_package_hash_key_name` already exists, it will be overwritten.
 - `odra_cfg_is_upgradable` - `Bool` type. If `true`, the contract will be deployed as upgradable.
 
-Optional arguments:
-- `odra_cfg_constructor` - `String` type. If the contract has the constructor entry point marked with `#[odra(init)]`, this should be set to the constructor name.
-- constructor arguments that match entry point set in `odra_cfg_constructor`.
+Additionally, if required by the contract, you can pass constructor arguments.
 
-## Contract Deploys
+When working with the test env via `cargo odra` or when using
+[Livenet integration](04-livenet.md) this is handled automatically. However, if you rather use
+`casper-client` directly, you have to pass them manually:
 
 ### Example: Deploy Counter
 
@@ -160,7 +139,6 @@ casper-client put-deploy \
   --session-arg "odra_cfg_package_hash_key_name:string:'counter_package_hash'" \
   --session-arg "odra_cfg_allow_key_override:bool:'true'" \
   --session-arg "odra_cfg_is_upgradable:bool:'true'" \
-  --session-arg "odra_cfg_constructor:string:'initialize'" \
   --session-arg "value:u32:42" 
 ```
 
@@ -189,7 +167,6 @@ casper-client put-deploy \
   --session-arg "odra_cfg_package_hash_key_name:string:'my_nft'" \
   --session-arg "odra_cfg_allow_key_override:bool:'false'" \
   --session-arg "odra_cfg_is_upgradable:bool:'true'" \
-  --session-arg "odra_cfg_constructor:string:'init'" \
   --session-arg "name:string:'MyNFT'" \
   --session-arg "symbol:string:'NFT'" \
   --session-arg "base_uri:string:'https://example.com/'"
@@ -253,7 +230,7 @@ Result of `to_bytes` on [CasperPackageHash].
 - `entry_point` - `String` type. The name of the entry point you want to call.
 - `args` - `Bytes` type. It is a serialized [RuntimeArgs] with the arguments you want to pass
 to the entry point. To be specific it is the result of `to_bytes` method wrapped with [Bytes] type.
-- `attached_value`. `Option<U512>` type. The amount of CSPR you want to attach to the call.
+- `attached_value`. `U512` type. The amount of CSPR you want to attach to the call.
 - `amount`. `U512` type. Should be the same value as `attached_value` if not `None`.
 It is a special Casper argument that enables the access to account's main purse.
 
@@ -284,9 +261,9 @@ graph TD;
 [deploy]: https://docs.rs/casper-execution-engine/latest/casper_execution_engine/core/engine_state/deploy_item/struct.DeployItem.html
 [Casper Event Standard]: https://github.com/make-software/casper-event-standard
 [Casper's 'Writing On-Chain Code']: https://docs.casper.network/writing-contracts/
-[proxy_caller.wasm]: https://github.com/odradev/odra/blob/release/0.4.0/odra-casper/livenet/resources/proxy_caller.wasm
+[proxy_caller.wasm]: https://github.com/odradev/odra/blob/release/0.8.0/odra-casper/test-vm/resources/proxy_caller.wasm
 [CasperPackageHash]: https://docs.rs/casper-types/latest/casper_types/contracts/struct.ContractPackageHash.html
 [RuntimeArgs]: https://docs.rs/casper-types/latest/casper_types/runtime_args/struct.RuntimeArgs.html
 [Bytes]: https://docs.rs/casper-types/latest/casper_types/bytesrepr/struct.Bytes.html
-[ERC721]: https://github.com/odradev/odra/blob/release/0.5.0/modules/src/erc721_token.rs
-[ERC1155]: https://github.com/odradev/odra/blob/release/0.5.0/modules/src/erc1155_token.rs
+[ERC721]: https://github.com/odradev/odra/blob/release/0.8.0/modules/src/erc721_token.rs
+[ERC1155]: https://github.com/odradev/odra/blob/release/0.8.0/modules/src/erc1155_token.rs

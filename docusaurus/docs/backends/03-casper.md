@@ -20,7 +20,7 @@ pub trait OdraType:
 
 The other exposed types are:
 
-* `CallArgs` - wraps around casper's [`RuntimeArgs`][runtime_args];
+* `CallDef` - holds [`RuntimeArgs`][runtime_args], name of the entrypoint, sent cspr amount and information about mutability;
 * `Balance` - U512 type alias;
 * `Address` - an enum that encapsulates casper's [`AccountHash`][account_hash] and [`ContractPackageHash`][contract_package_hash]
 
@@ -43,6 +43,10 @@ Besides that, all the events the contract emits are registered - events schemas 
 So, `Events` are nothing different from any other data stored by a contract.
 
 A struct to be an event must implement traits defined by [Casper Event Standard], thankfully you can derive them using `#[derive(Event)]`.
+
+:::note
+Don't forget to expose events in the module using `#[odra::module(events = [...])]`. 
+:::
 
 ### Payable
 The first Odra idiom is a `Contract Main Purse`. It is a purse associated with a contract. The purse is created lazily - when the first transfer to the contract occurs, a proper `URef` and a purse are created and stored under the `__contract_main_purse` key.

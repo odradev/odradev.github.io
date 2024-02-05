@@ -28,7 +28,7 @@ Other functions from Contract Env include handling transfers, addresses, block t
 Similarly to the Contract Env, the Host Env exposes a set of functions that allows the communication with
 the backend from the outside world - really useful for implementing tests.
 
-This ranges from interacting with the blockchain - like deploying and calling the contracts,
+This ranges from interacting with the blockchain - like deploying new, loading existing and calling the contracts,
 to the more test-oriented - handling errors, forwarding the block time, etc.
 
 ## What's next

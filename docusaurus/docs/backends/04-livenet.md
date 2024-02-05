@@ -13,13 +13,14 @@ however, it uses a real blockchain to deploy contracts and store the state.
 This lets us use Odra to deploy and test contracts on a real blockchain, but
 on the other hand, it comes with some limitations on what can be done in the tests.
 
-The main differences between Livenet and e.g. Casper test backend are:
+The main differences between Livenet and e.g. CasperVM backend are:
 - Real CSPR tokens are used to deploy and call contracts. This also means that we need to
-pay for each contract deployment and each contract call. Of course, we can use the faucet
+pay for each contract deployment and each contract call. Of course, we can use the [faucet](https://testnet.cspr.live/tools/faucet)
 to get some tokens for testing purposes, but we still need to specify the amount needed
 for each action.
 - The contract state is stored on the real blockchain, so we can't just reset the state - 
 we can redeploy the contract, but we can't remove the old one.
+- Because of the above, we can load the existing contracts and use them in the tests.
 - We have no control over the block time. This means that for example, `advance_block_time` function
 is implemented by waiting for the real time to pass.
 
@@ -148,7 +149,7 @@ Recipient's balance: 4000
 ```
 Those logs are a result of the last 4 lines of the above listing.
 Each deployment or a call to the blockchain will be noted and will take some time to execute.
-We can see that the `transfer` call took over 15 seconds to execute. But calling balance_of was nearly instant
+We can see that the `transfer` call took over 15 seconds to execute. But calling `balance_of` was nearly instant
 and cost us nothing. How it is possible?
 
 :::info
@@ -163,11 +164,10 @@ It is possible however to query the state of the blockchain for free.
 This principle is used in the Livenet backend - all calls that do not change the state of the blockchain are really executed offline - the only thing that is requested from the
 node is the current state. This is why the `balance_of` call was almost instant and free.
 
-Basically, if the entrypoint function is not mutable or does not make an external call, it is executed offline and
-node is used for the state query only.
-
-Take note, that even if the function is not mutable, but the contract is not deployed or loaded, the Livenet backend will 
-not know which code to execute - and a deployment will be executed.
+Basically, if the entrypoint function is not mutable or does not make a call to an unknown external contract
+(see [Cross Calls](../basics/10-cross-calls.md)), it is executed offline and
+node is used for the state query only. However, the Livenet needs to know the connection between the contracts
+and the code, so make sure to deploy or load already deployed contracts
 
 ## Multiple enviroments
 

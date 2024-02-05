@@ -83,6 +83,18 @@ Analogously to modules, Odra creates the `AdderRef` struct (but do not create th
 AdderRef::new(self.env(), address).add(3, 5)
 ```
 
+### Loading the contract
+Sometimes it is useful to load the deployed contract instead of deploying it by ourselves. This is especially useful when we want to test
+our contracts in [Livenet](../backends/04-livenet.md) backend. We can load the contract using `load` method on the `Deployer`:
+
+```rust title="examples/bin/erc20_on_livenet.rs"
+fn _load(env: &HostEnv) -> Erc20HostRef {
+    let address = "hash-d26fcbd2106e37be975d2045c580334a6d7b9d0a241c2358a4db970dfd516945";
+    let address = Address::from_str(address).unwrap();
+    Erc20Deployer::load(env, address)
+}
+```
+
 ## Testing
 Let's see how we can test our cross calls using this knowledge:
 

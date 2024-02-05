@@ -5,7 +5,7 @@ sidebar_position: 1
 # What is a backend?
 
 You can think of a backend as a target platform for your smart contract.
-This can be a piece of code allowing you to quickly check your code - like [OdraVM](02-mock-vm.md),
+This can be a piece of code allowing you to quickly check your code - like [OdraVM](02-odra-vm.md),
 a complete virtual machine, spinning up a blockchain for you - like [CasperVM](03-casper.md),
 or even a real blockchain - when using [Livenet backend](03-casper.md).
 

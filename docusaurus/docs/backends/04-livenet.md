@@ -89,9 +89,13 @@ fn main() {
     env.set_gas(100_000_000_000u64);
     
     // Deploy the contract. The API is the same as in the OdraVM backend.
-    let mut token = Erc20Deployer::init(
-        env, name, symbol, decimals, Some(initial_supply)
-    );
+    let init_args = Erc20InitArgs {
+        name,
+        symbol,
+        decimals,
+        initial_supply: Some(initial_supply)
+    };
+    let mut token = Erc20HostRef::deploy(env, init_args);
     
     // We can now use the contract as we would in the OdraVM backend.
     println!("Token address: {}", token.address().to_string());

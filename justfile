@@ -2,6 +2,7 @@ install:
     cd docusaurus && npm install
 
 build:
+    just install
     cd docusaurus && npm run build
     rm -rf docs
     cp -r docusaurus/build docs
@@ -19,7 +20,6 @@ docs-new-version version:
     cd docusaurus && npm run docusaurus docs:version {{version}}
 
 ci-build-and-commit:
-    just install
     just build
     git config --local user.email "action@github.com"
     git config --local user.name "GitHub Action"

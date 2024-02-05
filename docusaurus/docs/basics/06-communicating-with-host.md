@@ -9,23 +9,22 @@ One of the things that your contract will probably do is to query the host for s
 what is the current time? Who called me? Following example shows how to do this:
 
 ```rust title="examples/src/features/host_functions.rs"
-use odra::Variable;
-use odra::types::{BlockTime, Address};
+use odra::prelude::*;
+use odra::{module::Module, Address, Variable};
 
 #[odra::module]
 pub struct HostContract {
     name: Variable<String>,
-    created_at: Variable<BlockTime>,
-    created_by: Variable<Address>,
+    created_at: Variable<u64>,
+    created_by: Variable<Address>
 }
 
 #[odra::module]
 impl HostContract {
-    #[odra(init)]
     pub fn init(&mut self, name: String) {
         self.name.set(name);
-        self.created_at.set(odra::contract_env::get_block_time());
-        self.created_by.set(odra::contract_env::caller())
+        self.created_at.set(self.env().get_block_time());
+        self.created_by.set(self.env().caller())
     }
 
     pub fn name(&self) -> String {

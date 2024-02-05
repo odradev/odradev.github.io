@@ -31,7 +31,13 @@ where
 
 The Sequence module provides functions `get_current_value` and `next_value` to get the current value and increment the value respectively.
 
+### Key creation algorithm
+
+TODO: Add key creation
+
 ### Advanced Mapping
+
+TODO: Replace nested mapping with composite key mapping
 
 In Odra, the Mapping is a key-value storage system where the key is associated with a value. However, the value of the Mapping can be another Mapping. This concept is referred to as nested mapping. Moreover, the value of the Mapping can be an Odra module, introducing a greater level of complexity and utility.
 
@@ -138,7 +144,7 @@ use crate::modules::Token;
 #[odra::module]
 pub struct AdvancedStorage {
     my_sequence: Sequence<u32>,
-    my_mapping: Mapping<String, Mapping<String, Token>>,
+    my_mapping: Mapping<(String, String), Token>>,
 }
 
 impl AdvancedStorage {

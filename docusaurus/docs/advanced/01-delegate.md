@@ -15,24 +15,22 @@ You can delegate functions to as many child modules as you like. The functions w
 Consider the following basic example for better understanding:
 
 ```rust
-use odra::{
-    contract_env,
-    types::{Address, U256}
-};
-
 use crate::{erc20::Erc20, ownable::Ownable};
+use odra::{
+    Address, casper_types::U256,
+    module::{Module, ModuleWrapper}
+};
 
 #[odra::module]
 pub struct OwnedToken {
-    ownable: Ownable,
-    erc20: Erc20
+    ownable: ModuleWrapper<Ownable>,
+    erc20: ModuleWrapper<Erc20>
 }
 
 #[odra::module]
 impl OwnedToken {
-    #[odra(init)]
     pub fn init(&mut self, name: String, symbol: String, decimals: u8, initial_supply: U256) {
-        let deployer = contract_env::caller();
+        let deployer = self.env().caller();
         self.ownable.init(deployer);
         self.erc20.init(name, symbol, decimals, initial_supply);
     }
@@ -57,7 +55,7 @@ impl OwnedToken {
     }
 
     pub fn mint(&mut self, address: Address, amount: U256) {
-        self.ownable.ensure_ownership(contract_env::caller());
+        self.ownable.ensure_ownership(self.env().caller());
         self.erc20.mint(address, amount);
     }
 }
@@ -70,25 +68,24 @@ The above example basically merges the functionalities of modules and adds some 
 Let's take a look at another example.
 
 ```rust
-use odra::{
-    contract_env,
-    types::{Address, U256}
-};
-
 use crate::{erc20::Erc20, ownable::Ownable, exchange::Exchange};
+use odra::{
+    Address, casper_types::U256, 
+    module::{Module, ModuleWrapper}
+};
 
 #[odra::module]
 pub struct DeFiPlatform {
-    ownable: Ownable,
-    erc20: Erc20,
-    exchange: Exchange
+    ownable: ModuleWrapper<Ownable>,
+    erc20: ModuleWrapper<Erc20>,
+    exchange: ModuleWrapper<Exchange>
 }
 
 #[odra::module]
 impl DeFiPlatform {
     #[odra(init)]
     pub fn init(&mut self, name: String, symbol: String, decimals: u8, initial_supply: U256, exchange_rate: u64) {
-        let deployer = contract_env::caller();
+        let deployer = self.env().caller();
         self.ownable.init(deployer);
         self.erc20.init(name, symbol, decimals, initial_supply);
         self.exchange.init(exchange_rate);
@@ -111,7 +108,7 @@ impl DeFiPlatform {
     }
 
     pub fn mint(&mut self, address: Address, amount: U256) {
-        self.ownable.ensure_ownership(contract_env::caller());
+        self.ownable.ensure_ownership(self.env().caller());
         self.erc20.mint(address, amount);
     }
 }

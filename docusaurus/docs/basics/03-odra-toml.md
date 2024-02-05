@@ -10,15 +10,13 @@ that Odra will build. Let's take a look at the file structure again:
 
 ```toml
 [[contracts]]
-name = "flipper"
 fqn = "sample::Flipper"
 ```
 
-The `name` will be used as a name for the contract - the generated wasm file will be in the above case named
-`flipper.wasm`.
+The `fqn` (Fully Qualified Name) is used by the building tools to locate and build the contract.
+The last segment of the `fqn` will be used as the name for your contract - the generated wasm file will 
+be in the above case named `flipper.wasm`.
 
-The `fqn` (Fully Qualified Name) is used by the builder to locate the exact struct where
-the contract is defined.
 
 ## Adding a new contract manually
 
@@ -30,11 +28,9 @@ look like this:
 
 ```toml
 [[contracts]]
-name = "flipper"
 fqn = "sample::Flipper"
 
 [[contracts]]
-name = "counter"
 fqn = "sample::Counter"
 ```
 

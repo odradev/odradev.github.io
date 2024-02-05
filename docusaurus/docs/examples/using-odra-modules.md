@@ -6,7 +6,7 @@ sidebar_position: 2
 
 Besides the Odra framework, you can attach to your project `odra-module` - a set of plug-and-play modules.
 
-If you followed the [Installation guide](../getting-started/installation.md) your Cargo.toml should look like:
+If you followed the [Installation guide] your Cargo.toml should look like:
 
 ```toml title=Cargo.toml
 [package]
@@ -15,47 +15,53 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-odra = { version = "0.3.1", default-features = false }
+odra = "0.8.0"
 
-[features]
-default = ["mock-vm"]
-mock-vm = ["odra/mock-vm"]
-casper = ["odra/casper"]
+[dev-dependencies]
+odra-test = "0.8.0"
+
+[[bin]]
+name = "my_project_build_contract"
+path = "bin/build_contract.rs"
+test = false
+
+[[bin]]
+name = "my_project_build_schema"
+path = "bin/build_schema.rs"
+test = false
+
+[profile.release]
+codegen-units = 1
+lto = true
+
+[profile.dev.package."*"]
+opt-level = 3
 ```
 
 To use `odra-modules`, edit your `dependency` and `features` sections.
 
 ```toml title=Cargo.toml
 [dependencies]
-odra = { path = "../core", default-features = false }
-odra-modules = { path = "../modules", default-features = false }
-
-[features]
-default = ["mock-vm"]
-mock-vm = ["odra/mock-vm", "odra-modules/mock-vm"]
-casper = ["odra/casper", "odra-modules/casper"]
+odra = "0.8.0"
+odra-modules = "0.8.0"
 ```
-
-:::warning
-`odra-modules` defines the same features as the core framework. It's essential to add the dependency without default features. And if you define a `casper` feature in your project, add `odra-modules/casper`specifically (it applies to each backend).
-:::
 
 Now, the only thing left is to add a module to your contract.
 
 Let's write an example of `MyToken` based on `Erc20` module.
 
 ```rust
-use odra::types::{Address, U256};
+use odra::prelude::*;
+use odra::{Address, casper_types::U256, module::ModuleWrapper};
 use odra_modules::erc20::Erc20;
 
 #[odra::module]
 pub struct MyToken {
-    erc20: Erc20
+    erc20: ModuleWrapper<Erc20>
 }
 
 #[odra::module]
 impl OwnedToken {
-    #[odra(init)]
     pub fn init(&mut self, initial_supply: U256) {
         let name = String::from("MyToken");
         let symbol = String::from("MT");
@@ -102,7 +108,7 @@ impl OwnedToken {
 ```
 
 :::info
-All available modules are placed in the main Odra repository.
+All available modules are placed in the main [Odra repository].
 :::
 
 ## Available modules
@@ -160,3 +166,6 @@ Ownership can be transferred in a two-step process by using `transfer_ownership(
 
 #### Pauseable
 A module allowing to implement an emergency stop mechanism that can be triggered by any account.
+
+[Installation guide]: ../getting-started/installation.md
+[Odra repository]: https://github.com/odradev/odra

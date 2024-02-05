@@ -30,7 +30,6 @@ use odra::Variable;
 
 #[odra::module]
 impl DogContract {
-    #[odra(init)]
     pub fn init(&mut self, barks: bool, weight: u32, name: String) {
         self.barks.set(barks);
         self.weight.set(weight);
@@ -166,7 +165,6 @@ at the reimplementation of the functions with an additional function that takes 
 ```rust title="examples/src/features/storage/list.rs"
 #[odra::module]
 impl DogContract3 {
-    #[odra(init)]
     pub fn init(&mut self, name: String) {
         self.name.set(name);
     }

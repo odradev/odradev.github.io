@@ -21,13 +21,12 @@ There just two errors that may occur: `PausedRequired`, `UnpausedRequired`. We d
 Events definition is highly uncomplicated: `Paused` and `Unpaused` events holds only the address of the pauser.
 
 ```rust showLineNumbers
-use odra::{Event, types::Address};
+use odra::{Address, casper_event_standard::{self, Event}, OdraError};
 
-odra::execution_error! {
-    pub enum Error {
-        PausedRequired => 1_000,
-        UnpausedRequired => 1_001,
-    }
+#[derive(OdraError)]
+pub enum Error {
+    PausedRequired = 1_000,
+    UnpausedRequired = 1_001,
 }
 
 #[derive(Event, PartialEq, Eq, Debug)]
@@ -64,13 +63,13 @@ impl Pauseable {
 
     pub fn require_not_paused(&self) {
         if self.is_paused() {
-            contract_env::revert(Error::UnpausedRequired);
+            self.env().revert(Error::UnpausedRequired);
         }
     }
 
     pub fn require_paused(&self) {
         if !self.is_paused() {
-            contract_env::revert(Error::PausedRequired);
+            self.env().revert(Error::PausedRequired);
         }
     }
 }
@@ -90,20 +89,18 @@ impl Pauseable {
         self.require_not_paused();
         self.is_paused.set(true);
 
-        Paused {
-            account: contract_env::caller()
-        }
-        .emit();
+        self.env().emit_event(Paused {
+            account: self.env().caller()
+        });
     }
 
     pub fn unpause(&mut self) {
         self.require_paused();
         self.is_paused.set(false);
 
-        Unpaused {
-            account: contract_env::caller()
-        }
-        .emit();
+        self.env().emit_event(Unpaused {
+            account: self.env().caller()
+        });
     }
 }
 ```
@@ -116,13 +113,13 @@ impl Pauseable {
 In the end, let's use the module in a contract. For this purpose, we will implement a mock contract called `PauseableCounter`. The contract consists of a Variable `value` and a `Pauseable` module. The counter can only be incremented if the contract is in a normal state (is not paused).
 
 ```rust showLineNumbers
-use odra::Variable;
+use odra::{module::ModuleWrapper, Variable};
 use odra_modules::security::Pauseable;
 
 #[odra::module]
 pub struct PauseableCounter {
     value: Variable<u32>,
-    pauseable: Pauseable
+    pauseable: ModuleWrapper<Pauseable>
 }
 
 #[odra::module]
@@ -149,28 +146,20 @@ impl PauseableCounter {
 
 #[cfg(test)]
 mod test {
-    use super::PauseableCounterDeployer;
-    use odra_modules::security::errors::Error;
+    use super::*;
 
     #[test]
     fn increment_only_if_unpaused() {
-        let mut contract = PauseableCounterDeployer::default();
-        assert_eq!(contract.get_value(), 0);
-
+        let test_env = odra_test::env();
+        let mut contract = PauseableCounterDeployer::init(&test_env);
         contract.increment();
-        assert_eq!(contract.get_value(), 1);
-        
         contract.pause();
-        odra::test_env::assert_exception(
-            Error::UnpausedRequired, 
-            || contract.increment()
+
+        assert_eq!(
+            contract.try_increment().unwrap_err(),
+            UnpausedRequired.into()
         );
         assert_eq!(contract.get_value(), 1);
-
-        contract.unpause();
-        contract.increment();
-        assert_eq!(contract.get_value(), 2);
-
     }
 }
 ```

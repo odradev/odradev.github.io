@@ -11,10 +11,12 @@ example from the previous article, to use a single contract, but still separate 
 
 ```rust title="examples/src/features/modules.rs"
 use crate::features::cross_calls::MathEngine;
+use odra::module::ModuleWrapper;
+use odra::prelude::*;
 
 #[odra::module]
 pub struct ModulesContract {
-    pub math_engine: MathEngine,
+    pub math_engine: ModuleWrapper<MathEngine>
 }
 
 #[odra::module]
@@ -40,7 +42,8 @@ use super::ModulesContractDeployer;
 
 #[test]
 fn test_modules() {
-    let modules_contract = ModulesContractDeployer::default();
+    let test_env = odra_test::env();
+    let modules_contract = ModulesContractDeployer::init(&test_env);
     assert_eq!(modules_contract.add_using_module(), 8);
 }
 ```

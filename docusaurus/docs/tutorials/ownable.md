@@ -9,7 +9,7 @@ In this tutorial, we will write a simple module that allows us to set its owner.
 A module we will write in a minute, will help you master a few Odra features:
 
 * storing a single value,
-* defining constructors,
+* defining a constructor,
 * error handling,
 * defining and emitting `events`.
 * registering a contact in a test environment,
@@ -28,48 +28,45 @@ Before we write any code, we define functionalities we would like to implement.
 ### Define a module
 
 ```rust showLineNumbers
-use odra::{types::Address, Variable};
+use odra::{Address, Variable};
 
-#[odra::module]
+#[odra::module(events = [OwnershipTransferred])]
 pub struct Ownable {
-    owner: Variable<Address>
+    owner: Variable<Option<Address>>
 }
 ```
-That was easy, but it is crucial to understand the basic before we move on.
+That was easy, but it is crucial to understand the basics before we move on.
 
-* **L3** - Firstly, we need create a struct called `Ownable` and apply `#[odra::module]` to it above.
-* **L5** - Then we can define a layout of our module. That is extremely simple - just a single state value. What is most important you can never leave a raw type, you must always wrap it with `Variable`.
+* **L3** - Firstly, we need to create a struct called `Ownable` and apply `#[odra::module(events = [OwnershipTransferred])]` to it. The events attribute is optional but informs the Odra toolchain about the events that will be emitted by the module and includes them in the contract's metadata.
+* **L5** - Then we can define the layout of our module. It is extremely simple - just a single state value. What is most important is that you can never leave a raw type; you must always wrap it with `Variable`.
 
 ### Init the module
 
 ```rust showLineNumbers
-use odra::{
-    execution_error, contract_env, Event, types::{Address, event::OdraEvent}
-};
+use odra::prelude::*;
+use odra::{Address, module::Module, Variable};
+use odra::casper_event_standard::{self, Event};
 ...
 
 #[odra::module]
 impl Ownable {
-    #[odra(init)]
     pub fn init(&mut self, owner: &Address) {
         if self.owner.get().is_some() {
-            contract_env::revert(Error::OwnerIsAlreadyInitialized)
+            self.env().revert(Error::OwnerIsAlreadyInitialized)
         }
 
         self.owner.set(*owner);
         
-        OwnershipChanged {
+        self.env().emit_event(OwnershipChanged {
             prev_owner: None,
             new_owner: *owner
-        }
-        .emit();
+        });
     }
 }
 
-execution_error! {
-    pub enum Error {
-        OwnerIsNotInitialized => 1,
-    }
+#[derive(OdraError)]
+pub enum Error {
+    OwnerIsNotInitialized = 1,
 }
 
 #[derive(Event, Debug, PartialEq, Eq)]
@@ -80,14 +77,16 @@ pub struct OwnershipChanged {
 ```
 
 Ok, we have done a couple of things, let's analyze them one by one:
-* **L5** - The `impl` should be an odra module, so add `#[odra::module]`.
-* **L7** - The `init` function is marked as `#[odra(init)]` making it a constructor. It matters if we would like to deploy the `Ownable` module as a standalone contract.
-* **L23** - Before we set a new owner, we must assert there was no owner before and raise an error otherwise. For that purpose we defined an `Error` enum. Notice that the `Error` enum is defined inside the `execution_error` macro. It generates, among others, the required `Into<ExecutionError>` binding.
-* **L9-L11** - If the owner has been set already, we call `contract_env::revert()` function. As an argument we pass `Error::OwnerIsNotInitialized`. 
-* **L13** - Then we write the owner passed as an argument to the storage. To do so we call the `set()` on `Variable`.
-* **L29-L33** - Once the owner is set, we would like to inform the outside world. First step is to define an event struct. The struct must derive from `odra::Event`. We highly recommend to derive `Debug`, `PartialEq` and `Eq` for testing purpose.
-* **L23** - Finally, we create the `OwnershipChanged` struct and call `emit()` function on it (import `odra::types::event::OdraEvent` trait). Hence we set the first owner, we set the `prev_owner` value to `None`.
-
+* **L6** - The `impl` should be an Odra module, so add `#[odra::module]`.
+* **L8** - The `init` function is a constructor. This matters if we would like to deploy the `Ownable` module as a standalone contract.
+* **L22-25** - Before we set a new owner, we must assert there was no owner before and raise an error otherwise. For that purpose, we defined an `Error` enum. Notice that the `OdraError` derive macro is applied to the enum. It generates, among others, the required `Into<odra::OdraError>` binding.
+* **L9-L11** - If the owner has been set already, we call `ContractEnv::revert()` function with an `Error::OwnerIsNotInitialized` argument. 
+* **L13** - Then we write the owner passed as an argument to the storage. To do so, we call the `set()` on `Variable`.
+* **L27-L31** - Once the owner is set, we would like to inform the outside world. The first step is to define an event struct. The struct must derive from `casper_event_standard::Event`. We highly recommend to derive `Debug`, `PartialEq` and `Eq` for testing purpose.
+* **L15** - Finally, call `ContractEnv::emit_event()` passing the `OwnershipChanged` instance to the function. Hence, we set the first owner, we set the `prev_owner` value to `None`. 
+:::note
+L3 `use odra::casper_event_standard::{self, Event};` imports the `Event` macro, but also the whole `casper_event_standard` module, which is required by the code generated by the `#[derive(Event)]` macro.
+:::
 ### Features implementation
 
 ``` rust showLineNumbers
@@ -97,42 +96,40 @@ impl Ownable {
 
     pub fn ensure_ownership(&self, address: &Address) {
         if Some(address) != self.owner.get().as_ref() {
-            contract_env::revert(Error::NotOwner)
+            self.env().revert(Error::NotOwner)
         }
     }
 
     pub fn change_ownership(&mut self, new_owner: &Address) {
-        self.ensure_ownership(&contract_env::caller());
+        self.ensure_ownership(&self.env().caller());
         let current_owner = self.get_owner();
         self.owner.set(*new_owner);
-        OwnershipChanged {
+        self.env().emit_event(OwnershipChanged {
             prev_owner: Some(current_owner),
             new_owner: *new_owner
-        }
-        .emit();
+        });
     }
 
     pub fn get_owner(&self) -> Address {
         match self.owner.get() {
             Some(owner) => owner,
-            None => contract_env::revert(Error::OwnerIsNotInitialized)
+            None => self.env().revert(Error::OwnerIsNotInitialized)
         }
     }
 }
 
-execution_error! {
-    pub enum Error {
-        NotOwner => 1,
-        OwnerIsAlreadyInitialized => 2,
-        OwnerIsNotInitialized => 3,
-    }
+#[derive(OdraError)]
+pub enum Error {
+    NotOwner = 1,
+    OwnerIsAlreadyInitialized = 2,
+    OwnerIsNotInitialized = 3,
 }
 ```
-The above implementation relies on the concepts we have already used in this tutorial, so it should easy for you to get along.
+The above implementation relies on the concepts we have already used in this tutorial, so it should be easy for you to get along.
 
-* **L5,L32** - `ensure_ownership()` is reads the current owner, and reverts if is does not match the input `Address`. Also we need to update our `Error` enum adding a new variant `NotOwner`.
-* **L11** - The function defined above can be reused in `change_ownership()` implementation. We pass to it the current caller, using the `contract_env::caller()` function. The we update the state, and emit `OwnershipChanged`.
-* **L22,L34** - Lastly, a getter function. As the `Variable` `get()` function returns an `Option`, we need to handle a possible error. If someone call the getter on uninitialized module, it should revert with a new `Error` variant `OwnerIsNotInitialized`.
+* **L7,L31** - `ensure_ownership()` reads the current owner and reverts if it does not match the input `Address`. Also, we need to update our `Error` enum by adding a new variant `NotOwner`.
+* **L11** - The function defined above can be reused in the `change_ownership()` implementation. We pass to it the current caller, using the `ContractEnv::caller()` function. Then we update the state and emit `OwnershipChanged`.
+* **L21,L33** - Lastly, a getter function. As the `Variable::get()` function returns an `Option`, we need to handle a possible error. If someone calls the getter on an uninitialized module, it should revert with a new `Error` variant `OwnerIsNotInitialized`.
 
 ### Test
 
@@ -140,22 +137,21 @@ The above implementation relies on the concepts we have already used in this tut
 #[cfg(test)]
 mod tests {
     use super::*;
-    use odra::{assert_events, test_env};
+    use odra::HostEnv;
 
-    fn setup() -> (Address, OwnableRef) {
-        let owner = test_env::get_account(0);
-        let ownable = OwnableDeployer::init(owner);
-        (owner, ownable)
+    fn setup() -> (OwnableHostRef, HostEnv, Address) {
+        let env: HostEnv = odra_test::env();
+        (OwnableDeployer::init(&env), env.clone(), env.get_account(0))
     }
 
     #[test]
     fn initialization_works() {
-        let (owner, ownable) = setup();
+        let (ownable, _, owner) = setup();
         assert_eq!(ownable.get_owner(), owner);
        
-        assert_events!(
-            ownable,
-            OwnershipChanged {
+        contract.env().emitted_event(
+            ownable.address(),
+            &OwnershipChanged {
                 prev_owner: None,
                 new_owner: owner
             }
@@ -164,15 +160,16 @@ mod tests {
 
     #[test]
     fn owner_can_change_ownership() {
-        let (owner, mut ownable) = setup();
-        let new_owner = test_env::get_account(1);
+        let (mut ownable, env, owner) = setup();
+        let new_owner = env.get_account(1);
         
-        test_env::set_caller(owner);
+        env.set_caller(owner);
         ownable.change_ownership(&new_owner);
         assert_eq!(ownable.get_owner(), new_owner);
-        assert_events!(
-            ownable,
-            OwnershipChanged {
+
+        contract.env().emitted_event(
+            ownable.address(),
+            &OwnershipChanged {
                 prev_owner: Some(owner),
                 new_owner
             }
@@ -181,32 +178,28 @@ mod tests {
 
     #[test]
     fn non_owner_cannot_change_ownership() {
-        let (_, mut ownable) = setup();
-        let new_owner = test_env::get_account(1);
+        let (mut ownable, env, owner) = setup();
+        let new_owner = env.get_account(1);
         ownable.change_ownership(&new_owner);
         
-        test_env::assert_exception(Error::NotOwner, || {
-            ownable.change_ownership(&new_owner);
-        });
+        assert_eq!(ownable.change_ownership(&new_owner), Err(Error::NotOwner.into()));
     }
 }
 ```
-
-* **L6** - Each test case starts with the same initialization process, so for convenience, we defined the `setup()` function we call as the first statement in each test. Take a look at the signature `fn setup() -> (Address, OwnableRef)`. `OwnableRef` is a contract reference generated by Odra. This reference allows us call all the defined entrypoints namely: `ensure_ownership()`, `change_ownership()`, `get_owner()`, but not `init()` which is a constructor.
-* **L7** - Now, the module needs an owner, the easiest way is to take one from the `test_env`. We choose the address of first account (which is the default one).
-* **L8** - Odra created for us `OwnableDeployer` struct which implements all constructor functions. In this case there is just one function - `init()` which corresponds the function we have implemented in the module.
-* **L12** - It is time to define the first test. As you see, it is a regular rust test.
-* **L14-15** - Using the `setup()` function we get the owner, and a reference. We make a standard assertion comparing the owner we know, with the value returned from the contract.
+* **L6** - Each test case starts with the same initialization process, so for convenience, we have defined the setup() function, which we call as the first statement in each test. Take a look at the signature: `fn setup() -> (OwnableHostRef, HostEnv, Address)`. `OwnableHostRef` is a contract reference generated by Odra. This reference allows us to call all the defined entrypoints, namely: `ensure_ownership()`, `change_ownership()`, `get_owner()`, but not `init()`, which is a constructor.
+* **L7, L8** - The starting point of every test is getting an instance of `HostEnv` by calling `odra_test::env()`. Our function returns a triple: a contract ref, an env, and an address (the initial owner). Odra `#[odra::module]` macro generates a `OwnableDeployer` struct which exposes the `init` function, which deploys the contract, calls its constructor and returns a reference. Lastly, the module needs an owner. The easiest way is to take one from the `HostEnv`. We choose the address of first account (which is the default one). 
+* **L11** - It is time to define the first test. As you see, it is a regular Rust test.
+* **L13-14** - Using the `setup()` function, we get the owner and a reference (in this test, we don't use the env, so we ignore it). We make a standard assertion, comparing the owner we know with the value returned from the contract.
 :::note
 You may have noticed, we use here the term `module` interchangeably with `contract`. The reason is once we deploy our module onto a virtual blockchain it may be considered a contract.
 :::
-* **L17-23** - On the contract, only the `init()` function has been called, so we expect one event has been emitted. To assert that, let's use Odra's macro `assert_events`. As the first argument, pass the contract you want to read events from, followed by as many events as you expect have occurred.
-* **L30** - Because we know the initial owner is the 0-th account, we must select a different account. It could be any index from 1 to 19 - the `test env` predefines 20 accounts.
-* **L32** - As mentioned, the default is the 0-th account, if you want to change the executor call the `test_env::set_caller()` function. 
+* **L16-22** - On the contract, only the `init()` function has been called, so we expect one event to have been emitted. To assert that, let's use `HostEnv`. To get the env, we call `env()` on the contract, then call `HostEnv::emitted_event`. As the first argument, pass the contract address you want to read events from, followed by an event as you expect it to have occurred.
+* **L28** - Because we know the initial owner is the 0th account, we must select a different account. It could be any index from 1 to 19 - the `HostEnv` predefines 20 accounts.
+* **L30** - As mentioned, the default is the 0th account, if you want to change the executor, call the `HostEnv::set_caller()` function. 
 :::note
 The caller switch applies only the next contract interaction, the second call will be done as the default account.
 ::: 
-* **L49-55** - If a non-owner account tries to change ownership we expect it to fail. To capture the error, call `test_env::assert_exception()` with the error you expect and a failing block of code.
+* **L45-49** -  If a non-owner account tries to change ownership, we expect it to fail. To capture the error, call `HostEnv::try_change_ownership()` instead of `HostEnv::change_ownership()`. `HostEnv` provides try_ functions for each contract's entrypoint. The `try_` functions return `OdraResult` (an alias for `Result<T, OdraError>`) instead of panicking and halting the execution. In our case, we expect the contract to revert with the `Error::NotOwner` error. To compare the error, we use the `Error::into()` function, which converts the error into the `OdraError` type.
 
 ## Summary
 The `Ownable` module is ready, and we can test it against any defined backend. Theoretically it can be deployed as a standalone contract, but in upcoming tutorials you will see how to use it to compose a more complex contract.

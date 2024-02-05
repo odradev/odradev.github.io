@@ -9,21 +9,19 @@ in easy-to-use code. Let's write a simple example of a public wallet - a contrac
 their funds and anyone can withdraw them:
 
 ```rust title="examples/src/features/native_token.rs"
-use odra::types::Balance;
-use odra::contract_env;
+use odra::prelude::*;
+use odra::{casper_types::U512, module::Module};
 
 #[odra::module]
-pub struct PublicWallet {
-}
+pub struct PublicWallet {}
 
 #[odra::module]
 impl PublicWallet {
     #[odra(payable)]
-    pub fn deposit(&mut self) {
-    }
+    pub fn deposit(&mut self) {}
 
-    pub fn withdraw(&mut self, amount: Balance) {
-        contract_env::transfer_tokens(contract_env::caller(), amount);
+    pub fn withdraw(&mut self, amount: &U512) {
+        self.env().transfer_tokens(&self.env().caller(), amount);
     }
 }
 ```
@@ -49,19 +47,19 @@ To be able to test how many tokens a contract (or any address) has, `test_env` c
 `token_balance`:
 
 ```rust title="examples/src/features/native_token.rs"
-use odra::types::Balance;
-use odra::test_env;
 use super::PublicWalletDeployer;
+use odra::casper_types::U512;
 
 #[test]
 fn test_modules() {
-    let mut my_contract = PublicWalletDeployer::default();
-    assert_eq!(test_env::token_balance(my_contract.address()), Balance::zero());
+    let test_env = odra_test::env();
+    let mut my_contract = PublicWalletDeployer::init(&test_env);
+    assert_eq!(test_env.balance_of(my_contract.address()), U512::zero());
 
-    my_contract.with_tokens(Balance::from(100)).deposit();
-    assert_eq!(test_env::token_balance(my_contract.address()), Balance::from(100));
+    my_contract.with_tokens(U512::from(100)).deposit();
+    assert_eq!(test_env.balance_of(my_contract.address()), U512::from(100));
 
-    my_contract.withdraw(Balance::from(25));
-    assert_eq!(test_env::token_balance(my_contract.address()), Balance::from(75));
+    my_contract.withdraw(U512::from(25));
+    assert_eq!(test_env.balance_of(my_contract.address()), U512::from(75));
 }
 ```

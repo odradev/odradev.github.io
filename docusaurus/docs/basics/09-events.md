@@ -9,27 +9,27 @@ Different blockchains implement events in different ways. Odra lets you forget a
 Odra Events. Take a look:
 
 ```rust title="examples/src/features/events.rs"
-use odra::{Event, contract_env};
-use odra::types::{Address, BlockTime, event::OdraEvent};
+use casper_event_standard::Event;
+use odra::casper_event_standard;
+use odra::prelude::*;
+use odra::{module::Module, Address};
 
-#[odra::module(events = [PartyStarted])]
-pub struct PartyContract {
-}
+#[odra::module]
+pub struct PartyContract {}
 
 #[derive(Event, PartialEq, Eq, Debug)]
 pub struct PartyStarted {
     pub caller: Address,
-    pub block_time: BlockTime,
+    pub block_time: u64
 }
 
 #[odra::module]
 impl PartyContract {
-    #[odra(init)]
     pub fn init(&self) {
-        PartyStarted {
-            caller: contract_env::caller(),
-            block_time: contract_env::get_block_time(),
-        }.emit();
+        self.env().emit_event(PartyStarted {
+            caller: self.env().caller(),
+            block_time: self.env().get_block_time()
+        });
     }
 }
 ```
@@ -41,7 +41,7 @@ To define an event, we derive an `Event` macro like this:
 #[derive(Event, PartialEq, Eq, Debug)]
 pub struct PartyStarted {
     pub caller: Address,
-    pub block_time: BlockTime,
+    pub block_time: u64,
 }
 ```
 
@@ -50,8 +50,8 @@ as that:
 
 ```rust title="examples/src/features/events.rs"
 PartyStarted {
-    caller: contract_env::caller(),
-    block_time: contract_env::get_block_time(),
+    caller: self.env().caller(),
+    block_time: self.env().get_block_time()
 }.emit();
 ```
 
@@ -64,18 +64,17 @@ The event collection process is recursive; if your module consists of other modu
 Odra's `test_env` comes with a handy macro `assert_events!` which lets you easily test the events that a given contract has emitted:
 
 ```rust title="examples/src/features/events.rs"
-use odra::{assert_events, test_env};
-use crate::features::events::PartyStarted;
-use super::PartyContractDeployer;
+use super::{PartyContractDeployer, PartyStarted};
 
 #[test]
 fn test_party() {
-    let party_contract = PartyContractDeployer::init();
-    assert_events!(
-        party_contract,
-        PartyStarted {
-            caller: test_env::get_account(0),
-            block_time: 0,
+    let test_env = odra_test::env();
+    let party_contract = PartyContractDeployer::init(&test_env);
+    test_env.emitted_event(
+        party_contract.address(),
+        &PartyStarted {
+            caller: test_env.get_account(0),
+            block_time: 0
         }
     );
 }

@@ -91,7 +91,7 @@ our contracts in [Livenet](../backends/04-livenet.md) backend. We can load the c
 fn _load(env: &HostEnv) -> Erc20HostRef {
     let address = "hash-d26fcbd2106e37be975d2045c580334a6d7b9d0a241c2358a4db970dfd516945";
     let address = Address::from_str(address).unwrap();
-    Erc20Deployer::load(env, address)
+    <Erc20HostRef as HostRefLoader>::load(env, address)
 }
 ```
 

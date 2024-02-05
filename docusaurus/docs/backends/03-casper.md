@@ -7,23 +7,6 @@ The Casper backend allows you to compile your contracts into WASM files which ca
 onto [Casper Blockchain](https://casper.network/)
 and lets you to easily run them against [Casper's Execution Engine][casper_engine] locally.
 
-## Types
-
-A struct to be written into the storage must implement `OdraType` which is defined as follow:
-
-```rust
-pub trait OdraType: 
-    casper_types::CLTyped + 
-    casper_types::bytesrepr::ToBytes + 
-    casper_types::bytesrepr::FromBytes {}
-```
-
-The other exposed types are:
-
-* `CallDef` - holds [`RuntimeArgs`][runtime_args], name of the entrypoint, sent cspr amount and information about mutability;
-* `Balance` - U512 type alias;
-* `Address` - an enum that encapsulates casper's [`AccountHash`][account_hash] and [`ContractPackageHash`][contract_package_hash]
-
 ## Contract Env
 
 As with any other backend, Casper Backend must implement the same features, but some do not have native support. Let's take a closer look at how Odra overcomes these hindrances.

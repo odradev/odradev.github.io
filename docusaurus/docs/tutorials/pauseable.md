@@ -42,12 +42,12 @@ pub struct Unpaused {
 
 ### Module definition
 
-The module storage is extremely simple - has a single `Variable` of type bool, that indicates if a contract is paused.
+The module storage is extremely simple - has a single `Var` of type bool, that indicates if a contract is paused.
 
 ```rust showLineNumbers
 #[odra::module]
 pub struct Pauseable {
-    is_paused: Variable<bool>
+    is_paused: Var<bool>
 }
 ```
 
@@ -75,7 +75,7 @@ impl Pauseable {
 }
 ```
 * **L1** - as mentioned in the intro, the module is not intended to be a standalone contract, so the only `impl` block is not annotated with `odra::module` and hence does not expose any entrypoint.
-* **L2** - `is_paused()` checks the contract state, if the Variable `is_paused` has not been initialized, the default value (false) is returned.
+* **L2** - `is_paused()` checks the contract state, if the Var `is_paused` has not been initialized, the default value (false) is returned.
 * **L6** - to guarantee the code is executed when the contract is not paused, `require_not_paused()` function reads the state and reverts if the contract is paused. 
 * **L12** - `require_paused()` is a mirror function - stops the contract execution if the contract is not paused.
 
@@ -110,16 +110,16 @@ impl Pauseable {
 
 ## Pauseable counter
 
-In the end, let's use the module in a contract. For this purpose, we will implement a mock contract called `PauseableCounter`. The contract consists of a Variable `value` and a `Pauseable` module. The counter can only be incremented if the contract is in a normal state (is not paused).
+In the end, let's use the module in a contract. For this purpose, we will implement a mock contract called `PauseableCounter`. The contract consists of a Var `value` and a `Pauseable` module. The counter can only be incremented if the contract is in a normal state (is not paused).
 
 ```rust showLineNumbers
-use odra::{module::ModuleWrapper, Variable};
+use odra::{module::SubModule, Var};
 use odra_modules::security::Pauseable;
 
 #[odra::module]
 pub struct PauseableCounter {
-    value: Variable<u32>,
-    pauseable: ModuleWrapper<Pauseable>
+    value: Var<u32>,
+    pauseable: SubModule<Pauseable>
 }
 
 #[odra::module]

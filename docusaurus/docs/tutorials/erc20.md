@@ -28,10 +28,10 @@ It is designed to store the following data:
 ```rust title=erc20.rs showLineNumbers
 #[odra::module(events = [Transfer, Approval])]
 pub struct Erc20 {
-    decimals: Variable<u8>,
-    symbol: Variable<String>,
-    name: Variable<String>,
-    total_supply: Variable<U256>,
+    decimals: Var<u8>,
+    symbol: Var<String>,
+    name: Var<String>,
+    total_supply: Var<U256>,
     balances: Mapping<Address, U256>,
     allowances: Mapping<(Address, Address), U256>
 }

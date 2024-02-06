@@ -1,4 +1,9 @@
+---
+sidebar_position: 1
+description: Migration guide to v0.8.0
+---
 
+# Migration guide to v0.8.0
 
 ### 1. **Introduction:**
    - Briefly introduce the migration guide.

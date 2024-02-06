@@ -16,7 +16,7 @@ The Contract Env is a simple interface that each backend needs to implement,
 exposing features of the blockchain from the perspective of the contract.
 
 It gives Odra a set of functions, which allows implementing more complex concepts -
-for example, to implement [Mapping](../basics/05-storage-interaction.md),
+for example, to implement [Mapping](../basics/04-storage-interaction.md),
 Odra requires some kind of storage integration.
 The exact implementation of those functions is a responsibility of a backend,
 making Odra and its user free to implement the contract logic,

@@ -18,13 +18,13 @@ Consider the following basic example for better understanding:
 use crate::{erc20::Erc20, ownable::Ownable};
 use odra::{
     Address, casper_types::U256,
-    module::{Module, ModuleWrapper}
+    module::{Module, SubModule}
 };
 
 #[odra::module]
 pub struct OwnedToken {
-    ownable: ModuleWrapper<Ownable>,
-    erc20: ModuleWrapper<Erc20>
+    ownable: SubModule<Ownable>,
+    erc20: SubModule<Erc20>
 }
 
 #[odra::module]
@@ -71,14 +71,14 @@ Let's take a look at another example.
 use crate::{erc20::Erc20, ownable::Ownable, exchange::Exchange};
 use odra::{
     Address, casper_types::U256, 
-    module::{Module, ModuleWrapper}
+    module::{Module, SubModule}
 };
 
 #[odra::module]
 pub struct DeFiPlatform {
-    ownable: ModuleWrapper<Ownable>,
-    erc20: ModuleWrapper<Erc20>,
-    exchange: ModuleWrapper<Exchange>
+    ownable: SubModule<Ownable>,
+    erc20: SubModule<Erc20>,
+    exchange: SubModule<Exchange>
 }
 
 #[odra::module]

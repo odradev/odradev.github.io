@@ -29,7 +29,7 @@ this straightforward storage definition:
 ```rust
 #[odra::module]
 pub struct Token {
-    name: Variable<String>,
+    name: Var<String>,
     balances: Mapping<Address, U256>
 }
 ```
@@ -44,8 +44,8 @@ complex example:
 ```rust
 #[odra::module]
 pub struct Loans {
-    lenders: ModuleWrapper<Token>,
-    borrowers: ModuleWrapper<Token>,
+    lenders: SubModule<Token>,
+    borrowers: SubModule<Token>,
 }
 ```
 
@@ -61,7 +61,7 @@ operates.
 
 Every element of a module (`struct`) with N elements is associated with an index
 ranging from 0 to N-1, represented as a u8 with a maximum of 256 elements. If an
-element of a module is another module (`ModuleWrapper<...>`), the associated index
+element of a module is another module (`SubModule<...>`), the associated index
 serves as a prefix for the indexes of the inner module.
 
 While this may initially appear complex, it is easily understood through an

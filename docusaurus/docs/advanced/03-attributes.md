@@ -55,7 +55,7 @@ In Odra you can just apply the `#[odra(non_reentrant)]` attribute to your functi
 ```rust
 #[odra::module]
 pub struct NonReentrantCounter {
-    counter: Variable<u32>
+    counter: Var<u32>
 }
 
 #[odra::module]
@@ -79,12 +79,12 @@ impl NonReentrantCounter {
 #[cfg(test)]
 mod test {
     use super::*;
-    use odra::ExecutionError;
+    use odra::{host::Deployer, ExecutionError};
 
     #[test]
     fn ref_recursion_not_allowed() {
         let test_env = odra_test::env();
-        let mut contract = NonReentrantCounterDeployer::init(&test_env);
+        let mut contract = NonReentrantCounterHostRef::init(&test_env);
 
         let result = contract.count_ref_recursive(11);
         assert_eq!(result, ExecutionError::ReentrantCall.into());

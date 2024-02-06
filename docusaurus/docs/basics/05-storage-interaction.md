@@ -7,26 +7,26 @@ description: How to write data into blockchain's storage
 The Odra framework implements multiple types of data that can be stored on the blockchain. Let's go
 through all of them and explain their pros and cons.
 
-## Variable
-The Variable is the simplest storage type available in the Odra framework. It serializes the data and stores it under a single key in the blockchain storage. To use it, just wrap your
-variable in the `Variable` type. Let's look at a "real world" example of a contract that represents a dog:
+## Var
+The `Var` is the simplest storage type available in the Odra framework. It serializes the data and stores it under a single key in the blockchain storage. To use it, just wrap your
+variable in the `Var` type. Let's look at a "real world" example of a contract that represents a dog:
 
 ```rust title="examples/src/features/storage/variable.rs"
 #[odra::module]
 pub struct DogContract {
-    barks: Variable<bool>,
-    weight: Variable<u32>,
-    name: Variable<String>,
-    walks: Variable<Vec<u32>>,
+    barks: Var<bool>,
+    weight: Var<u32>,
+    name: Var<String>,
+    walks: Var<Vec<u32>>,
 }
 ```
 
-You can see the `Variable` wrapping the data. Even complex types like `Vec` can be wrapped (with some caveats)!
+You can see the `Var` wrapping the data. Even complex types like `Vec` can be wrapped (with some caveats)!
 
 Let's make this contract usable, by providing a constructor and some getter functions:
 
 ```rust title="examples/src/features/storage/variable.rs"
-use odra::Variable;
+use odra::Var;
 
 #[odra::module]
 impl DogContract {
@@ -80,7 +80,7 @@ To modify the data, use the `set()` function:
 self.barks.set(barks);
 ```
 
-A Variable is easy to use and efficient for simple data types. One of its downsides is that it
+A `Var` is easy to use and efficient for simple data types. One of its downsides is that it
 serializes the data as a whole, so when you're using complex types like `Vec` or `HashMap`,
 each time you `get` or `set` the whole data is read and written to the blockchain storage.
 
@@ -98,23 +98,23 @@ To tackle this issue following two types were created.
 
 ## Mapping
 
-The Mapping is used to store and access data as key-value pairs. To define a Mapping, you need to
+The `Mapping` is used to store and access data as key-value pairs. To define a `Mapping`, you need to
 pass two values - the key type and the value type. Let's look at the variation of the Dog contract, that
-uses Mapping to store information about our dog's friends and how many times they visited:
+uses `Mapping` to store information about our dog's friends and how many times they visited:
 
 ```rust title="examples/src/features/storage/mapping.rs"
-use odra::{Mapping, Variable};
+use odra::{Mapping, Var};
 
 #[odra::module]
 pub struct DogContract2 {
-    name: Variable<String>,
+    name: Var<String>,
     friends: Mapping<String, u32>,
 }
 ```
 
 In the example above, our key is a String (it is a name of the friend) and we are storing u32 values
-(amount of visits). To read and write values from and into a Mapping we use a similar approach
-to the one shown in the Variables section with one difference - we need to pass a key:
+(amount of visits). To read and write values from and into a `Mapping` we use a similar approach
+to the one shown in the Vars section with one difference - we need to pass a key:
 
 ```rust title="examples/src/features/storage/mapping.rs"
 pub fn visit(&mut self, friend_name: String) {
@@ -127,21 +127,21 @@ pub fn visits(&self, friend_name: String) -> u32 {
 }
 ```
 
-The biggest improvement over a `Variable` is that we can model functionality of a `HashMap` using `Mapping`.
+The biggest improvement over a `Var` is that we can model functionality of a `HashMap` using `Mapping`.
 The amount of data written to and read from the storage is minimal. However, we cannot iterate over `Mapping`.
 We could implement such behavior by using a numeric type key and saving the length of the set in a
 separate variable. Thankfully Odra comes with a prepared solution - the `List` type.
 
 :::note
 If you take a look into List implementation in Odra, you'll see that in fact it is just a Mapping with
-a Variable working together:
+a Var working together:
 
 ```rust title="core/src/list.rs"
-use odra::{Variable, List};
+use odra::{List, Var};
 
 pub struct List<T> {
     values: Mapping<u32, T>,
-    index: Variable<u32>
+    index: Var<u32>
 }
 ```
 :::
@@ -153,7 +153,7 @@ we'll use the list:
 ```rust title="examples/src/features/storage/list.rs"
 #[odra::module]
 pub struct DogContract3 {
-    name: Variable<String>,
+    name: Var<String>,
     walks: List<u32>,
 }
 ```
@@ -192,7 +192,7 @@ We need to do this to sum the length of all the walks, but the Odra framework ca
 the cases for you.
 
 :::info
-All of the above examples, alongside the tests, are available in the odra repository in the `examples/src/docs/` folder.
+All of the above examples, alongside the tests, are available in the Odra repository in the `examples/src/features/` folder.
 :::
 
 ## Custom Types

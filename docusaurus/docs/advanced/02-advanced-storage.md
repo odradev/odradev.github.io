@@ -12,7 +12,7 @@ Before we delve into the advanced features, let's recap some basic storage conce
 
 **List**: Built on top of the Var and Mapping building blocks, List in Odra allows storing an ordered collection of values that can be iterated over.
    
-If you need a refresher on these topics, please refer to our [guide](../basics/04-storage-interaction.md) on basic storage in Odra.
+If you need a refresher on these topics, please refer to our [guide](../basics/05-storage-interaction.md) on basic storage in Odra.
 
 ## Advanced Storage Concepts
 

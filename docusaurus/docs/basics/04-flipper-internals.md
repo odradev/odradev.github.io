@@ -37,7 +37,7 @@ the fields of the contract. Those fields can be regular Rust data types, however
 be persisted on the blockchain. They can also be Odra modules - defined in your project or coming
 from Odra itself. Finally, to make the data persistent on the blockchain, you can use something like
 `Var<T>` showed above. To learn more about storage interaction, take a look at the
-[next article](04-storage-interaction.md).
+[next article](05-storage-interaction.md).
 
 ## Impl
 ```rust title="flipper.rs"

@@ -10,7 +10,7 @@ import TabItem from '@theme/TabItem';
 
 Odra v0.8.0 introduces several breaking changes that require users to update their smart contracts and tests. This migration guide provides a detailed overview of the changes, along with step-by-step instructions for migrating existing code to the new version.
 
-This guide is intended for developers who have built smart contracts using previous versions of Odra and need to update their code to be compatible with v0.8.0. It assumes a basic understanding of smart contract development and the Odra framework. If you're new to Odra, we recommend to start your journey with the [Getting Started](../getting-started/).
+This guide is intended for developers who have built smart contracts using previous versions of Odra and need to update their code to be compatible with v0.8.0. It assumes a basic understanding of smart contract development and the Odra framework. If you're new to Odra, we recommend to start your journey with the [Getting Started](../category/getting-started/).
 
 The most significant changes in v0.8.0 include:
 - Odra is not a blockchain-agnostic framework anymore. It is now a Casper smart contract framework only.

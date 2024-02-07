@@ -84,7 +84,7 @@ mod test {
     #[test]
     fn ref_recursion_not_allowed() {
         let test_env = odra_test::env();
-        let mut contract = NonReentrantCounterHostRef::init(&test_env);
+        let mut contract = NonReentrantCounterHostRef::deploy(&test_env, NoArgs);
 
         let result = contract.count_ref_recursive(11);
         assert_eq!(result, ExecutionError::ReentrantCall.into());

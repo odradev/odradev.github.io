@@ -67,7 +67,7 @@ impl Mappings {
         key3: String
     ) -> String {
         let opt_string = self.strings.get(&(key1, key2, key3));
-        opt_string.unwrap_or_revert()
+        opt_string.unwrap_or_revert(&self.env())
     }
 }
 ```

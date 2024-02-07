@@ -9,15 +9,20 @@ regular Rust unit and integration tests. Have a look at how we test the Dog Cont
 previous article:
 
 ```rust title="examples/src/features/storage/list.rs"
-use odra::{Variable, List};
+use odra::{List, Var};
 
 #[cfg(test)]
 mod tests {
-    use super::DogContract3Deployer;
+    use super::{DogContract3HostRef, DogContract3InitArgs};
+    use odra::{host::Deployer, prelude::*};
 
     #[test]
     fn init_test() {
-        let mut dog_contract = DogContract3Deployer::init(&odra_test::env(), "Mantus".to_string());
+        let test_env = odra_test::env();
+        let init_args = DogContract3InitArgs {
+            name: "DogContract".to_string()
+        };
+        let mut dog_contract = DogContract3HostRef::deploy(&test_env, init_args);
         assert_eq!(dog_contract.walks_amount(), 0);
         assert_eq!(dog_contract.walks_total_length(), 0);
         dog_contract.walk_the_dog(5);
@@ -28,11 +33,34 @@ mod tests {
 }
 ```
 
-The `#[odra(module)]` macro created a Deployer code for us, which will deploy the contract on the
-VM:
+The first interesting thing you may notice is placed the import section.
+
+```rust
+use super::{DogContract3HostRef, DogContract3InitArgs};
+use odra::{host::Deployer, prelude::*};
+```
+
+We are using `super` to import the `DogContract3HostRef` and `DogContract3InitArgs` from the parent module.
+`{{ModuleName}}HostRef` and `{{ModuleName}}InitArgs` are types that was generated for us by Odra.
+
+`DogContract3HostRef` is a reference to the contract that we can use to interact with it (call entrypoints) 
+and implements [`HostRef`] trait. 
+
+`DogContract3InitArgs` is a struct that we use to initialize the contract and implements [`InitArgs`] trait.
+Considering the contract initialization, there three possible scenarios:
+1. The contract has a constructor with arguments, then Odra creates a struct named `{{ModuleName}}InitArgs`.
+2. The contract has a constructor with no arguments, then you can use `odra::host::NoArgs`.
+3. The contract does not have a constructor, then you can use `odra::host::NoArgs`.
+All of those structs implement the `odra::host::InitArgs` trait, required to conform to the
+`Deployer::deploy` method signature. 
+
+The other import is `odra::host::Deployer`. This is a trait is used to deploy the contract and give us a reference to it.
+
+Let's take a look at the test itself. How to obtain a reference to the contract?
+ `{{ModuleName}}HostRef` implements the [`Deployer`] trait, which provides the `deploy` method:
 
 ```rust title="examples/src/features/storage/list.rs"
-let mut dog_contract = DogContract3Deployer::init(&odra_test::env(), "Mantus".to_string());
+let mut dog_contract = DogContract3HostRef::deploy(&test_env, init_args);
 ```
 
 From now on, we can use `dog_contract` to interact with our deployed contract - in particular, all
@@ -50,7 +78,7 @@ pub fn walk_the_dog(&mut self, length: u32) {
 dog_contract.walk_the_dog(5);
 ```
 
-## Test env
+## HostEnv
 
 Odra gives us some additional functions that we can use to communicate with the host (outside the contract context)
 and to configure how the contracts are deployed and called. Let's revisit the example from the previous
@@ -59,51 +87,49 @@ article about host communication and implement the tests that prove it works:
 ```rust title="examples/src/features/testing.rs"
 #[cfg(test)]
 mod tests {
-    use super::TestingContractDeployer;
-    use odra::prelude::*;
+    use crate::features::testing::{TestingContractHostRef, TestingContractInitArgs};
+    use odra::{host::{Deployer, HostEnv}, prelude::*};
 
     #[test]
     fn env() {
-        let test_env = odra_test::env();
+        let test_env: HostEnv = odra_test::env();
         test_env.set_caller(test_env.get_account(0));
-        let testing_contract = TestingContractDeployer::init(&test_env, "MyContract".to_string());
+        let init_args = TestingContractInitArgs {
+            name: "MyContract".to_string()
+        };
+        let testing_contract = TestingContractHostRef::deploy(&test_env, init_args);
         let creator = testing_contract.created_by();
         test_env.set_caller(test_env.get_account(1));
-        let testing_contract2 = TestingContractDeployer::init(&test_env, "MyContract2".to_string());
+        let init_args = TestingContractInitArgs {
+            name: "MyContract2".to_string()
+        };
+        let testing_contract2 = TestingContractHostRef::deploy(&test_env, init_args);
         let creator2 = testing_contract2.created_by();
         assert_ne!(creator, creator2);
     }
 }
 ```
-
-In the code above, we are deploying two instances of the same contract, but we're using `odra::test_env::set_caller`
-to change the caller - so the Address which is deploying the contract. This changes the result of the `odra::contract_env::caller()`
+In the code above, at the beginning of the test, we are obtaining a `HostEnv` instance using `odra_test::env()`.
+Next, we are deploying two instances of the same contract, but we're using `HostEnv::set_caller`
+to change the caller - so the Address which is deploying the contract. This changes the result of the `odra::ContractEnv::caller()`
 the function we are calling inside the contract.
 
-Each test env comes with a set of functions that will let you write better tests:
+`HostEnv` comes with a set of functions that will let you write better tests:
 
-- `fn set_caller(address: Address)` - you've seen it in action just now
-- `fn token_balance(address: Address) -> Balance` - it returns the balance of the account associated with the given address
-- `fn advance_block_time_by(seconds: BlockTime)` - it increases the current value of block_time
-- `fn get_account(n: usize) -> Address` - it returns an nth address that was prepared for you by Odra in advance;
-  by default, you start with the 0th account
-- `fn assert_exception<F, E>(err: E, block: F)` - it executes the `block` code and expects `err` to happen
-- `fn get_event<T: MockVMType + OdraEvent>(address: Address, index: i32) -> Result<T, EventError>` - returns
-  the event emitted by the contract
+- `fn set_caller(&self, address: Address)` - you've seen it in action just now
+- `fn balance_of(&self, address: &Address) -> U512` - returns the balance of the account associated with the given address
+- `fn advance_block_time(&self, time_diff: u64)` - increases the current value of `block_time`
+- `fn get_account(&self, n: usize) -> Address` - returns an n-th address that was prepared for you by Odra in advance;
+  by default, you start with the 0-th account
+- `fn emitted_event<T: ToBytes + EventInstance>(&self, contract_address: &Address, event: &T) -> bool` - verifies if the event was emitted by the contract
 
-Again, we'll see those used in the next articles.
-
-## Deployer
-You may be wondering what is the `TestingContractDeployer` and where did it come from.
-It is a piece of code generated automatically for you, thanks to the `#[odra::module]` macro.
-If you used the `#[odra(init)]` on one of the methods, it will be the constructor of your contract.
-Odra will make sure that it is called only once, so you can use it to initialize your data structures etc.
-
-If you do not provide the init method, you can deploy the contract using `::default()` method.
-In the end, you will get a `Ref` instance (in our case the `TestingContractRef`) which reimplements all
-the methods you defined in the contract, but executes them on a blockchain!
-
-To learn more about the `Ref` contract, visit the [Cross calls](10-cross-calls.md) article.
+Full list of functions can be found in the [`HostEnv`] documentation.
 
 ## What's next
 We take a look at how Odra handles errors!
+
+[`HostRef`]: https://docs.rs/odra/0.8.0/odra/host/trait.HostRef.html
+[`InitArgs`]: https://docs.rs/odra/0.8.0/odra/host/trait.InitArgs.html
+[`HostEnv`]: https://docs.rs/odra/0.8.0/odra/host/struct.HostEnv.html
+[`Deployer`]: https://docs.rs/odra/0.8.0/odra/host/trait.Deployer.html
+[`HostEnv`]: https://docs.rs/odra/0.8.0/odra/host/struct.HostEnv.html

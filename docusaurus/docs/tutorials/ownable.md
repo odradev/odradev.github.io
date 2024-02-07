@@ -28,23 +28,23 @@ Before we write any code, we define functionalities we would like to implement.
 ### Define a module
 
 ```rust showLineNumbers
-use odra::{Address, Variable};
+use odra::{Address, Var};
 
 #[odra::module(events = [OwnershipTransferred])]
 pub struct Ownable {
-    owner: Variable<Option<Address>>
+    owner: Var<Option<Address>>
 }
 ```
 That was easy, but it is crucial to understand the basics before we move on.
 
 * **L3** - Firstly, we need to create a struct called `Ownable` and apply `#[odra::module(events = [OwnershipTransferred])]` to it. The events attribute is optional but informs the Odra toolchain about the events that will be emitted by the module and includes them in the contract's metadata.
-* **L5** - Then we can define the layout of our module. It is extremely simple - just a single state value. What is most important is that you can never leave a raw type; you must always wrap it with `Variable`.
+* **L5** - Then we can define the layout of our module. It is extremely simple - just a single state value. What is most important is that you can never leave a raw type; you must always wrap it with `Var`.
 
 ### Init the module
 
 ```rust showLineNumbers
 use odra::prelude::*;
-use odra::{Address, module::Module, Variable};
+use odra::{Address, module::Module, Var};
 use odra::casper_event_standard::{self, Event};
 ...
 
@@ -81,7 +81,7 @@ Ok, we have done a couple of things, let's analyze them one by one:
 * **L8** - The `init` function is a constructor. This matters if we would like to deploy the `Ownable` module as a standalone contract.
 * **L22-25** - Before we set a new owner, we must assert there was no owner before and raise an error otherwise. For that purpose, we defined an `Error` enum. Notice that the `OdraError` derive macro is applied to the enum. It generates, among others, the required `Into<odra::OdraError>` binding.
 * **L9-L11** - If the owner has been set already, we call `ContractEnv::revert()` function with an `Error::OwnerIsNotInitialized` argument. 
-* **L13** - Then we write the owner passed as an argument to the storage. To do so, we call the `set()` on `Variable`.
+* **L13** - Then we write the owner passed as an argument to the storage. To do so, we call the `set()` on `Var`.
 * **L27-L31** - Once the owner is set, we would like to inform the outside world. The first step is to define an event struct. The struct must derive from `casper_event_standard::Event`. We highly recommend to derive `Debug`, `PartialEq` and `Eq` for testing purpose.
 * **L15** - Finally, call `ContractEnv::emit_event()` passing the `OwnershipChanged` instance to the function. Hence, we set the first owner, we set the `prev_owner` value to `None`. 
 :::note
@@ -129,7 +129,7 @@ The above implementation relies on the concepts we have already used in this tut
 
 * **L7,L31** - `ensure_ownership()` reads the current owner and reverts if it does not match the input `Address`. Also, we need to update our `Error` enum by adding a new variant `NotOwner`.
 * **L11** - The function defined above can be reused in the `change_ownership()` implementation. We pass to it the current caller, using the `ContractEnv::caller()` function. Then we update the state and emit `OwnershipChanged`.
-* **L21,L33** - Lastly, a getter function. As the `Variable::get()` function returns an `Option`, we need to handle a possible error. If someone calls the getter on an uninitialized module, it should revert with a new `Error` variant `OwnerIsNotInitialized`.
+* **L21,L33** - Lastly, a getter function. As the `Var::get()` function returns an `Option`, we need to handle a possible error. If someone calls the getter on an uninitialized module, it should revert with a new `Error` variant `OwnerIsNotInitialized`.
 
 ### Test
 

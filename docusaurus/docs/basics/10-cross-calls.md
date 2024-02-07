@@ -9,11 +9,11 @@ To show how to handle calls between contracts, first, let's implement two of the
 
 ```rust title="examples/src/features/cross_calls.rs"
 use odra::prelude::*;
-use odra::{module::Module, Address, UnwrapOrRevert, Variable};
+use odra::{Address, module::Module, UnwrapOrRevert, Var};
 
 #[odra::module]
 pub struct CrossContract {
-    pub math_engine: Variable<Address>
+    pub math_engine: Var<Address>
 }
 
 #[odra::module]
@@ -29,7 +29,7 @@ impl CrossContract {
 }
 
 #[odra::module]
-pub struct MathEngine {}
+pub struct MathEngine;
 
 #[odra::module]
 impl MathEngine {
@@ -42,26 +42,24 @@ impl MathEngine {
 storage for later use. If we deploy the `MathEngine` first and take note of its address, we can then deploy
 `CrossContract` and use `MathEngine` to perform complicated calculations for us!
 
-To call the external contract, we use the `Ref` that was created for us by Odra:
+To call the external contract, we use the `{{ModuleName}}ContractRef` that was created for us by Odra:
 
 ```rust title="examples/src/features/cross_calls.rs"
 MathEngineContractRef::new(self.env(), math_engine_address).add(3, 5)
 ```
 
 ## Contract Ref
-We mentioned `Ref` already in our [Testing](07-testing.md) article.
-It is a reference to already deployed - running contract.
-Here we are going to take a deeper look at it.
+We mentioned `HostRef` already in our [Testing](07-testing.md) article - a host side reference to already deployed contract.
 
-Similarly to a `Deployer`, the `Ref` is generated automatically, thanks to the `#[odra::module]` macro.
-To get an instance of a reference, we can either deploy a contract (using `Deployer`) or by building it
-directly, using `::at(address: Address)` method, as shown above.
+In the module context we use a `ContractRef` instead, to call other contracts.
+
+Similarly to a `{{ModuleName}}HostRef`, the `{{ModuleName}}ContractRef` is generated automatically, 
+by the `#[odra::module]` macro.
+
+To get an instance of a contract reference, we the reference constructor function - `{{ModuleName}}ContractRef::new(env: Rc<ContractEnv>, address: Address)`, as shown above.
+
 The reference implements all the public endpoints to the contract (those marked as `pub` in `#[odra::module]`
-impl), alongside couple methods:
-
-- `at(Address) -> Self` - points the reference to an Address
-- `address() -> Address` - returns the Address the reference is currently pointing at
-- `with_tokens(Amount) -> Self` - attaches Amount of native tokens to the next call
+impl), and the `{{ModuleName}}ContractRef::address()` function, which returns the address of the contract.
 
 # External Contracts
 Sometimes in our contract, we would like to interact with a someone else's contract, already deployed onto the blockchain. The only thing we know about the contract is the ABI.
@@ -77,10 +75,10 @@ pub trait Adder {
 }
 ```
 
-Analogously to modules, Odra creates the `AdderRef` struct (but do not create the `AdderDeployer`). Having an address we can call:
+Analogously to modules, Odra creates the `AdderContractRef` struct (and `AdderHostRef` to be used in tests, but do not implement the `Deployer` trait). Having an address, in the module context we can call:
 
 ```rust title="examples/src/features/cross_calls.rs"
-AdderRef::new(self.env(), address).add(3, 5)
+AdderContractRef::new(self.env(), address).add(3, 5)
 ```
 
 ### Loading the contract
@@ -99,14 +97,18 @@ fn _load(env: &HostEnv) -> Erc20HostRef {
 Let's see how we can test our cross calls using this knowledge:
 
 ```rust title="examples/src/features/cross_calls.rs"
- use super::{CrossContractDeployer, MathEngineDeployer};
+ use super::{CrossContractHostRef, CrossContractInitArgs, MathEngineHostRef};
+ use odra::host::{Deployer, HostRef, NoArgs};
 
 #[test]
 fn test_cross_calls() {
     let test_env = odra_test::env();
-    let math_engine_contract = MathEngineDeployer::init(&test_env);
-    let cross_contract =
-        CrossContractDeployer::init(&test_env, *math_engine_contract.address());
+    let math_engine_contract = MathEngineHostRef::deploy(&test_env, NoArgs);
+
+    let init_args = CrossContractInitArgs {
+        math_engine_address: *math_engine_contract.address()
+    };
+    let cross_contract = CrossContractHostRef::deploy(&test_env, init_args);
 
     assert_eq!(cross_contract.add_using_another(), 8);
 }
@@ -117,17 +119,17 @@ Each test start with a fresh instance of blockchain - no contracts are deployed.
 ```rust title="examples/src/features/cross_calls.rs"
 #[cfg(test)]
 mod tests {
-    use odra::types::Address;
     use crate::features::cross_calls::{Adder, AdderHostRef};
+    use odra::{Address, host::{Deployer, HostRef, NoArgs}};
     
     #[test]
     fn test_ext() {
-        let adder = AdderHostRef::new(get_adder_address(), test_env).add(3, 5)
+        let adder = AdderHostRef::new(test_env, get_adder_address()).add(3, 5)
         assert_eq!(adder.add(1, 2), 3);
     }
 
     fn get_adder_address() -> Address {
-        let contract = MathEngineDeployer::init(&odra_test::env());
+        let contract = MathEngineHostRef::deploy(&odra_test::env(), NoArgs);
         *contract.address()
     }
 }

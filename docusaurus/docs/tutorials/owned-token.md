@@ -20,12 +20,12 @@ Let's define a module called `OwnedToken` that is a composition of `Ownable` and
 
 ```rust title=owned_token.rs showLineNumbers
 use crate::{erc20::Erc20, ownable::Ownable};
-use odra::module::ModuleWrapper;
+use odra::module::SubModule;
 
 #[odra::module]
 pub struct OwnedToken {
-    ownable: ModuleWrapper<Ownable>,
-    erc20: ModuleWrapper<Erc20>
+    ownable: SubModule<Ownable>,
+    erc20: SubModule<Erc20>
 }
 ```
 

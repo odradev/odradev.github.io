@@ -10,12 +10,12 @@ following example of a simple owned contract:
 
 ```rust title="examples/src/features/handling_errors.rs"
 use odra::prelude::*;
-use odra::{module::Module, Address, OdraError, Variable};
+use odra::{Address, module::Module, OdraError, Var};
 
 #[odra::module]
 pub struct OwnedContract {
-    name: Variable<String>,
-    owner: Variable<Address>
+    name: Var<String>,
+    owner: Var<Address>
 }
 
 #[derive(OdraError)]
@@ -51,7 +51,7 @@ impl OwnedContract {
 
 ```
 
-Firstly, we are using `execution_error!` macro to define our own set of Errors that our contract will
+Firstly, we are using the `OdraError` derive macro to define our own set of Errors that our contract will
 throw. Then, you can use those errors in your code - for example, instead of unwrapping Options, you can use
 `unwrap_or_revert_with` and pass an error as an argument:
 
@@ -59,22 +59,28 @@ throw. Then, you can use those errors in your code - for example, instead of unw
 self.owner.get().unwrap_or_revert_with(Error::OwnerNotSet)
 ```
 
-You and the users of your contract will be thankful for a meaningful error message!
-
 You can also throw the error directly, by using `revert`:
 
 ```rust title="examples/src/features/handling_errors.rs"
 self.env().revert(Error::NotAnOwner)
 ```
 
+Defining an error in Odra, you must keep in mind a few rules:
+
+1. An error should be a field-less enum. 
+2. The enum must derive from `OdraError`.
+3. Avoid implicit discriminants.
+
+:::note
+In your project you can define as many error enums as you wish, but you must ensure that the discriminants are unique across the project!
+:::
+
 ## Testing errors
 
-Okay, but how about testing it? We've already mentioned a function - `assert_exception`. This is how you will
-use it:
+Okay, but how about testing it? Let's write a test that will check if the error is thrown when the caller is not an owner:
 
 ```rust title="examples/src/features/handling_errors.rs"
-use super::Error;
-use super::OwnedContractDeployer;
+use super::{Error, OwnedContractHostRef, OwnedContractInitArgs};
 use odra::prelude::*;
 
 #[test]
@@ -84,26 +90,28 @@ fn test_owner_error() {
     let not_an_owner = test_env.get_account(1);
 
     test_env.set_caller(owner);
-    let mut owned_contract =
-        OwnedContractDeployer::init(&test_env, "OwnedContract".to_string());
+    let init_args = OwnedContractInitArgs {
+        name: "OwnedContract".to_string()
+    };
+    let mut owned_contract = OwnedContractHostRef::deploy(&test_env, init_args);
 
     test_env.set_caller(not_an_owner);
     assert_eq!(
-        owned_contract
-            .try_change_name("NewName".to_string())
-            .unwrap_err(),
-        Error::NotAnOwner.into()
+        owned_contract.try_change_name("NewName".to_string()),
+        Err(Error::NotAnOwner.into())
     );
 }
 ```
+Each `{{ModuleName}}HostRef` has `try_{{entry_point_name}}` functions that return an [`OdraResult`].
+`OwnedContractHostRef` implements regular entrypoints: `name`, `owner`, `change_name`, and 
+and safe its safe version: `try_name`, `try_owner`, `try_change_name`.
 
-In the example above, because we are calling the `change_name` method as an address which is not an "owner",
-we are expecting that "NotAnOwner" error will be thrown.
-
-:::note
-Here we are creating another reference to the already deployed contract using `OwnedContractRef::at()` and passing to it
-its Address. Note that `OwnedContractDeployer::init()` returns the same type.
-:::
+In our example, we are calling `try_change_name` and expecting an error to be thrown.
+For assertions, we are using a standard `assert_eq!` macro. As the contract call returns an `OdraError`, 
+we need to convert our custom error to `OdraError` using `Into::into()`.
 
 ## What's next
 We will learn how to emit and test events using Odra.
+
+[`OdraResult`]: https://docs.rs/odra/0.8.0/odra/type.OdraResult.html
+[`OdraError`]: https://docs.rs/odra/0.8.0/odra/enum.OdraError.html

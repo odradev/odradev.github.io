@@ -52,12 +52,12 @@ Let's write an example of `MyToken` based on `Erc20` module.
 
 ```rust
 use odra::prelude::*;
-use odra::{Address, casper_types::U256, module::ModuleWrapper};
+use odra::{Address, casper_types::U256, module::SubModule};
 use odra_modules::erc20::Erc20;
 
 #[odra::module]
 pub struct MyToken {
-    erc20: ModuleWrapper<Erc20>
+    erc20: SubModule<Erc20>
 }
 
 #[odra::module]

@@ -301,7 +301,7 @@ pub trait Token {
 }
 
 // Usage
-TokenContractRef::new(self.env(), token).balance_of(account)
+TokenContractRef::new(env, token).balance_of(account)
 ```
 </TabItem>
 <TabItem value="old" label="Prev">

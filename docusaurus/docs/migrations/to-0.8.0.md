@@ -39,7 +39,7 @@ You can find the `build_contract.rs` and `build_schema.rs` files in [templates] 
 
 ### 2.2. **Update Cargo.toml**
 There a bunch of changes in the `Cargo.toml` file.
-* You don't to specify the features anymore - remove the `features` section and `default-features` flag from the `odra` dependency.
+* You don't have to specify the features anymore - remove the `features` section and `default-features` flag from the `odra` dependency.
 * Register bins you added in the previous step.
 * Add `dev-dependencies` section with `odra-test` crate.
 * Add recommended profiles for `release` and `dev` to optimize the build process.

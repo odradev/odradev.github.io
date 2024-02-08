@@ -289,7 +289,7 @@ pub struct Erc721Token {
 
 #### 2.3.9. **Update external contract calls.**
 
-However the definition of an external contract remains the same, the way you call it has changed. A reference to an external contract is named `{{ModuleName}}ContractRef` (former `{{ModuleName}}Ref`) and you can call it using `{{ModuleName}}ContractRef::new(self.env(), address)` (former `{{ModuleName}}Ref::at()`).
+However the definition of an external contract remains the same, the way you call it has changed. A reference to an external contract is named `{{ModuleName}}ContractRef` (former `{{ModuleName}}Ref`) and you can call it using `{{ModuleName}}ContractRef::new(env, address)` (former `{{ModuleName}}Ref::at()`).
 
 <Tabs>
 <TabItem value="current" label="0.8.0">

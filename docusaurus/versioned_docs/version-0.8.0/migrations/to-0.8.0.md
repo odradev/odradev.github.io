@@ -39,7 +39,7 @@ You can find the `build_contract.rs` and `build_schema.rs` files in [templates] 
 
 ### 2.2. **Update Cargo.toml**
 There a bunch of changes in the `Cargo.toml` file.
-* You don't to specify the features anymore - remove the `features` section and `default-features` flag from the `odra` dependency.
+* You don't have to specify the features anymore - remove the `features` section and `default-features` flag from the `odra` dependency.
 * Register bins you added in the previous step.
 * Add `dev-dependencies` section with `odra-test` crate.
 * Add recommended profiles for `release` and `dev` to optimize the build process.
@@ -140,7 +140,7 @@ The smart contracts themselves will need to be updated to work with the new vers
 #### 2.3.2. **Some type aliases are no longer in use.**
    * `Balance` - use `odra::casper_types::U512`.
    * `BlockTime` - use `u64`.
-   * `Event` - use `odra::casper_types::bytesrepr::Bytes`.
+   * `EventData` - use `odra::casper_types::bytesrepr::Bytes`.
 
 #### 2.3.3. **Consider import `odra::prelude::*` in your module files.**
 
@@ -289,7 +289,7 @@ pub struct Erc721Token {
 
 #### 2.3.9. **Update external contract calls.**
 
-However the definition of an external contract remains the same, the way you call it has changed. A reference to an external contract is named `{{ModuleName}}ContractRef` (former `{{ModuleName}}Ref`) and you can call it using `{{ModuleName}}ContractRef::new(self.env(), address)` (former `{{ModuleName}}Ref::at()`).
+However the definition of an external contract remains the same, the way you call it has changed. A reference to an external contract is named `{{ModuleName}}ContractRef` (former `{{ModuleName}}Ref`) and you can call it using `{{ModuleName}}ContractRef::new(env, address)` (former `{{ModuleName}}Ref::at()`).
 
 <Tabs>
 <TabItem value="current" label="0.8.0">
@@ -301,7 +301,7 @@ pub trait Token {
 }
 
 // Usage
-TokenContractRef::new(self.env(), token).balance_of(account)
+TokenContractRef::new(env, token).balance_of(account)
 ```
 </TabItem>
 <TabItem value="old" label="Prev">

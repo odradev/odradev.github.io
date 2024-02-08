@@ -140,7 +140,7 @@ The smart contracts themselves will need to be updated to work with the new vers
 #### 2.3.2. **Some type aliases are no longer in use.**
    * `Balance` - use `odra::casper_types::U512`.
    * `BlockTime` - use `u64`.
-   * `Event` - use `odra::casper_types::bytesrepr::Bytes`.
+   * `EventData` - use `odra::casper_types::bytesrepr::Bytes`.
 
 #### 2.3.3. **Consider import `odra::prelude::*` in your module files.**
 

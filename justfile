@@ -27,6 +27,6 @@ ci-build-and-commit:
     git commit -m "Automatic site build"
     git config --global --add safe.directory /github/workspace
 
-develop-with-search:
+build-and-serve-locally:
     cd docusaurus && npm run build
     cd docusaurus && npm run serve

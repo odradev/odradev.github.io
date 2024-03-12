@@ -115,7 +115,6 @@ casper-client put-deploy \
     --session-arg "odra_cfg_package_hash_key_name:string:'test_contract_package_hash'" \
     --session-arg "odra_cfg_allow_key_override:bool:'true'" \
     --session-arg "odra_cfg_is_upgradable:bool:'true'" \
-    --session-arg "odra_cfg_constructor:string:'init'" \
     --session-arg "name:string='My Name'" \
     --session-arg "description:string='My Description'" \ 
     --session-arg "price_1:u256='101'" \
@@ -149,9 +148,9 @@ Storage Layout
 CustomItem:                 prefix: 0x0..._0000_0000_0000  0
   version: u32,                     0x0..._0000_0000_0000  0
   meta: Metadata,                   0x0..._0000_0000_0001  1
-  data: Data:               prefix: 0x0..._0000_0010_0000  (2 << 4)
+  data: Data:               prefix: 0x0..._0000_0000_0010  2
     value: u32,                     0x0..._0000_0010_0000  (2 << 4) + 0
-    inner: InnerData:       prefix: 0x0..._0010_0001_0000  ((2 << 4) + 1) << 4
+    inner: InnerData:       prefix: 0x0..._0000_0010_0001  (2 << 4) + 1
       named_values: Mapping         0x0..._0010_0001_0000  ((2 << 4) + 1) << 4 + 0
 ```
 

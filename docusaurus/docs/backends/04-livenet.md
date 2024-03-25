@@ -140,6 +140,10 @@ To run the above code, we simply need to run the binary with the `livenet` featu
 cargo run --bin erc20_on_livenet --features=livenet
 ```
 
+:::note
+Before executing the binary, make sure you built a wasm file.
+:::
+
 A part of a sample output should look like this:
 
 ```bash
@@ -173,7 +177,7 @@ Basically, if the entrypoint function is not mutable or does not make a call to 
 node is used for the state query only. However, the Livenet needs to know the connection between the contracts
 and the code, so make sure to deploy or load already deployed contracts
 
-## Multiple enviroments
+## Multiple environments
 
 It is possible to have multiple environments for the Livenet backend. This is useful if we want to easily switch between multiple accounts,
 multiple nodes or even multiple chains.

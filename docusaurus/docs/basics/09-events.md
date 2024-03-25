@@ -34,7 +34,7 @@ impl PartyContract {
 ```
 
 We defined a new contract, which emits an event called `PartyStarted` when the contract is deployed.
-To define an event, we derive an `Event` macro like this:
+To define an event, add the `#[derive(Event)]` attribute like this:
 
 ```rust title="examples/src/features/events.rs"
 #[derive(Event, PartialEq, Eq, Debug)]
@@ -47,13 +47,13 @@ pub struct PartyStarted {
 To emit an event, we use the `emit_event` function from the `ContractEnv`, passing the event as an argument:
 
 ```rust title="examples/src/features/events.rs"
-PartyStarted {
+self.env().emit_event(PartyStarted {
     caller: self.env().caller(),
     block_time: self.env().get_block_time()
-}.emit();
+});
 ```
 
-To determine all the events at compilation time to register them once the contract is deployed. To register events, add an `events` attribute to the struct's `#[odra::module]` macro. 
+To determine all the events at compilation time to register them once the contract is deployed. To register events, add an `events` attribute to the struct's `#[odra::module]` attribute.
 
 The event collection process is recursive; if your module consists of other modules, and they have already registered their events, you don't need to add them to the parent module.
 

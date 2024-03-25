@@ -52,13 +52,13 @@ const config = {
                     sidebarPath: require.resolve('./sidebars.js'),
                     lastVersion: '0.8.1',
                     versions: {
-                        '0.8.1': {
-                            label: '0.8.1',
-                            path: '0.8.1',
-                        },
                         current: {
                             label: 'next',
                             path: '',
+                        },
+                        '0.8.1': {
+                            label: '0.8.1',
+                            path: '0.8.1',
                         },
                         '0.8.0': {
                             label: '0.8.0',

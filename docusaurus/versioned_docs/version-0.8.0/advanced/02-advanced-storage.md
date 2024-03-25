@@ -18,7 +18,7 @@ If you need a refresher on these topics, please refer to our [guide](../basics/0
 
 ### Sequence
 
-The Sequence in Odra is a basic module that holds a `Var` which keeps track of the current value. 
+The `Sequence` in Odra is a basic module that stores a single value in the storage that can be read or incremented. Internally, holds a `Var` which keeps track of the current value. 
 
 ```rust
 pub struct Sequence<T>
@@ -41,8 +41,8 @@ However, there are more advanced scenarios where the value of the Mapping repres
 Let's consider the following example:
 
 ```rust title="examples/src/features/storage/mapping.rs"
-use odra::{map, types::U256, Mapping, UnwrapOrRevert};
-
+use odra::{casper_types::U256, Mapping, UnwrapOrRevert};
+use odra::prelude::*;
 use crate::owned_token::OwnedToken;
 
 #[odra::module]
@@ -88,12 +88,13 @@ The given code snippet showcases the `AdvancedStorage` contract that incorporate
 
 ```rust
 use odra::{Address, casper_types::U512, Sequence, Mapping};
+use odra::prelude::*;
 use crate::modules::Token;
 
 #[odra::module]
 pub struct AdvancedStorage {
     counter: Sequence<u32>,
-    tokens: Mapping<(String, String), Token>>,
+    tokens: Mapping<(String, String), Token>,
 }
 
 impl AdvancedStorage {
@@ -110,7 +111,7 @@ impl AdvancedStorage {
         token.balance_of(&address)
     }
 
-    pub fn mint(&self, outer_token_namekey: String, creator: String, amount: U512, to: Address) {
+    pub fn mint(&self, token_name: String, creator: String, amount: U512, to: Address) {
         let mut token = self.tokens.module(&(token_name, creator));
         token.mint(amount, to);
     }

@@ -140,6 +140,10 @@ To run the above code, we simply need to run the binary with the `livenet` featu
 cargo run --bin erc20_on_livenet --features=livenet
 ```
 
+:::note
+Before executing the binary, make sure you built a wasm file.
+:::
+
 A part of a sample output should look like this:
 
 ```bash

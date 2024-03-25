@@ -34,7 +34,7 @@ even possible.
 To see a more reasonable example, check out `examples/src/contracts/tlw.rs` in the odra main repository.
 :::
 
-You can see a new macro used here: `#[odra(payable)]` - it will add all the code needed for a function to
+You can see a new attribute used here: `#[odra(payable)]` - it will add all the code needed for a function to
 be able to receive the funds. Additionally, we are using a new function from `ContractEnv::transfer_tokens()`.
 It does exactly what you are expecting it to do - it transfers native tokens from the contract to the
 specified address.
@@ -44,19 +44,22 @@ To be able to test how many tokens a contract (or any address) has, `HostEnv` co
 `balance_of`:
 
 ```rust title="examples/src/features/native_token.rs"
-use super::PublicWalletHostRef;
-use odra::{casper_types::U512, host::{Deployer, NoArgs}};
+#[cfg(test)]
+mod tests {
+    use super::PublicWalletHostRef;
+    use odra::{casper_types::U512, host::{Deployer, HostRef, NoArgs}};
 
-#[test]
-fn test_modules() {
-    let test_env = odra_test::env();
-    let mut my_contract = PublicWalletHostRef::deploy(&test_env, NoArgs);
-    assert_eq!(test_env.balance_of(my_contract.address()), U512::zero());
+    #[test]
+    fn test_modules() {
+        let test_env = odra_test::env();
+        let mut my_contract = PublicWalletHostRef::deploy(&test_env, NoArgs);
+        assert_eq!(test_env.balance_of(my_contract.address()), U512::zero());
 
-    my_contract.with_tokens(U512::from(100)).deposit();
-    assert_eq!(test_env.balance_of(my_contract.address()), U512::from(100));
+        my_contract.with_tokens(U512::from(100)).deposit();
+        assert_eq!(test_env.balance_of(my_contract.address()), U512::from(100));
 
-    my_contract.withdraw(U512::from(25));
-    assert_eq!(test_env.balance_of(my_contract.address()), U512::from(75));
+        my_contract.withdraw(U512::from(25));
+        assert_eq!(test_env.balance_of(my_contract.address()), U512::from(75));
+    }
 }
 ```

@@ -6,7 +6,7 @@ description: Divide your code into modules
 # Modules
 
 Simply put, modules in Odra let you reuse your code between contracts or even projects. Every contract you
-write is also a module, thanks to the macro `#[odra::module]`. This means that we can easily rewrite our math
+write is also a module, thanks to the `#[odra::module]` attribute. This means that we can easily rewrite our math
 example from the previous article, to use a single contract, but still separate our "math" code:
 
 ```rust title="examples/src/features/modules.rs"
@@ -43,14 +43,17 @@ To see how modules can be used in a real-world scenario, check out the [OwnedTok
 As we don't need to hold addresses, the test is really simple:
 
 ```rust title="examples/src/features/modules.rs"
-use super::ModulesContractHostRef;
-use odra::host::{Deployer, NoArgs};
+#[cfg(test)]
+mod tests {
+    use super::ModulesContractHostRef;
+    use odra::host::{Deployer, NoArgs};
 
-#[test]
-fn test_modules() {
-    let test_env = odra_test::env();
-    let modules_contract = ModulesContractHostRef::deploy(&test_env, NoArgs);
-    assert_eq!(modules_contract.add_using_module(), 8);
+    #[test]
+    fn test_modules() {
+        let test_env = odra_test::env();
+        let modules_contract = ModulesContractHostRef::deploy(&test_env, NoArgs);
+        assert_eq!(modules_contract.add_using_module(), 8);
+    }
 }
 ```
 

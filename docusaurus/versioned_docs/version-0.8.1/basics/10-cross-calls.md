@@ -42,7 +42,7 @@ impl MathEngine {
 storage for later use. If we deploy the `MathEngine` first and take note of its address, we can then deploy
 `CrossContract` and use `MathEngine` to perform complicated calculations for us!
 
-To call the external contract, we use the `{{ModuleName}}ContractRef` that was created for us by Odra:
+To perform a cross-contact call, we use the `{{ModuleName}}ContractRef` that was created for us by Odra:
 
 ```rust title="examples/src/features/cross_calls.rs"
 MathEngineContractRef::new(self.env(), math_engine_address).add(3, 5)
@@ -54,9 +54,9 @@ We mentioned `HostRef` already in our [Testing](07-testing.md) article - a host 
 In the module context we use a `ContractRef` instead, to call other contracts.
 
 Similarly to a `{{ModuleName}}HostRef`, the `{{ModuleName}}ContractRef` is generated automatically, 
-by the `#[odra::module]` macro.
+by the `#[odra::module]` attribute.
 
-To get an instance of a contract reference, we the reference constructor function - `{{ModuleName}}ContractRef::new(env: Rc<ContractEnv>, address: Address)`, as shown above.
+To obtain an instance of a contract reference, we simply call the constructor - `{{ModuleName}}ContractRef::new(env: Rc<ContractEnv>, address: Address)`, as shown above.
 
 The reference implements all the public endpoints to the contract (those marked as `pub` in `#[odra::module]`
 impl), and the `{{ModuleName}}ContractRef::address()` function, which returns the address of the contract.
@@ -64,11 +64,11 @@ impl), and the `{{ModuleName}}ContractRef::address()` function, which returns th
 # External Contracts
 Sometimes in our contract, we would like to interact with a someone else's contract, already deployed onto the blockchain. The only thing we know about the contract is the ABI.
 
-For that purpose, we use `#[odra:external_contract]` macro. This macro should be applied to a trait. The trait defines the part of the ABI we would like to take advantage of.
+For that purpose, we use `#[odra:external_contract]` attribute. This attribute should be applied to a trait. The trait defines the part of the ABI we would like to take advantage of.
 
 Let's pretend the `MathEngine` we defined is an external contract. There is a contract with `add()` function that adds two numbers somewhere.
 
-```rust title="examples/src/features/cross_calls.rs"
+```rust
 #[odra::external_contract]
 pub trait Adder {
     fn add(&self, n1: u32, n2: u32) -> u32;
@@ -97,39 +97,43 @@ fn _load(env: &HostEnv) -> Erc20HostRef {
 Let's see how we can test our cross calls using this knowledge:
 
 ```rust title="examples/src/features/cross_calls.rs"
- use super::{CrossContractHostRef, CrossContractInitArgs, MathEngineHostRef};
- use odra::host::{Deployer, HostRef, NoArgs};
+#[cfg(test)]
+mod tests {
+    use super::{CrossContractHostRef, CrossContractInitArgs, MathEngineHostRef};
+    use odra::host::{Deployer, HostRef, NoArgs};
 
-#[test]
-fn test_cross_calls() {
-    let test_env = odra_test::env();
-    let math_engine_contract = MathEngineHostRef::deploy(&test_env, NoArgs);
+    #[test]
+    fn test_cross_calls() {
+        let test_env = odra_test::env();
+        let math_engine_contract = MathEngineHostRef::deploy(&test_env, NoArgs);
 
-    let init_args = CrossContractInitArgs {
-        math_engine_address: *math_engine_contract.address()
-    };
-    let cross_contract = CrossContractHostRef::deploy(&test_env, init_args);
+        let init_args = CrossContractInitArgs {
+            math_engine_address: *math_engine_contract.address()
+        };
+        let cross_contract = CrossContractHostRef::deploy(&test_env, init_args);
 
-    assert_eq!(cross_contract.add_using_another(), 8);
+        assert_eq!(cross_contract.add_using_another(), 8);
+    }
 }
 ```
 
-Each test start with a fresh instance of blockchain - no contracts are deployed. To test an external contract we deploy a `MathEngine` contract first, but we are not going to use it directly. We take only its address. Let's keep pretending, there is a contract with the `add()` function we want to use.
+Each test begins with a clean instance of the blockchain, with no contracts deployed. To test an external contract, we first deploy a `MathEngine` contract, although we won't directly utilize it. Instead, we only extract its address. Let's continue assuming there is a contract featuring the `add()` function that we intend to utilize.
 
-```rust title="examples/src/features/cross_calls.rs"
+```rust
 #[cfg(test)]
 mod tests {
-    use crate::features::cross_calls::{Adder, AdderHostRef};
+    use super::*;
     use odra::{Address, host::{Deployer, HostRef, NoArgs}};
     
     #[test]
     fn test_ext() {
-        let adder = AdderHostRef::new(test_env, get_adder_address()).add(3, 5)
+        let test_env = odra_test::env();
+        let adder = AdderHostRef::new(&test_env, get_adder_address(&test_env)).add(3, 5)
         assert_eq!(adder.add(1, 2), 3);
     }
 
-    fn get_adder_address() -> Address {
-        let contract = MathEngineHostRef::deploy(&odra_test::env(), NoArgs);
+    fn get_adder_address(test_env: &HostEnv) -> Address {
+        let contract = MathEngineHostRef::deploy(test_env, NoArgs);
         *contract.address()
     }
 }

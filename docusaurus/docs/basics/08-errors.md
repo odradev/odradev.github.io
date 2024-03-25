@@ -51,8 +51,8 @@ impl OwnedContract {
 
 ```
 
-Firstly, we are using the `OdraError` derive macro to define our own set of Errors that our contract will
-throw. Then, you can use those errors in your code - for example, instead of unwrapping Options, you can use
+Firstly, we are using the `OdraError` derive attribute to define our own set of Errors that our contract will
+throw. Then, you can use those errors in your code - for example, instead of forcefully unwrapping Options, you can use
 `unwrap_or_revert_with` and pass an error as an argument:
 
 ```rust title="examples/src/features/handling_errors.rs"
@@ -80,26 +80,30 @@ In your project you can define as many error enums as you wish, but you must ens
 Okay, but how about testing it? Let's write a test that will check if the error is thrown when the caller is not an owner:
 
 ```rust title="examples/src/features/handling_errors.rs"
-use super::{Error, OwnedContractHostRef, OwnedContractInitArgs};
-use odra::prelude::*;
+#[cfg(test)]
+mod tests {
+    use super::{Error, OwnedContractHostRef, OwnedContractInitArgs};
+    use odra::host::Deployer;
+    use odra::prelude::*;
 
-#[test]
-fn test_owner_error() {
-    let test_env = odra_test::env();
-    let owner = test_env.get_account(0);
-    let not_an_owner = test_env.get_account(1);
+    #[test]
+    fn test_owner_error() {
+        let test_env = odra_test::env();
+        let owner = test_env.get_account(0);
+        let not_an_owner = test_env.get_account(1);
 
-    test_env.set_caller(owner);
-    let init_args = OwnedContractInitArgs {
-        name: "OwnedContract".to_string()
-    };
-    let mut owned_contract = OwnedContractHostRef::deploy(&test_env, init_args);
+        test_env.set_caller(owner);
+        let init_args = OwnedContractInitArgs {
+            name: "OwnedContract".to_string()
+        };
+        let mut owned_contract = OwnedContractHostRef::deploy(&test_env, init_args);
 
-    test_env.set_caller(not_an_owner);
-    assert_eq!(
-        owned_contract.try_change_name("NewName".to_string()),
-        Err(Error::NotAnOwner.into())
-    );
+        test_env.set_caller(not_an_owner);
+        assert_eq!(
+            owned_contract.try_change_name("NewName".to_string()),
+            Err(Error::NotAnOwner.into())
+        );
+    }
 }
 ```
 Each `{{ModuleName}}HostRef` has `try_{{entry_point_name}}` functions that return an [`OdraResult`].

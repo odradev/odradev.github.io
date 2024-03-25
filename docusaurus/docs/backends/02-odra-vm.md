@@ -34,7 +34,7 @@ OdraVM starts instantly and runs the tests in the native speed.
 
 ## Execution
 
-When the OdraVM backend is enabled, the `#[odra::module]` macro is responsible for converting
+When the OdraVM backend is enabled, the `#[odra::module]` attribute is responsible for converting
 your `pub` functions into a list of Entrypoints, which are put into a `Contract Container`.
 When the contract is deployed, its Container registered into a Registry under an address.
 During the contract call, OdraVM finds an Entrypoint and executes the code.

@@ -32,7 +32,7 @@ pub struct Flipper {
 ```
 
 In Odra, all contracts are also modules, which can be reused between contracts. That's why we need
-to mark the struct with the `#[odra::module]` macro. In the struct definition itself, we state all
+to mark the struct with the `#[odra::module]` attribute. In the struct definition itself, we state all
 the fields of the contract. Those fields can be regular Rust data types, however - those will not
 be persisted on the blockchain. They can also be Odra modules - defined in your project or coming
 from Odra itself. Finally, to make the data persistent on the blockchain, you can use something like
@@ -55,10 +55,10 @@ impl Flipper {
     }
     ...
 ```
-Similarly to the struct, we mark the `impl` section with the `#[odra::module]` macro. Odra will take all
+Similarly to the struct, we mark the `impl` section with the `#[odra::module]` attribute. Odra will take all
 `pub` functions from this section and create contract endpoints from them. So, if you wish to have
 functions that are not available for calling outside the contract, do not make them public. Alternatively,
-you can create a separate `impl` section without the macro - all functions defined there, even marked
+you can create a separate `impl` section without the attribute - all functions defined there, even marked
 with `pub` will be not callable.
 
 The function named `init` is the constructor of the contract. This function will be limited to only

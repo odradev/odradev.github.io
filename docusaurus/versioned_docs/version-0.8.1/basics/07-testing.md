@@ -64,7 +64,7 @@ let mut dog_contract = DogContract3HostRef::deploy(&test_env, init_args);
 ```
 
 From now on, we can use `dog_contract` to interact with our deployed contract - in particular, all
-`pub` functions from the impl section that was annotated with a macro are available to us:
+`pub` functions from the impl section that was annotated with the `odra::module` attribute are available to us:
 
 ```rust title="examples/src/features/storage/list.rs"
 // Impl

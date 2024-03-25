@@ -18,7 +18,8 @@ Consider the following basic example for better understanding:
 use crate::{erc20::Erc20, ownable::Ownable};
 use odra::{
     Address, casper_types::U256,
-    module::{Module, SubModule}
+    module::{Module, SubModule},
+    prelude::*
 };
 
 #[odra::module]
@@ -71,7 +72,8 @@ Let's take a look at another example.
 use crate::{erc20::Erc20, ownable::Ownable, exchange::Exchange};
 use odra::{
     Address, casper_types::U256, 
-    module::{Module, SubModule}
+    module::{Module, SubModule},
+    prelude::*
 };
 
 #[odra::module]
@@ -83,7 +85,6 @@ pub struct DeFiPlatform {
 
 #[odra::module]
 impl DeFiPlatform {
-    #[odra(init)]
     pub fn init(&mut self, name: String, symbol: String, decimals: u8, initial_supply: U256, exchange_rate: u64) {
         let deployer = self.env().caller();
         self.ownable.init(deployer);

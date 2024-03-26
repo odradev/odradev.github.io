@@ -26,6 +26,9 @@ It is designed to store the following data:
    
 ## Module definition
 ```rust title=erc20.rs showLineNumbers
+use odra::prelude::*;
+use odra::{Address, casper_types::U256, Mapping, Var};
+
 #[odra::module(events = [Transfer, Approval])]
 pub struct Erc20 {
     decimals: Var<u8>,
@@ -37,20 +40,25 @@ pub struct Erc20 {
 }
 ```
 
-* **L7** - For the first time, we need to store key-value pairs. In order to do that, we use `Mapping`. The name is taken after Solidity's native type `mapping`.
-* **L8** - Odra does not allows nested `Mapping`s as Solidity does. Instead, you can create a compound key using a tuple of keys.
+* **L10** - For the first time, we need to store key-value pairs. In order to do that, we use `Mapping`. The name is taken after Solidity's native type `mapping`.
+* **L11** - Odra does not allows nested `Mapping`s as Solidity does. Instead, you can create a compound key using a tuple of keys.
 
 ### Metadata
 
 ```rust title=erc20.rs showLineNumbers
+...
+use odra::casper_event_standard::{self, Event};
+
+...
+
 #[odra::module]
 impl Erc20 {
-    pub fn init(&mut self, name: String, symbol: String, decimals: u8, initial_supply: &U256) {
+    pub fn init(&mut self, name: String, symbol: String, decimals: u8, initial_supply: U256) {
         let caller = self.env().caller();
         self.name.set(name);
         self.symbol.set(symbol);
         self.decimals.set(decimals);
-        self.mint(&caller, initial_supply);
+        self.mint(&caller, &initial_supply);
     }
 
     pub fn name(&self) -> String {
@@ -71,9 +79,9 @@ impl Erc20 {
 }
 
 impl Erc20 {
-    pub fn mint(&mut self, address: &Address, amount: &U256) {
+   pub fn mint(&mut self, address: &Address, amount: &U256) {
         self.balances.add(address, *amount);
-        self.total_supply.add(amount);
+        self.total_supply.add(*amount);
         
         self.env().emit_event(Transfer {
             from: None,
@@ -91,15 +99,14 @@ pub struct Transfer {
 }
 ```
 
-* **L1** - The first `impl` block, marked as a module, contains functions defined in the ERC-20 standard.
-* **L3-L9** - A constructor sets the token metadata and mints the initial supply.
-* **L11-L13** - Getter functions are straightforward, but there is one worth-mentioning subtlety. In the `Ownable` example, we used the `get()` function returning an `Option<T>`. If the type implements the `Default` trait, you can call the `get_or_default()` function, and the contract does not fail even if the value is not initialized.
-* **L28** - The second `impl` is not an Odra module; in other words, these functions will not be part of the contract's ABI.
-* **L29-L39** - The `mint` function is public, so, like in regular Rust code, it will be accessible from the outside. `mint()` uses the notation `self.balances.add(&address, amount);`, which is syntactic sugar for:
+* **L6** - The first `impl` block, marked as a module, contains functions defined in the ERC-20 standard.
+* **L8-L14** - A constructor sets the token metadata and mints the initial supply.
+* **L33** - The second `impl` is not an Odra module; in other words, these functions will not be part of the contract's ABI.
+* **L34-L43** - The `mint` function is public, so, like in regular Rust code, it will be accessible from the outside. `mint()` uses the notation `self.balances.add(address, *amount);`, which is syntactic sugar for:
 ```rust
-let current_balance = self.balances.get(&address).unwrap_or_default();
+let current_balance = self.balances.get(address).unwrap_or_default();
 let new_balance = current_balance.overflowing_add(current_balance).unwrap_or_revert();
-self.balances.set(&address, new_balance);
+self.balances.set(address, new_balance);
 ```
 
 ### Core
@@ -107,9 +114,13 @@ self.balances.set(&address, new_balance);
 To ensure comprehensive functionality, let's implement the remaining features such as `transfer`, `transfer_from`, and `approve`. Since they do not introduce any new concepts, we will present them without additional remarks.
 
 ```rust showLineNumbers title=erc20.rs
+...
+use odra::OdraError;
+
 #[odra::module]
 impl Erc20 {
     ...
+
     pub fn transfer(&mut self, recipient: &Address, amount: &U256) {
         let caller = self.env().caller();
         self.raw_transfer(&caller, recipient, amount);
@@ -123,13 +134,12 @@ impl Erc20 {
 
     pub fn approve(&mut self, spender: &Address, amount: &U256) {
         let owner = self.env().caller();
-        self.allowances.get_instance(&owner).set(spender, *amount);
-        Approval {
+        self.allowances.set(&(owner, *spender), *amount);
+        self.env().emit_event(Approval {
             owner,
             spender: *spender,
             value: *amount
-        }
-        .emit();
+        });
     }
 
     pub fn balance_of(&self, address: &Address) -> U256 {
@@ -137,7 +147,7 @@ impl Erc20 {
     }
 
     pub fn allowance(&self, owner: &Address, spender: &Address) -> U256 {
-        self.allowances.get_instance(owner).get_or_default(spender)
+        self.allowances.get_or_default(&(*owner, *spender))
     }
 }
 
@@ -151,29 +161,26 @@ impl Erc20 {
         }
         self.balances.set(owner, owner_balance - *amount);
         self.balances.add(recipient, *amount);
-        Transfer {
+        self.env().emit_event(Transfer {
             from: Some(*owner),
             to: Some(*recipient),
             amount: *amount
-        }
-        .emit();
+        });
     }
 
     fn spend_allowance(&mut self, owner: &Address, spender: &Address, amount: &U256) {
-        let allowance = self.allowances.get_instance(owner).get_or_default(spender);
+        let allowance = self.allowance(owner, spender);
         if allowance < *amount {
             self.env().revert(Error::InsufficientAllowance)
         }
         let new_allowance = allowance - *amount;
         self.allowances
-            .get_instance(owner)
-            .set(spender, new_allowance);
-        Approval {
+            .set(&(*owner, *spender), new_allowance);
+        self.env().emit_event(Approval {
             owner: *owner,
             spender: *spender,
             value: allowance - *amount
-        }
-        .emit();
+        });
     }
 }
 
@@ -198,13 +205,8 @@ Now, compare the code we have written, with [Open Zeppelin code][erc20-open-zepp
 ```rust title=erc20.rs showLineNumbers
 #[cfg(test)]
 pub mod tests {
-    use super::{
-        errors::Error,
-        events::{Approval, Transfer},
-        Erc20Deployer, Erc20HostRef
-    };
-    use odra::prelude::*;
-    use odra::{casper_types::U256, HostEnv};
+    use super::*;
+    use odra::{casper_types::U256, host::{Deployer, HostEnv, HostRef}};
 
     const NAME: &str = "Plascoin";
     const SYMBOL: &str = "PLS";
@@ -215,12 +217,14 @@ pub mod tests {
         let env = odra_test::env();
         (
             env.clone(),
-            Erc20Deployer::init(
+            Erc20HostRef::deploy(
                 &env,
-                SYMBOL.to_string(),
-                NAME.to_string(),
-                DECIMALS,
-                Some(INITIAL_SUPPLY.into())
+                Erc20InitArgs {
+                    symbol: SYMBOL.to_string(),
+                    name: NAME.to_string(),
+                    decimals: DECIMALS,
+                    initial_supply: INITIAL_SUPPLY.into()
+                }
             )
         )
     }
@@ -258,16 +262,16 @@ pub mod tests {
         let sender = env.get_account(0);
         let recipient = env.get_account(1);
         let amount = 1_000.into();
-        erc20.transfer(recipient, amount);
+        erc20.transfer(&recipient, &amount);
 
         // Then the sender balance is deducted.
         assert_eq!(
-            erc20.balance_of(sender),
+            erc20.balance_of(&sender),
             U256::from(INITIAL_SUPPLY) - amount
         );
 
         // Then the recipient balance is updated.
-        assert_eq!(erc20.balance_of(recipient), amount);
+        assert_eq!(erc20.balance_of(&recipient), amount);
 
         // Then Transfer event was emitted.
         assert!(env.emitted_event(
@@ -290,7 +294,7 @@ pub mod tests {
         let amount = U256::from(INITIAL_SUPPLY) + U256::one();
 
         // Then an error occurs.
-        assert!(erc20.try_transfer(recipient, amount).is_err());
+        assert!(erc20.try_transfer(&recipient, &amount).is_err());
     }
 
     #[test]
@@ -302,13 +306,13 @@ pub mod tests {
         let approved_amount = 3_000.into();
         let transfer_amount = 1_000.into();
 
-        assert_eq!(erc20.balance_of(owner), U256::from(INITIAL_SUPPLY));
+        assert_eq!(erc20.balance_of(&owner), U256::from(INITIAL_SUPPLY));
 
         // Owner approves Spender.
-        erc20.approve(spender, approved_amount);
+        erc20.approve(&spender, &approved_amount);
 
         // Allowance was recorded.
-        assert_eq!(erc20.allowance(owner, spender), approved_amount);
+        assert_eq!(erc20.allowance(&owner, &spender), approved_amount);
         assert!(env.emitted_event(
             erc20.address(),
             &Approval {
@@ -320,14 +324,14 @@ pub mod tests {
 
         // Spender transfers tokens from Owner to Recipient.
         env.set_caller(spender);
-        erc20.transfer_from(owner, recipient, transfer_amount);
+        erc20.transfer_from(&owner, &recipient, &transfer_amount);
 
         // Tokens are transferred and allowance decremented.
         assert_eq!(
-            erc20.balance_of(owner),
+            erc20.balance_of(&owner),
             U256::from(INITIAL_SUPPLY) - transfer_amount
         );
-        assert_eq!(erc20.balance_of(recipient), transfer_amount);
+        assert_eq!(erc20.balance_of(&recipient), transfer_amount);
         assert!(env.emitted_event(
             erc20.address(),
             &Approval {
@@ -360,14 +364,14 @@ pub mod tests {
 
         // Then transfer fails.
         assert_eq!(
-            erc20.try_transfer_from(owner, recipient, amount),
+            erc20.try_transfer_from(&owner, &recipient, &amount),
             Err(Error::InsufficientAllowance.into())
         );
     }
 }
 ```
 
-* **L149** - Alternatively, if you don't want to check the entire event, you may assert only its type.
+* **L146** - Alternatively, if you don't want to check the entire event, you may assert only its type.
 
 ## What's next
 Having two modules: `Ownable` and `Erc20`, let's combine them, and create an ERC-20 on steroids.

@@ -44,7 +44,7 @@ You can pass a source of Odra you want to use, by using `-s` parameter:
 ```bash
 cargo odra new -n my-project -s ../odra # will use local folder of odra
 cargo odra new -n my-project -s release/0.9.0 # will use github branch, e.g. if you want to test new release
-cargo odra new -n my-project -s 0.8.0 # will use a version released on crates.io
+cargo odra new -n my-project -s 0.8.1 # will use a version released on crates.io
 ```
 
 The second way of creating a project is by using `init` command:

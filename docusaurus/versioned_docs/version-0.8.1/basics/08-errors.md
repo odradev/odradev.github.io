@@ -117,5 +117,5 @@ we need to convert our custom error to `OdraError` using `Into::into()`.
 ## What's next
 We will learn how to emit and test events using Odra.
 
-[`OdraResult`]: https://docs.rs/odra/0.8.0/odra/type.OdraResult.html
-[`OdraError`]: https://docs.rs/odra/0.8.0/odra/enum.OdraError.html
+[`OdraResult`]: https://docs.rs/odra/0.8.1/odra/type.OdraResult.html
+[`OdraError`]: https://docs.rs/odra/0.8.1/odra/enum.OdraError.html

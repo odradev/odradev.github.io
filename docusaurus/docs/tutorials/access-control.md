@@ -21,13 +21,28 @@ Before we start writing code, we list the functionalities of our access control 
 7. Each action triggers an event.
 8. Unauthorized access stops contract execution.
 
+### Project Structure
+
+```plaintext
+access-control
+├── src
+│   ├── access
+│   │   ├── access_control.rs
+│   │   ├── events.rs
+│   │   └── errors.rs
+│   └── lib.rs
+|── build.rs
+|── Cargo.toml
+└── Odra.toml
+```
+
 ### Events and Errors
 
 There are three actions that can be performed concerning a `Role`: granting, revoking, and altering the admin role. Let us establish standard Odra events for each of these actions.
 
 ```rust title=events.rs showLineNumbers
 use odra::casper_event_standard::{self, Event};
-use odra::casper_types::Address;
+use odra::Address;
 use super::access_control::Role;
 
 #[derive(Event, PartialEq, Eq, Debug)]
@@ -74,7 +89,7 @@ Now, we are stepping into the most interesting part: the module definition and i
 
 ```rust title=access_control.rs showLineNumbers
 use super::events::*;
-use crate::access::errors::Error;
+use super::errors::Error;
 use odra::prelude::*;
 use odra::{module::Module, Address, Mapping};
 
@@ -90,8 +105,8 @@ pub struct AccessControl {
 
 #[odra::module]
 impl AccessControl {
-    pub1 fn has_role(&self, role: &Role, address: &Address) -> bool {
-        self.roles.get_instance(role).get_or_default(address)
+    pub fn has_role(&self, role: &Role, address: &Address) -> bool {
+        self.roles.get_or_default(&(*role, *address))
     }
 
     pub fn get_role_admin(&self, role: &Role) -> Role {
@@ -104,17 +119,17 @@ impl AccessControl {
     }
 
     pub fn grant_role(&mut self, role: &Role, address: &Address) {
-        self.check_role(&self.get_role_admin(role), &contract_env::caller());
+        self.check_role(&self.get_role_admin(role), &self.env().caller());
         self.unchecked_grant_role(role, address);
     }
 
     pub fn revoke_role(&mut self, role: &Role, address: &Address) {
-        self.check_role(&self.get_role_admin(role), &contract_env::caller());
+        self.check_role(&self.get_role_admin(role), &self.env().caller());
         self.unchecked_revoke_role(role, address);
     }
 
     pub fn renounce_role(&mut self, role: &Role, address: &Address) {
-        if address != &contract_env::caller() {
+        if address != &self.env().caller() {
             self.env().revert(Error::RoleRenounceForAnotherAddress);
         }
         self.unchecked_revoke_role(role, address);
@@ -140,7 +155,7 @@ impl AccessControl {
 
     pub fn unchecked_grant_role(&mut self, role: &Role, address: &Address) {
         if !self.has_role(role, address) {
-            self.roles.get_instance(role).set(address, true);
+            self.roles.set(&(*role, *address), true);
             self.env().emit_event(RoleGranted {
                 role: *role,
                 address: *address,
@@ -151,7 +166,7 @@ impl AccessControl {
 
     pub fn unchecked_revoke_role(&mut self, role: &Role, address: &Address) {
         if self.has_role(role, address) {
-            self.roles.get_instance(role).set(address, false);
+            self.roles.set(&(*role, *address), false);
             self.env().emit_event(RoleRevoked {
                 role: *role,
                 address: *address,

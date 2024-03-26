@@ -20,8 +20,10 @@ There just two errors that may occur: `PausedRequired`, `UnpausedRequired`. We d
 
 Events definition is highly uncomplicated: `Paused` and `Unpaused` events holds only the address of the pauser.
 
-```rust showLineNumbers
-use odra::{Address, casper_event_standard::{self, Event}, OdraError};
+```rust title=pauseable.rs showLineNumbers
+use odra::prelude::*;
+use odra::{Address, OdraError};
+use odra::casper_event_standard::{self, Event};
 
 #[derive(OdraError)]
 pub enum Error {
@@ -44,8 +46,8 @@ pub struct Unpaused {
 
 The module storage is extremely simple - has a single `Var` of type bool, that indicates if a contract is paused.
 
-```rust showLineNumbers
-#[odra::module]
+```rust title=pauseable.rs showLineNumbers
+#[odra::module(events = [Paused, Unpaused])]
 pub struct Pauseable {
     is_paused: Var<bool>
 }
@@ -83,7 +85,7 @@ impl Pauseable {
 
 Finally, we will add the ability to switch the module state.
 
-```rust showLineNumbers
+```rust title=pauseable.rs showLineNumbers
 impl Pauseable {
     pub fn pause(&mut self) {
         self.require_not_paused();
@@ -112,9 +114,10 @@ impl Pauseable {
 
 In the end, let's use the module in a contract. For this purpose, we will implement a mock contract called `PauseableCounter`. The contract consists of a Var `value` and a `Pauseable` module. The counter can only be incremented if the contract is in a normal state (is not paused).
 
-```rust showLineNumbers
-use odra::{module::SubModule, Var};
-use odra_modules::security::Pauseable;
+```rust title=pauseable.rs showLineNumbers
+...
+use odra::SubModule;
+...
 
 #[odra::module]
 pub struct PauseableCounter {
@@ -147,17 +150,18 @@ impl PauseableCounter {
 #[cfg(test)]
 mod test {
     use super::*;
+    use odra::host::{Deployer, NoArgs};
 
     #[test]
     fn increment_only_if_unpaused() {
         let test_env = odra_test::env();
-        let mut contract = PauseableCounterDeployer::init(&test_env);
+        let mut contract = PauseableCounterHostRef::deploy(&test_env, NoArgs);
         contract.increment();
         contract.pause();
 
         assert_eq!(
             contract.try_increment().unwrap_err(),
-            UnpausedRequired.into()
+            Error::UnpausedRequired.into()
         );
         assert_eq!(contract.get_value(), 1);
     }

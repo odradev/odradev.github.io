@@ -20,6 +20,7 @@ Let's define a module called `OwnedToken` that is a composition of `Ownable` and
 
 ```rust title=owned_token.rs showLineNumbers
 use crate::{erc20::Erc20, ownable::Ownable};
+use odra::prelude::*;
 use odra::module::SubModule;
 
 #[odra::module]
@@ -34,14 +35,13 @@ As you can see, we do not need any storage definition - we just take advantage o
 ### Delegation
 
 ```rust title=owned_token.rs showLineNumbers
-use odra::prelude::*;
-use odra::{Address, casper_types::U256, module::Module};
-
+...
+use odra::{Address, casper_types::U256};
 ...
 
 #[odra::module]
 impl OwnedToken {
-    pub fn init(&mut self, name: String, symbol: String, decimals: u8, initial_supply: &U256) {
+    pub fn init(&mut self, name: String, symbol: String, decimals: u8, initial_supply: U256) {
         let deployer = self.env().caller();
         self.ownable.init(deployer);
         self.erc20.init(name, symbol, decimals, initial_supply);
@@ -100,10 +100,10 @@ impl OwnedToken {
 
 Easy. However, there are a few worth mentioning subtleness:
 
-* **L10-L11** - A constructor is an excellent place to initialize both modules at once.
-* **L14-L16** - Most of the entrypoints do not need any modification, so we simply delegate them to the `erc20` module.
-* **L50-L52** - The same is done with the `ownable` module.
-* **L58-L61** - Minting should not be unconditional, we need some control over it. First, using `ownable` we make sure the `caller` really is indeed the owner.
+* **L9-L10** - A constructor is an excellent place to initialize both modules at once.
+* **L13-L15** - Most of the entrypoints do not need any modification, so we simply delegate them to the `erc20` module.
+* **L49-L51** - The same is done with the `ownable` module.
+* **L57-L60** - Minting should not be unconditional, we need some control over it. First, using `ownable` we make sure the `caller` really is indeed the owner.
 
 ## Summary
 

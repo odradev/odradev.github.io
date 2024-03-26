@@ -101,11 +101,13 @@ pub struct Transfer {
 
 * **L6** - The first `impl` block, marked as a module, contains functions defined in the ERC-20 standard.
 * **L8-L14** - A constructor sets the token metadata and mints the initial supply.
-* **L33** - The second `impl` is not an Odra module; in other words, these functions will not be part of the contract's ABI.
+* **L33** - The second `impl` is not an Odra module; in other words, these functions will not be part of the contract's public interface.
 * **L34-L43** - The `mint` function is public, so, like in regular Rust code, it will be accessible from the outside. `mint()` uses the notation `self.balances.add(address, *amount);`, which is syntactic sugar for:
 ```rust
+use odra::UnwrapOrRevert;
+
 let current_balance = self.balances.get(address).unwrap_or_default();
-let new_balance = current_balance.overflowing_add(current_balance).unwrap_or_revert();
+let new_balance = <U256 as OverflowingAdd>::overflowing_add(current_balance, current_balance).unwrap_or_revert(&self.env());
 self.balances.set(address, new_balance);
 ```
 

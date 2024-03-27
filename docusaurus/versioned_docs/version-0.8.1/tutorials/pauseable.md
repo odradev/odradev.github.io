@@ -2,9 +2,9 @@
 sidebar_position: 5
 ---
 
-# Pauseable
+# Pausable
 
-The `Pauseable` module is like your smart contract's safety switch. It lets authorized users temporarily pause certain features if needed. It's a great way to boost security, but it's not meant to be used on its own. Think of it as an extra tool in your access control toolbox, giving you more control to manage your smart contract safely and efficiently.
+The `Pausable` module is like your smart contract's safety switch. It lets authorized users temporarily pause certain features if needed. It's a great way to boost security, but it's not meant to be used on its own. Think of it as an extra tool in your access control toolbox, giving you more control to manage your smart contract safely and efficiently.
 
 ## Code
 
@@ -51,7 +51,7 @@ use odra::Var;
 ...
 
 #[odra::module(events = [Paused, Unpaused])]
-pub struct Pauseable {
+pub struct Pausable {
     is_paused: Var<bool>
 }
 ```
@@ -61,7 +61,7 @@ pub struct Pauseable {
 Now, let's move to state checks and guards.
 
 ```rust title=pauseable.rs showLineNumbers
-impl Pauseable {
+impl Pausable {
     pub fn is_paused(&self) -> bool {
         self.is_paused.get_or_default()
     }
@@ -89,7 +89,7 @@ impl Pauseable {
 Finally, we will add the ability to switch the module state.
 
 ```rust title=pauseable.rs showLineNumbers
-impl Pauseable {
+impl Pausable {
     pub fn pause(&mut self) {
         self.require_not_paused();
         self.is_paused.set(true);
@@ -113,9 +113,9 @@ impl Pauseable {
 `pause()` and `unpause()` functions do three things: ensure the contract is the right state (unpaused for `pause()`, not paused for `unpause()`), updates the state, and finally emits events (`Paused`/`Unpaused`).
 
 
-## Pauseable counter
+## Pausable counter
 
-In the end, let's use the module in a contract. For this purpose, we will implement a mock contract called `PauseableCounter`. The contract consists of a Var `value` and a `Pauseable` module. The counter can only be incremented if the contract is in a normal state (is not paused).
+In the end, let's use the module in a contract. For this purpose, we will implement a mock contract called `PausableCounter`. The contract consists of a Var `value` and a `Pausable` module. The counter can only be incremented if the contract is in a normal state (is not paused).
 
 ```rust title=pauseable.rs showLineNumbers
 ...
@@ -123,13 +123,13 @@ use odra::SubModule;
 ...
 
 #[odra::module]
-pub struct PauseableCounter {
+pub struct PausableCounter {
     value: Var<u32>,
-    pauseable: SubModule<Pauseable>
+    pauseable: SubModule<Pausable>
 }
 
 #[odra::module]
-impl PauseableCounter {
+impl PausableCounter {
     pub fn increment(&mut self) {
         self.pauseable.require_not_paused();
 
@@ -158,7 +158,7 @@ mod test {
     #[test]
     fn increment_only_if_unpaused() {
         let test_env = odra_test::env();
-        let mut contract = PauseableCounterHostRef::deploy(&test_env, NoArgs);
+        let mut contract = PausableCounterHostRef::deploy(&test_env, NoArgs);
         contract.increment();
         contract.pause();
 

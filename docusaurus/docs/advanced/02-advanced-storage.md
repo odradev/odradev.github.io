@@ -23,7 +23,7 @@ The `Sequence` in Odra is a basic module that stores a single value in the stora
 ```rust
 pub struct Sequence<T>
 where
-    T: Num + One + OdraType
+    T: Num + One + ToBytes + FromBytes + CLTyped
 {
     value: Var<T>
 }
@@ -34,7 +34,7 @@ The Sequence module provides functions `get_current_value` and `next_value` to g
 ### Advanced Mapping
 
 In Odra, a `Mapping` is a key-value storage system where the key is associated with a value.
-In previous examples, the value of the `Mapping` typically comprised a standard serializable type (such as number, string, or bool) or a custom type derived from `odra::OdraType`.
+In previous examples, the value of the `Mapping` typically comprised a standard serializable type (such as number, string, or bool) or a custom type marked with the `#[odra::odra_type]` attribute.
 
 However, there are more advanced scenarios where the value of the Mapping represents a module itself. This approach is beneficial when managing a collection of modules, each maintaining its unique state.
 

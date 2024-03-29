@@ -22,21 +22,20 @@ Events definition is highly uncomplicated: `Paused` and `Unpaused` events holds 
 
 ```rust title=pauseable.rs showLineNumbers
 use odra::prelude::*;
-use odra::{Address, OdraError};
-use odra::casper_event_standard::{self, Event};
+use odra::Address;
 
-#[derive(OdraError)]
+#[odra::odra_error]
 pub enum Error {
     PausedRequired = 1_000,
     UnpausedRequired = 1_001,
 }
 
-#[derive(Event, PartialEq, Eq, Debug)]
+#[odra::event]
 pub struct Paused {
     pub account: Address
 }
 
-#[derive(Event, PartialEq, Eq, Debug)]
+#[odra::event]
 pub struct Unpaused {
     pub account: Address
 }

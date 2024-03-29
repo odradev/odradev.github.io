@@ -10,15 +10,15 @@ following example of a simple owned contract:
 
 ```rust title="examples/src/features/handling_errors.rs"
 use odra::prelude::*;
-use odra::{Address, module::Module, OdraError, Var};
+use odra::{Address, Var};
 
-#[odra::module]
+#[odra::module(errors = Error)]
 pub struct OwnedContract {
     name: Var<String>,
     owner: Var<Address>
 }
 
-#[derive(OdraError)]
+#[odra::odra_error]
 pub enum Error {
     OwnerNotSet = 1,
     NotAnOwner = 2
@@ -48,10 +48,9 @@ impl OwnedContract {
         self.name.set(name);
     }
 }
-
 ```
 
-Firstly, we are using the `OdraError` derive attribute to define our own set of Errors that our contract will
+Firstly, we are using the `#[odra::odra_error]` attribute to define our own set of Errors that our contract will
 throw. Then, you can use those errors in your code - for example, instead of forcefully unwrapping Options, you can use
 `unwrap_or_revert_with` and pass an error as an argument:
 
@@ -65,10 +64,12 @@ You can also throw the error directly, by using `revert`:
 self.env().revert(Error::NotAnOwner)
 ```
 
+To register errors, add the `errors` inner attribute to the struct's `#[odra::module]` attribute and pass the error type as the value. The registered errors will be present in the contract [`schema`].
+
 Defining an error in Odra, you must keep in mind a few rules:
 
 1. An error should be a field-less enum. 
-2. The enum must derive from `OdraError`.
+2. The enum must be annotated with `#[odra::odra_error]`.
 3. Avoid implicit discriminants.
 
 :::note
@@ -117,5 +118,6 @@ we need to convert our custom error to `OdraError` using `Into::into()`.
 ## What's next
 We will learn how to emit and test events using Odra.
 
-[`OdraResult`]: https://docs.rs/odra/0.8.0/odra/type.OdraResult.html
-[`OdraError`]: https://docs.rs/odra/0.8.0/odra/enum.OdraError.html
+[`OdraResult`]: https://docs.rs/odra/0.9.0/odra/type.OdraResult.html
+[`OdraError`]: https://docs.rs/odra/0.9.0/odra/enum.OdraError.html
+[`schema`]: ./casper-contract-schema

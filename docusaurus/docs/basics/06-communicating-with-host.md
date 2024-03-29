@@ -10,7 +10,7 @@ what is the current time? Who called me? Following example shows how to do this:
 
 ```rust title="examples/src/features/host_functions.rs"
 use odra::prelude::*;
-use odra::{Address, module::Module, Var};
+use odra::{Address, Var};
 
 #[odra::module]
 pub struct HostContract {
@@ -49,6 +49,6 @@ You will learn more functions that Odra exposes from host and types it uses in f
 In the next article, we'll dive into testing your contracts with Odra, so you can check that the code
 we presented in fact works!
 
-[`Module::env()`]: https://docs.rs/odra/0.8.0/odra/module/trait.Module.html#tymehtod.env
-[`ContractEnv`]: https://docs.rs/odra/0.8.0/odra/struct.ContractEnv.html
+[`Module::env()`]: https://docs.rs/odra/0.9.0/odra/module/trait.Module.html#tymehtod.env
+[`ContractEnv`]: https://docs.rs/odra/0.9.0/odra/struct.ContractEnv.html
 [`Backend section`]: ../backends/01-what-is-a-backend.md#contract-env

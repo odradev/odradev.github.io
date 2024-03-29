@@ -46,11 +46,6 @@ pub struct Erc20 {
 ### Metadata
 
 ```rust title=erc20.rs showLineNumbers
-...
-use odra::casper_event_standard::{self, Event};
-
-...
-
 #[odra::module]
 impl Erc20 {
     pub fn init(&mut self, name: String, symbol: String, decimals: u8, initial_supply: U256) {
@@ -91,7 +86,7 @@ impl Erc20 {
     }
 }
 
-#[derive(Event, PartialEq, Eq, Debug)]
+#[odra::event]
 pub struct Transfer {
     pub from: Option<Address>,
     pub to: Option<Address>,
@@ -99,10 +94,10 @@ pub struct Transfer {
 }
 ```
 
-* **L6** - The first `impl` block, marked as a module, contains functions defined in the ERC-20 standard.
-* **L8-L14** - A constructor sets the token metadata and mints the initial supply.
-* **L33** - The second `impl` is not an Odra module; in other words, these functions will not be part of the contract's public interface.
-* **L34-L43** - The `mint` function is public, so, like in regular Rust code, it will be accessible from the outside. `mint()` uses the notation `self.balances.add(address, *amount);`, which is syntactic sugar for:
+* **L1** - The first `impl` block, marked as a module, contains functions defined in the ERC-20 standard.
+* **L3-L9** - A constructor sets the token metadata and mints the initial supply.
+* **L28** - The second `impl` is not an Odra module; in other words, these functions will not be part of the contract's public interface.
+* **L29-L38** - The `mint` function is public, so, like in regular Rust code, it will be accessible from the outside. `mint()` uses the notation `self.balances.add(address, *amount);`, which is syntactic sugar for:
 ```rust
 use odra::UnwrapOrRevert;
 
@@ -116,9 +111,6 @@ self.balances.set(address, new_balance);
 To ensure comprehensive functionality, let's implement the remaining features such as `transfer`, `transfer_from`, and `approve`. Since they do not introduce any new concepts, we will present them without additional remarks.
 
 ```rust showLineNumbers title=erc20.rs
-...
-use odra::OdraError;
-
 #[odra::module]
 impl Erc20 {
     ...
@@ -186,14 +178,14 @@ impl Erc20 {
     }
 }
 
-#[derive(Event, PartialEq, Eq, Debug)]
+#[odra::event]
 pub struct Approval {
     pub owner: Address,
     pub spender: Address,
     pub value: U256
 }
 
-#[derive(OdraError)]
+#[odra::odra_error]
 pub enum Error {
     InsufficientBalance = 1,
     InsufficientAllowance = 2,

@@ -55,6 +55,10 @@ const config = {
                             label: 'next',
                             path: '',
                         },
+                        '0.9.0': {
+                            label: '0.9.0',
+                            path: '0.9.0',
+                        },
                         '0.8.1': {
                             label: '0.8.1',
                             path: '0.8.1',

@@ -199,12 +199,12 @@ All of the above examples, alongside the tests, are available in the Odra reposi
 
 By default you can store only built-in types like numbers, Options, Results, Strings, Vectors.
 
-Implementing custom types is straightforward, your type must derive from `OdraType`: 
+Implementing custom types is straightforward, your type must add `#[odra::odra_type]` attribute. Let's see how to implement a `Dog` type: 
 
 ```rust
-use odra::{Address, OdraType};
+use odra::Address;
 
-#[derive(OdraType)]
+#[odra::odra_type]
 pub struct Dog {
     pub name: String,
     pub age: u8,
@@ -213,7 +213,7 @@ pub struct Dog {
 ```
 
 :::note
-Each field of your struct must be an OdraType.
+Each custom typed field of your struct must be marked with the `#[odra::odra_type]` attribute .
 :::
 
 ## What's next

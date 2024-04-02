@@ -18,7 +18,7 @@ Consider the following basic example for better understanding:
 use crate::{erc20::Erc20, ownable::Ownable};
 use odra::{
     Address, casper_types::U256,
-    module::{Module, SubModule},
+    module::SubModule,
     prelude::*
 };
 
@@ -38,20 +38,20 @@ impl OwnedToken {
 
     delegate! {
         to self.erc20 {
-            pub fn transfer(&mut self, recipient: Address, amount: U256);
-            pub fn transfer_from(&mut self, owner: Address, recipient: Address, amount: U256);
-            pub fn approve(&mut self, spender: Address, amount: U256);
-            pub fn name(&self) -> String;
-            pub fn symbol(&self) -> String;
-            pub fn decimals(&self) -> u8;
-            pub fn total_supply(&self) -> U256;
-            pub fn balance_of(&self, owner: Address) -> U256;
-            pub fn allowance(&self, owner: Address, spender: Address) -> U256;
+            fn transfer(&mut self, recipient: Address, amount: U256);
+            fn transfer_from(&mut self, owner: Address, recipient: Address, amount: U256);
+            fn approve(&mut self, spender: Address, amount: U256);
+            fn name(&self) -> String;
+            fn symbol(&self) -> String;
+            fn decimals(&self) -> u8;
+            fn total_supply(&self) -> U256;
+            fn balance_of(&self, owner: Address) -> U256;
+            fn allowance(&self, owner: Address, spender: Address) -> U256;
         }
 
         to self.ownable {
-            pub fn get_owner(&self) -> Address;
-            pub fn change_ownership(&mut self, new_owner: Address);
+            fn get_owner(&self) -> Address;
+            fn change_ownership(&mut self, new_owner: Address);
         }
     }
 
@@ -72,7 +72,7 @@ Let's take a look at another example.
 use crate::{erc20::Erc20, ownable::Ownable, exchange::Exchange};
 use odra::{
     Address, casper_types::U256, 
-    module::{Module, SubModule},
+    module::SubModule,
     prelude::*
 };
 
@@ -94,17 +94,17 @@ impl DeFiPlatform {
 
     delegate! {
         to self.erc20 {
-            pub fn transfer(&mut self, recipient: Address, amount: U256);
-            pub fn balance_of(&self, owner: Address) -> U256;
+            fn transfer(&mut self, recipient: Address, amount: U256);
+            fn balance_of(&self, owner: Address) -> U256;
         }
 
         to self.ownable {
-            pub fn get_owner(&self) -> Address;
+            fn get_owner(&self) -> Address;
         }
 
         to self.exchange {
-            pub fn swap(&mut self, sender: Address, recipient: Address);
-            pub fn set_exchange_rate(&mut self, new_rate: u64);
+            fn swap(&mut self, sender: Address, recipient: Address);
+            fn set_exchange_rate(&mut self, new_rate: u64);
         }
     }
 

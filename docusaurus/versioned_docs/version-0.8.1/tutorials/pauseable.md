@@ -22,8 +22,7 @@ Events definition is highly uncomplicated: `Paused` and `Unpaused` events holds 
 
 ```rust title=pauseable.rs showLineNumbers
 use odra::prelude::*;
-use odra::{Address, OdraError};
-use odra::casper_event_standard::{self, Event};
+use odra::{Address, Event, OdraError};
 
 #[derive(OdraError)]
 pub enum Error {

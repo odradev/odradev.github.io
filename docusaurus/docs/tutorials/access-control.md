@@ -41,25 +41,25 @@ access-control
 There are three actions that can be performed concerning a `Role`: granting, revoking, and altering the admin role. Let us establish standard Odra events for each of these actions.
 
 ```rust title=events.rs showLineNumbers
-use odra::casper_event_standard::{self, Event};
+use odra::prelude::*;
 use odra::Address;
 use super::access_control::Role;
 
-#[derive(Event, PartialEq, Eq, Debug)]
+#[odra::event]
 pub struct RoleGranted {
     pub role: Role,
     pub address: Address,
     pub sender: Address
 }
 
-#[derive(Event, PartialEq, Eq, Debug)]
+#[odra::event]
 pub struct RoleRevoked {
     pub role: Role,
     pub address: Address,
     pub sender: Address
 }
 
-#[derive(Event, PartialEq, Eq, Debug)]
+#[odra::event]
 pub struct RoleAdminChanged {
     pub role: Role,
     pub previous_admin_role: Role,
@@ -70,9 +70,7 @@ pub struct RoleAdminChanged {
 * **L19-L24** - the event describing the admin role change, requires the subject `Role`, the previous and the current admin `Role`.
 
 ```rust title=errors.rs
-use odra::OdraError;
-
-#[derive(OdraError)]
+#[odra::odra_error]
 pub enum Error {
     MissingRole = 20_000,
     RoleRenounceForAnotherAddress = 20_001,
@@ -91,7 +89,7 @@ Now, we are stepping into the most interesting part: the module definition and i
 use super::events::*;
 use super::errors::Error;
 use odra::prelude::*;
-use odra::{module::Module, Address, Mapping};
+use odra::{Address, Mapping};
 
 pub type Role = [u8; 32];
 

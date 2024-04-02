@@ -47,7 +47,7 @@ pub struct Erc20 {
 
 ```rust title=erc20.rs showLineNumbers
 ...
-use odra::casper_event_standard::{self, Event};
+use odra::Event;
 
 ...
 

@@ -72,7 +72,7 @@ Let's take a look at another example.
 use crate::{erc20::Erc20, ownable::Ownable, exchange::Exchange};
 use odra::{
     Address, casper_types::U256, 
-    module::{Module, SubModule},
+    module::SubModule,
     prelude::*
 };
 

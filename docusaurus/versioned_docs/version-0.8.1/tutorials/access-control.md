@@ -41,8 +41,8 @@ access-control
 There are three actions that can be performed concerning a `Role`: granting, revoking, and altering the admin role. Let us establish standard Odra events for each of these actions.
 
 ```rust title=events.rs showLineNumbers
-use odra::casper_event_standard::{self, Event};
-use odra::Address;
+use odra::prelude::*;
+use odra::{Address, Event};
 use super::access_control::Role;
 
 #[derive(Event, PartialEq, Eq, Debug)]

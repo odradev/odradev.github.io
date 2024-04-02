@@ -9,7 +9,7 @@ To show how to handle calls between contracts, first, let's implement two of the
 
 ```rust title="examples/src/features/cross_calls.rs"
 use odra::prelude::*;
-use odra::{Address, module::Module, UnwrapOrRevert, Var};
+use odra::{Address, UnwrapOrRevert, Var};
 
 #[odra::module]
 pub struct CrossContract {

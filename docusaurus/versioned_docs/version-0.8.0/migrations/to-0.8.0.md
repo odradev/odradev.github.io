@@ -511,7 +511,7 @@ Here is a complete example of a smart contract after and before the migration to
 <Tabs>
 <TabItem value="current" label="0.8.0">
 
-```rust
+```rust title="src/erc20.rs"
 use crate::erc20::errors::Error::*;
 use crate::erc20::events::*;
 use odra::prelude::*;
@@ -744,16 +744,16 @@ mod tests {
       let sender = env.get_account(0);
       let recipient = env.get_account(1);
       let amount = 1_000.into();
-      erc20.transfer(recipient, amount);
+      erc20.transfer(&recipient, &amount);
 
       // Then the sender balance is deducted.
       assert_eq!(
-         erc20.balance_of(sender),
+         erc20.balance_of(&sender),
          U256::from(INITIAL_SUPPLY) - amount
       );
 
       // Then the recipient balance is updated.
-      assert_eq!(erc20.balance_of(recipient), amount);
+      assert_eq!(erc20.balance_of(&recipient), amount);
 
       // Then Transfer event was emitted.
       assert!(env.emitted_event(
@@ -776,7 +776,7 @@ mod tests {
       let amount = U256::from(INITIAL_SUPPLY) + U256::one();
 
       // Then an error occurs.
-      assert!(erc20.try_transfer(recipient, amount).is_err());
+      assert!(erc20.try_transfer(&recipient, &amount).is_err());
    }
 
    // Other tests...
@@ -785,7 +785,7 @@ mod tests {
 </TabItem>
 <TabItem value="old" label="Prev">
 
-```rust
+```rust title="src/erc20.rs"
 use odra::prelude::string::String;
 use odra::{
     contract_env,
@@ -1090,3 +1090,4 @@ If you encounter any further issues after completing the migration steps, please
 [Docs.rs]: https://docs.rs/odra/0.8.0/odra/index.html
 [examples]: https:://github.com/odradev/odra/tree/release/0.8.0/examples
 [Examples]: https:://github.com/odradev/odra/tree/release/0.8.0/examples
+

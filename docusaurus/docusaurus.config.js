@@ -50,7 +50,6 @@ const config = {
                 },
                 docs: {
                     sidebarPath: require.resolve('./sidebars.js'),
-                    lastVersion: '0.8.1',
                     versions: {
                         current: {
                             label: 'next',

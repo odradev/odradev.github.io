@@ -8,10 +8,8 @@ description: Creating and emitting Events
 In the EVM world events are stored as logs within the blockchain's transaction receipts. These logs can be accessed by external applications or other smart contracts to monitor and react to specific events. Casper does not support events natively, however, Odra mimics this feature. Take a look:
 
 ```rust title="examples/src/features/events.rs"
-use casper_event_standard::Event;
-use odra::casper_event_standard;
 use odra::prelude::*;
-use odra::{Address, module::Module};
+use odra::{Address, Event};
 
 #[odra::module(events = [PartyStarted])]
 pub struct PartyContract;

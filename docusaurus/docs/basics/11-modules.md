@@ -1,5 +1,5 @@
 ---
-sidebar_position: 11
+sidebar_position: 12
 description: Divide your code into modules
 ---
 
@@ -60,5 +60,5 @@ mod tests {
 ## What's next
 We will see how to handle native token transfers.
 
-[OwnedToken example]: https://github.com/odradev/odra/blob/release/0.8.0/examples/src/contracts/owned_token.rs
+[OwnedToken example]: https://github.com/odradev/odra/blob/release/0.9.0/examples/src/contracts/owned_token.rs
 [Storage Layout]: ../advanced/04-storage-layout.md

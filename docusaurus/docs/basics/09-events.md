@@ -8,15 +8,13 @@ description: Creating and emitting Events
 In the EVM world events are stored as logs within the blockchain's transaction receipts. These logs can be accessed by external applications or other smart contracts to monitor and react to specific events. Casper does not support events natively, however, Odra mimics this feature. Take a look:
 
 ```rust title="examples/src/features/events.rs"
-use casper_event_standard::Event;
-use odra::casper_event_standard;
 use odra::prelude::*;
-use odra::{Address, module::Module};
+use odra::Address;
 
 #[odra::module(events = [PartyStarted])]
 pub struct PartyContract;
 
-#[derive(Event, PartialEq, Eq, Debug)]
+#[odra::event]
 pub struct PartyStarted {
     pub caller: Address,
     pub block_time: u64
@@ -34,10 +32,10 @@ impl PartyContract {
 ```
 
 We defined a new contract, which emits an event called `PartyStarted` when the contract is deployed.
-To define an event, add the `#[derive(Event)]` attribute like this:
+To define an event, add the `#[odra::event]` attribute like this:
 
 ```rust title="examples/src/features/events.rs"
-#[derive(Event, PartialEq, Eq, Debug)]
+#[odra::event]
 pub struct PartyStarted {
     pub caller: Address,
     pub block_time: u64,
@@ -53,7 +51,7 @@ self.env().emit_event(PartyStarted {
 });
 ```
 
-To determine all the events at compilation time to register them once the contract is deployed. To register events, add an `events` attribute to the struct's `#[odra::module]` attribute.
+To determine all the events at compilation time to register them once the contract is deployed. To register events, add an `events` inner attribute to the struct's `#[odra::module]` attribute. The registered events will also be present in the contract [`schema`].
 
 The event collection process is recursive; if your module consists of other modules, and they have already registered their events, you don't need to add them to the parent module.
 
@@ -88,4 +86,5 @@ To explore more event testing functions, check the [`HostEnv`] documentation.
 ## What's next
 Read the next article to learn how to call other contracts from the contract context.
 
-[`HostEnv`]: https://docs.rs/odra/0.8.0/odra/host/struct.HostEnv.html
+[`HostEnv`]: https://docs.rs/odra/0.9.0/odra/host/struct.HostEnv.html
+[`schema`]: ./casper-contract-schema

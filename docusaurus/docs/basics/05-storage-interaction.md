@@ -212,6 +212,17 @@ pub struct Dog {
 }
 ```
 
+`#[odra_type]` is applicable to named field structs and enums. It generates serialization, deserialization and schema code for your type.
+`CLType` of a custom type is `CLType::Any`, except for an unit-only enum, which is `CLType::U8`.
+
+```rust title="unit_only_enum.rs"
+enum Enum {
+    Foo = 3,
+    Bar = 2,
+    Baz = 1,
+}
+```
+
 :::note
 Each custom typed field of your struct must be marked with the `#[odra::odra_type]` attribute .
 :::

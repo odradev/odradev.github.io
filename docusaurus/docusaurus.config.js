@@ -35,6 +35,7 @@ const config = {
                 'docs/0.6.0/**/*',
                 'docs/0.7.0/**/*',
                 'docs/0.8.0/**/*',
+                'docs/0.9.0/**/*'
             ]
         }]],
 
@@ -51,7 +52,7 @@ const config = {
                 docs: {
                     sidebarPath: require.resolve('./sidebars.js'),
                     includeCurrentVersion: true,
-                    lastVersion: '0.9.0',
+                    lastVersion: '0.9.1',
                     versions: {
                         current: {
                             label: 'next',

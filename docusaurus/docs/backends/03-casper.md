@@ -222,7 +222,7 @@ to the entry point. To be specific it is the result of `to_bytes` method wrapped
 It is a special Casper argument that enables the access to account's main purse.
 
 Currently `casper-client` doesn't allow building such arguments.
-You have to build it using your SDK.
+You have to build it using your SDK. See an example in the [Tutorial section].
 
 ## Execution
 
@@ -254,3 +254,4 @@ graph TD;
 [Bytes]: https://docs.rs/casper-types/latest/casper_types/bytesrepr/struct.Bytes.html
 [ERC721]: https://github.com/odradev/odra/blob/release/0.9.0/modules/src/erc721_token.rs
 [ERC1155]: https://github.com/odradev/odra/blob/release/0.9.0/modules/src/erc1155_token.rs
+[Tutorial section]: ../tutorials/using-proxy-caller

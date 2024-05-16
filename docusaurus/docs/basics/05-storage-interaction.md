@@ -12,6 +12,9 @@ The `Var` is the simplest storage type available in the Odra framework. It seria
 variable in the `Var` type. Let's look at a "real world" example of a contract that represents a dog:
 
 ```rust title="examples/src/features/storage/variable.rs"
+use odra::prelude::*;
+use odra::Var;
+
 #[odra::module]
 pub struct DogContract {
     barks: Var<bool>,
@@ -26,8 +29,6 @@ You can see the `Var` wrapping the data. Even complex types like `Vec` can be wr
 Let's make this contract usable, by providing a constructor and some getter functions:
 
 ```rust title="examples/src/features/storage/variable.rs"
-use odra::Var;
-
 #[odra::module]
 impl DogContract {
     pub fn init(&mut self, barks: bool, weight: u32, name: String) {
@@ -103,6 +104,7 @@ pass two values - the key type and the value type. Let's look at the variation o
 uses `Mapping` to store information about our dog's friends and how many times they visited:
 
 ```rust title="examples/src/features/storage/mapping.rs"
+use odra::prelude::*;
 use odra::{Mapping, Var};
 
 #[odra::module]
@@ -151,6 +153,8 @@ Going back to our DogContract example - let's revisit the walk case. This time, 
 we'll use the list:
 
 ```rust title="examples/src/features/storage/list.rs"
+use odra::{prelude::*, List, Var};
+
 #[odra::module]
 pub struct DogContract3 {
     name: Var<String>,

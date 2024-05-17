@@ -134,15 +134,17 @@ we need to add a new function to our token module:
         self.proposed_mint.set((account, amount));
         // Open a vote.
         self.is_vote_open.set(true);
-        // Set the vote end time to 24 hours from now.
+        // Set the vote end time to 10 minutes from now.
         self.vote_end_time
-            .set(self.env().get_block_time() + 60 * 60 * 24 * 1000);
+            .set(self.env().get_block_time() + 60 * 10 * 1000);
     }
 ```
 
 After some validation, we open the vote by setting the `is_vote_open` to `true`,
-and setting the `vote_end_time` to 24 hours from now. In real-world scenarios,
+and setting the `vote_end_time` to 10 minutes. In real-world scenarios,
 the time could be configurable, but for the sake of simplicity, we hardcoded it.
+Also, it should be quite longer than 10 minutes, but it will come in handy
+when we will test it on Livenet.
 
 #### Voting for the mint
 
@@ -235,7 +237,7 @@ the caller's.
 
 Additonally, we used `raw_mint` to mint the tokens, skipping the security
 checks. We have no modality for minting, but even if we had, we don't
-have anyone with permissions! Contract needs to mint the tokens itself.
+have anyone with permissions! The Contract needs to mint the tokens itself.
 
 ### Testing
 
@@ -264,7 +266,7 @@ run both on OdraVM and on the CasperVM.
         assert_eq!(token.balance_of(&env.get_account(0)), 900.into());
 
         // Wait for the vote to end.
-        env.advance_block_time(60 * 60 * 25 * 1000);
+        env.advance_block_time(60 * 11 * 1000);
 
         // Finish the vote.
         token.tally();
@@ -285,7 +287,7 @@ run both on OdraVM and on the CasperVM.
         env.set_caller(env.get_account(0));
         token.vote(false, U256::from(1000));
 
-        env.advance_block_time(60 * 60 * 25 * 1000);
+        env.advance_block_time(60 * 11 * 1000);
 
         token.tally();
 
@@ -449,9 +451,9 @@ impl OurToken {
         self.proposed_mint.set((account, amount));
         // Open a vote.
         self.is_vote_open.set(true);
-        // Set the vote end time to 24 hours from now.
+        // Set the vote end time to 10 minutes from now.
         self.vote_end_time
-            .set(self.env().get_block_time() + 60 * 60 * 24 * 1000);
+            .set(self.env().get_block_time() + 60 * 10 * 1000);
     }
 
     /// Votes on the proposed mint.
@@ -560,7 +562,7 @@ mod tests {
         assert_eq!(token.balance_of(&env.get_account(0)), 900.into());
 
         // Wait for the vote to end.
-        env.advance_block_time(60 * 60 * 25 * 1000);
+        env.advance_block_time(60 * 11 * 1000);
 
         // Finish the vote.
         token.tally();
@@ -581,7 +583,7 @@ mod tests {
         env.set_caller(env.get_account(0));
         token.vote(false, U256::from(1000));
 
-        env.advance_block_time(60 * 60 * 25 * 1000);
+        env.advance_block_time(60 * 11 * 1000);
 
         token.tally();
 

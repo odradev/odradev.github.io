@@ -55,7 +55,7 @@ fully compatible with the Casper execution engine.
 ## Running the tests manually
 
 To run the tests manually, Odra needs to know which backend to use.
-To run tests agains Casper backend, the following command needs to be used:
+To run tests against Casper backend, the following command needs to be used:
 
 ```bash
 ODRA_BACKEND=casper cargo test

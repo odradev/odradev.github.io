@@ -15,13 +15,13 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-odra = "0.9.0"
+odra = "1.0.0"
 
 [dev-dependencies]
-odra-test = "0.9.0"
+odra-test = "1.0.0"
 
 [build-dependencies]
-odra-build = "0.9.0"
+odra-build = "1.0.0"
 
 [[bin]]
 name = "my_project_build_contract"
@@ -45,8 +45,8 @@ To use `odra-modules`, edit your `dependency` and `features` sections.
 
 ```toml title=Cargo.toml
 [dependencies]
-odra = "0.9.0"
-odra-modules = "0.9.0"
+odra = "1.0.0"
+odra-modules = "1.0.0"
 ```
 
 Now, the only thing left is to add a module to your contract.
@@ -119,6 +119,12 @@ All available modules are placed in the main [Odra repository].
 Odra modules comes with couple of ready-to-use modules and reusable extensions.
 
 ### Tokens
+
+#### CEP-18
+Casper Ecosystem Proposal 18 (CEP-18) is a standard interface for the CSPR and the custom made tokens. Inspired by the ERC20 standard. Read more about the CEP-18 [here](https://github.com/casper-network/ceps/blob/master/text/0018-token-standard.md).
+
+#### CEP-78
+Casper Ecosystem Proposal 78 (CEP-78) is an enhanced NFT standard focused on ease of use and installation. Inspired by the ERC721 standard. Read more about the CEP-78 [here](https://github.com/casper-network/ceps/blob/master/text/0078-enhanced-nft-standard.md).
 
 #### Erc20
 

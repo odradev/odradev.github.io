@@ -70,13 +70,13 @@ implementation.
 
 ```
 Loans {
-    lenders: Token {   // prefix: 0x0000
-        name: 0,       //    key: 0x0000_0000
-        balances: 1    //    key: 0x0000_0001
+    lenders: Token {   // prefix: 0x0001
+        name: 1,       //    key: 0x0001_0001
+        balances: 2    //    key: 0x0001_0010
     },
-    borrowers: Token { // prefix: 0x0001
-        name: 0,       //    key: 0x0001_0000
-        balances: 1    //    key: 0x0001_0001
+    borrowers: Token { // prefix: 0x0010
+        name: 1,       //    key: 0x0010_0001
+        balances: 2    //    key: 0x0010_0010
     }
 }
 ```

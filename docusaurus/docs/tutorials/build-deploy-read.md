@@ -1,5 +1,5 @@
 ---
-sidebar_position: 6
+sidebar_position: 7
 ---
 
 import Tabs from '@theme/Tabs';
@@ -146,12 +146,12 @@ The first step is to calculate the index of the keys.
 Storage Layout
 
 CustomItem:                 prefix: 0x0..._0000_0000_0000  0
-  version: u32,                     0x0..._0000_0000_0000  0
-  meta: Metadata,                   0x0..._0000_0000_0001  1
-  data: Data:               prefix: 0x0..._0000_0000_0010  2
-    value: u32,                     0x0..._0000_0010_0000  (2 << 4) + 0
-    inner: InnerData:       prefix: 0x0..._0000_0010_0001  (2 << 4) + 1
-      named_values: Mapping         0x0..._0010_0001_0000  ((2 << 4) + 1) << 4 + 0
+  version: u32,                     0x0..._0000_0000_0001  1
+  meta: Metadata,                   0x0..._0000_0000_0010  2
+  data: Data:               prefix: 0x0..._0000_0000_0011  3
+    value: u32,                     0x0..._0000_0011_0001  (3 << 4) + 1
+    inner: InnerData:       prefix: 0x0..._0000_0011_0010  (3 << 4) + 2
+      named_values: Mapping         0x0..._0011_0010_0001  ((3 << 4) + 2) << 4 + 1
 ```
 
 The actual key is obtained as follows:
@@ -232,8 +232,8 @@ async fn read_state_key(key: String) -> Vec<u8> {
 }
 
 async fn metadata() -> Metadata {
-    // The key for the metadata is 1, and it has no mapping data
-    let key = key(1, &[]);
+    // The key for the metadata is 2, and it has no mapping data
+    let key = key(2, &[]);
     let bytes = read_state_key(key).await;
 
     // Read the name and store the remaining bytes
@@ -263,8 +263,8 @@ async fn metadata() -> Metadata {
 }
 
 async fn value() -> u32 {
-    // The key for the value is (2 << 4) + 0, and it has no mapping data
-    let key = key(2 << 4, &[]);
+    // The key for the value is (3 << 4) + 1, and it has no mapping data
+    let key = key((3 << 4) + 1, &[]);
     let bytes = read_state_key(key).await;
 
     // Read the value and ignore the remaining bytes for simplicity
@@ -272,9 +272,9 @@ async fn value() -> u32 {
 }
 
 async fn named_value(name: &str) -> u32 {
-    // The key for the named value is ((2 << 4) + 1) << 4, and the mapping data is the name as bytes
+    // The key for the named value is (((3 << 4) + 2) << 4) + 1, and the mapping data is the name as bytes
     let mapping_data = name.to_bytes().unwrap();
-    let key = key(((2 << 4) + 1) << 4, &mapping_data);
+    let key = key((((3 << 4) + 2) << 4) + 1, &mapping_data);
     let bytes = read_state_key(key).await;
 
     // Read the value and ignore the remaining bytes for simplicity
@@ -407,8 +407,8 @@ export class Contract {
   }
 
   async metadata() {
-    // The key for the metadata is 1, and it has no mapping data
-    let bytes: Uint8Array = await this.read_state(key(1));
+    // The key for the metadata is 2, and it has no mapping data
+    let bytes: Uint8Array = await this.read_state(key(2));
 
     // Read the name and store the remaining bytes
     let name = new CLStringBytesParser().fromBytesWithRemainder(bytes);
@@ -442,8 +442,8 @@ export class Contract {
   }
   
   async value() {
-    // The key for the value is (2 << 4) + 0, and it has no mapping data
-    const bytes = await this.read_state(key((2 << 4) + 0));
+    // The key for the value is (3 << 4) + 1, and it has no mapping data
+    const bytes = await this.read_state(key((3 << 4) + 1));
 
     // Read the value and ignore the remaining bytes for simplicity
     let value = new CLU32BytesParser().fromBytesWithRemainder(bytes);
@@ -451,12 +451,12 @@ export class Contract {
   }
 
   async named_value(name: string) {
-    // The key for the named value is ((2 << 4) + 1) << 4, and the mapping data is the name as bytes
+    // The key for the named value is (((3 << 4) + 2) << 4) + 1, and the mapping data is the name as bytes
     let mapping_data = new CLStringBytesParser()
       .toBytes(CLValueBuilder.string(name))
       .unwrap();
     let bytes: Uint8Array = await this.read_state(
-      key(((2 << 4) + 1) << 4, mapping_data)
+      key((((3 << 4) + 2) << 4) + 1, mapping_data)
     );
 
     // Read the value and ignore the remaining bytes for simplicity

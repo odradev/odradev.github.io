@@ -1,5 +1,5 @@
 ---
-sidebar_position: 7
+sidebar_position: 8
 ---
 
 import Tabs from '@theme/Tabs';
@@ -94,7 +94,7 @@ pub struct Withdrawal {
 }
 ```
 
-Full code can be found [here](https://github.com/odradev/odra/blob/release/0.9.1/examples/src/contracts/tlw.rs).
+Full code can be found [here](https://github.com/odradev/odra/blob/release/1.0.0/examples/src/contracts/tlw.rs).
 
 ## Client
 
@@ -122,13 +122,13 @@ To interact with the contract, we use the `livenet` backend. It allows to write 
 ```toml title=Cargo.toml
 [package]
 name = "odra-examples"
-version = "0.9.1"
+version = "1.0.0"
 edition = "2021"
 
 [dependencies]
 odra = { path = "../odra", default-features = false }
 ... # other dependencies
-odra-casper-livenet-env = { version = "0.9.1", optional = true }
+odra-casper-livenet-env = { version = "1.0.0", optional = true }
 
 ... # other sections
 

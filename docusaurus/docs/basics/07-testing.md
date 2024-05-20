@@ -128,8 +128,8 @@ Full list of functions can be found in the [`HostEnv`] documentation.
 ## What's next
 We take a look at how Odra handles errors!
 
-[`HostRef`]: https://docs.rs/odra/0.9.0/odra/host/trait.HostRef.html
-[`InitArgs`]: https://docs.rs/odra/0.9.0/odra/host/trait.InitArgs.html
-[`HostEnv`]: https://docs.rs/odra/0.9.0/odra/host/struct.HostEnv.html
-[`Deployer`]: https://docs.rs/odra/0.9.0/odra/host/trait.Deployer.html
-[`HostEnv`]: https://docs.rs/odra/0.9.0/odra/host/struct.HostEnv.html
+[`HostRef`]: https://docs.rs/odra/1.0.0/odra/host/trait.HostRef.html
+[`InitArgs`]: https://docs.rs/odra/1.0.0/odra/host/trait.InitArgs.html
+[`HostEnv`]: https://docs.rs/odra/1.0.0/odra/host/struct.HostEnv.html
+[`Deployer`]: https://docs.rs/odra/1.0.0/odra/host/trait.Deployer.html
+[`HostEnv`]: https://docs.rs/odra/1.0.0/odra/host/struct.HostEnv.html

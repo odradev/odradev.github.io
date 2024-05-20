@@ -84,8 +84,7 @@ Okay, but how about testing it? Let's write a test that will check if the error 
 #[cfg(test)]
 mod tests {
     use super::{Error, OwnedContractHostRef, OwnedContractInitArgs};
-    use odra::host::Deployer;
-    use odra::prelude::*;
+    use odra::{host::Deployer, prelude::*};
 
     #[test]
     fn test_owner_error() {
@@ -118,6 +117,6 @@ we need to convert our custom error to `OdraError` using `Into::into()`.
 ## What's next
 We will learn how to emit and test events using Odra.
 
-[`OdraResult`]: https://docs.rs/odra/0.9.0/odra/type.OdraResult.html
-[`OdraError`]: https://docs.rs/odra/0.9.0/odra/enum.OdraError.html
+[`OdraResult`]: https://docs.rs/odra/1.0.0/odra/type.OdraResult.html
+[`OdraError`]: https://docs.rs/odra/1.0.0/odra/enum.OdraError.html
 [`schema`]: ./casper-contract-schema

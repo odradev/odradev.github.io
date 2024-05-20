@@ -118,58 +118,61 @@ To implement the endpoint that allows token holders to propose a new mint,
 we need to add a new function to our token module:
 
 ```rust showLineNumbers title="src/token.rs"
-    /// Proposes a new mint for the contract.
-    pub fn propose_new_mint(&mut self, account: Address, amount: U256) {
-        // Only allow proposing a new mint if there is no vote in progress.
-        if self.is_vote_open().get_or_default() {
-            self.env().revert(GovernanceError::VoteAlreadyOpen);
-        }
-
-        // Only the token holders can propose a new mint.
-        if self.balance_of(&self.env().caller()) == U256::zero() {
-            self.env().revert(GovernanceError::OnlyTokenHoldersCanPropose);
-        }
-
-        // Set the proposed mint.
-        self.proposed_mint.set((account, amount));
-        // Open a vote.
-        self.is_vote_open.set(true);
-        // Set the vote end time to 10 minutes from now.
-        self.vote_end_time
-            .set(self.env().get_block_time() + 60 * 10 * 1000);
+/// Proposes a new mint for the contract.
+pub fn propose_new_mint(&mut self, account: Address, amount: U256) {
+    // Only allow proposing a new mint if there is no vote in progress.
+    if self.is_vote_open().get_or_default() {
+        self.env().revert(GovernanceError::VoteAlreadyOpen);
     }
+
+    // Only the token holders can propose a new mint.
+    if self.balance_of(&self.env().caller()) == U256::zero() {
+        self.env().revert(GovernanceError::OnlyTokenHoldersCanPropose);
+    }
+
+    // Set the proposed mint.
+    self.proposed_mint.set((account, amount));
+    // Open a vote.
+    self.is_vote_open.set(true);
+    // Set the vote end time to 10 minutes from now.
+    self.vote_end_time
+        .set(self.env().get_block_time() + 60 * 10 * 1000);
+}
 ```
+
+As a parameters to the function, we pass the address of the account that should be the receiver of
+the minted tokens, and the amount.
 
 After some validation, we open the vote by setting the `is_vote_open` to `true`,
 and setting the `vote_end_time` to 10 minutes. In real-world scenarios,
 the time could be configurable, but for the sake of simplicity, we hardcoded it.
 Also, it should be quite longer than 10 minutes, but it will come in handy
-when we will test it on Livenet.
+when we test it on Livenet.
 
 #### Voting for the mint
 
-Next, we need an endpoint that will allow us to cas a ballot:
+Next, we need an endpoint that will allow us to cast a ballot:
 
 ```rust showLineNumbers title="src/token.rs"
-    /// Votes on the proposed mint.
-    pub fn vote(&mut self, choice: bool, amount: U256) {
-        // Only allow voting if there is a vote in progress.
-        self.assert_vote_in_progress();
+/// Votes on the proposed mint.
+pub fn vote(&mut self, choice: bool, amount: U256) {
+    // Only allow voting if there is a vote in progress.
+    self.assert_vote_in_progress();
 
-        let voter = self.env().caller();
-        let contract = self.env().self_address();
+    let voter = self.env().caller();
+    let contract = self.env().self_address();
 
-        // Transfer the voting tokens from the voter to the contract.
-        self.token
-            .transfer(&contract, &amount);
+    // Transfer the voting tokens from the voter to the contract.
+    self.token
+        .transfer(&contract, &amount);
 
-        // Add the vote to the list.
-        self.votes.push(Ballot {
-            voter,
-            choice,
-            amount,
-        });
-    }
+    // Add the vote to the list.
+    self.votes.push(Ballot {
+        voter,
+        choice,
+        amount,
+    });
+}
 ```
 
 The most interesting thing here is that we are using a mechanism of staking,
@@ -185,50 +188,50 @@ The last step is to tally the votes and mint the tokens if the majority
 of voters agreed to do so:
 
 ```rust showLineNumbers title="src/token.rs"
-    /// Count the votes and perform the action
-    pub fn tally(&mut self) {
-        // Only allow tallying the votes once.
-        if !self.is_vote_open.get_or_default()
-        {
-            self.env().revert(GovernanceError::NoVoteInProgress);
-        }
-
-        // Only allow tallying the votes after the vote has ended.
-        let finish_time = self
-            .vote_end_time
-            .get_or_revert_with(GovernanceError::NoVoteInProgress);
-        if self.env().get_block_time() < finish_time {
-            self.env().revert(GovernanceError::VoteNotYetEnded);
-        }
-
-        // Count the votes
-        let mut yes_votes = U256::zero();
-        let mut no_votes = U256::zero();
-
-        let contract = self.env().self_address();
-
-        while let Some(vote) = self.votes.pop() {
-            if vote.choice {
-                yes_votes += vote.amount;
-            } else {
-                no_votes += vote.amount;
-            }
-
-            // Transfer back the voting tokens to the voter.
-            self.token.raw_transfer(&contract, &vote.voter, &vote.amount);
-        }
-
-        // Perform the action if the vote has passed.
-        if yes_votes > no_votes {
-            let (account, amount) = self
-                .proposed_mint
-                .get_or_revert_with(GovernanceError::NoVoteInProgress);
-            self.token.raw_mint(&account, &amount);
-        }
-
-        // Close the vote.
-        self.is_vote_open.set(false);
+/// Count the votes and perform the action
+pub fn tally(&mut self) {
+    // Only allow tallying the votes once.
+    if !self.is_vote_open.get_or_default()
+    {
+        self.env().revert(GovernanceError::NoVoteInProgress);
     }
+
+    // Only allow tallying the votes after the vote has ended.
+    let finish_time = self
+        .vote_end_time
+        .get_or_revert_with(GovernanceError::NoVoteInProgress);
+    if self.env().get_block_time() < finish_time {
+        self.env().revert(GovernanceError::VoteNotYetEnded);
+    }
+
+    // Count the votes
+    let mut yes_votes = U256::zero();
+    let mut no_votes = U256::zero();
+
+    let contract = self.env().self_address();
+
+    while let Some(vote) = self.votes.pop() {
+        if vote.choice {
+            yes_votes += vote.amount;
+        } else {
+            no_votes += vote.amount;
+        }
+
+        // Transfer back the voting tokens to the voter.
+        self.token.raw_transfer(&contract, &vote.voter, &vote.amount);
+    }
+
+    // Perform the action if the vote has passed.
+    if yes_votes > no_votes {
+        let (account, amount) = self
+            .proposed_mint
+            .get_or_revert_with(GovernanceError::NoVoteInProgress);
+        self.token.raw_mint(&account, &amount);
+    }
+
+    // Close the vote.
+    self.is_vote_open.set(false);
+}
 ```
 
 Notice how we used `raw_transfer` from the `Cep18` module. We used it
@@ -245,55 +248,56 @@ Now, we will put our implementation to the test. One unit test, that we can
 run both on OdraVM and on the CasperVM.
 
 ```rust showLineNumbers title="src/token.rs"
-    #[test]
-    fn it_works() {
-        let env = odra_test::env();
-        let init_args = OurTokenInitArgs {
-            name: "OurToken".to_string(),
-            symbol: "OT".to_string(),
-            decimals: 0,
-            initial_supply: U256::from(1_000u64),
-        };
+#[test]
+fn it_works() {
+    let env = odra_test::env();
+    let init_args = OurTokenInitArgs {
+        name: "OurToken".to_string(),
+        symbol: "OT".to_string(),
+        decimals: 0,
+        initial_supply: U256::from(1_000u64),
+    };
 
-        let mut token = OurTokenHostRef::deploy(&env, init_args);
+    let mut token = OurTokenHostRef::deploy(&env, init_args);
 
-        // Start a new voting to mint 1000 tokens to account 1.
-        // There is only 1 token holder, so there is one Ballot cast.
-        token.propose_new_mint(env.get_account(1), U256::from(2000));
-        token.vote(true, U256::from(100));
+    // The deployer, as the only token holder,
+    // starts a new voting to mint 1000 tokens to account 1.
+    // There is only 1 token holder, so there is one Ballot cast.
+    token.propose_new_mint(env.get_account(1), U256::from(2000));
+    token.vote(true, U256::from(1000));
 
-        // The tokens should now be staked.
-        assert_eq!(token.balance_of(&env.get_account(0)), 900.into());
+    // The tokens should now be staked.
+    assert_eq!(token.balance_of(&env.get_account(0)), U256::zero());
 
-        // Wait for the vote to end.
-        env.advance_block_time(60 * 11 * 1000);
+    // Wait for the vote to end.
+    env.advance_block_time(60 * 11 * 1000);
 
-        // Finish the vote.
-        token.tally();
+    // Finish the vote.
+    token.tally();
 
-        // The tokens should now be minted.
-        assert_eq!(token.balance_of(&env.get_account(1)), 2000.into());
-        assert_eq!(token.total_supply(), 3000.into());
+    // The tokens should now be minted.
+    assert_eq!(token.balance_of(&env.get_account(1)), U256::from(2000));
+    assert_eq!(token.total_supply(), 3000.into());
 
-        // The stake should be returned.
-        assert_eq!(token.balance_of(&env.get_account(0)), 1000.into());
+    // The stake should be returned.
+    assert_eq!(token.balance_of(&env.get_account(0)), U256::from(1000));
 
-        // Now account 1 can mint new tokens with their voting power...
-        env.set_caller(env.get_account(1));
-        token.propose_new_mint(env.get_account(1), U256::from(2000));
-        token.vote(true, U256::from(2000));
+    // Now account 1 can mint new tokens with their voting power...
+    env.set_caller(env.get_account(1));
+    token.propose_new_mint(env.get_account(1), U256::from(2000));
+    token.vote(true, U256::from(2000));
 
-        // ...Even if the deployer votes against it.
-        env.set_caller(env.get_account(0));
-        token.vote(false, U256::from(1000));
+    // ...Even if the deployer votes against it.
+    env.set_caller(env.get_account(0));
+    token.vote(false, U256::from(1000));
 
-        env.advance_block_time(60 * 11 * 1000);
+    env.advance_block_time(60 * 11 * 1000);
 
-        token.tally();
+    token.tally();
 
-        // The power of community governance!
-        assert_eq!(token.balance_of(&env.get_account(1)), 4000.into());
-    }
+    // The power of community governance!
+    assert_eq!(token.balance_of(&env.get_account(1)), U256::from(4000));
+}
 ```  
 
 We can run the test using both methods:
@@ -367,15 +371,8 @@ impl OurToken {
     /// Initializes the contract with the given metadata and initial supply.
     pub fn init(&mut self, name: String, symbol: String, decimals: u8, initial_supply: U256) {
         // We put the token address as an admin, so it can govern itself. Self-governing token!
-        self.token.init(
-            symbol,
-            name,
-            decimals,
-            initial_supply,
-            vec![],
-            vec![],
-            None,
-        );
+        self.token
+            .init(symbol, name, decimals, initial_supply, vec![], vec![], None);
     }
 
     // Delegate all Cep18 functions to the token submodule.
@@ -444,7 +441,8 @@ impl OurToken {
 
         // Only the token holders can propose a new mint.
         if self.balance_of(&self.env().caller()) == U256::zero() {
-            self.env().revert(GovernanceError::OnlyTokenHoldersCanPropose);
+            self.env()
+                .revert(GovernanceError::OnlyTokenHoldersCanPropose);
         }
 
         // Set the proposed mint.
@@ -453,7 +451,7 @@ impl OurToken {
         self.is_vote_open.set(true);
         // Set the vote end time to 10 minutes from now.
         self.vote_end_time
-            .set(self.env().get_block_time() + 60 * 10 * 1000);
+            .set(self.env().get_block_time() + 10 * 60 * 1000);
     }
 
     /// Votes on the proposed mint.
@@ -465,8 +463,7 @@ impl OurToken {
         let contract = self.env().self_address();
 
         // Transfer the voting tokens from the voter to the contract.
-        self.token
-            .transfer(&contract, &amount);
+        self.token.transfer(&contract, &amount);
 
         // Add the vote to the list.
         self.votes.push(Ballot {
@@ -479,8 +476,7 @@ impl OurToken {
     /// Count the votes and perform the action
     pub fn tally(&mut self) {
         // Only allow tallying the votes once.
-        if !self.is_vote_open.get_or_default()
-        {
+        if !self.is_vote_open.get_or_default() {
             self.env().revert(GovernanceError::NoVoteInProgress);
         }
 
@@ -506,7 +502,8 @@ impl OurToken {
             }
 
             // Transfer back the voting tokens to the voter.
-            self.token.raw_transfer(&contract, &vote.voter, &vote.amount);
+            self.token
+                .raw_transfer(&contract, &vote.voter, &vote.amount);
         }
 
         // Perform the action if the vote has passed.
@@ -553,13 +550,14 @@ mod tests {
 
         let mut token = OurTokenHostRef::deploy(&env, init_args);
 
-        // Start a new voting to mint 1000 tokens to account 1.
+        // The deployer, as the only token holder,
+        // starts a new voting to mint 1000 tokens to account 1.
         // There is only 1 token holder, so there is one Ballot cast.
         token.propose_new_mint(env.get_account(1), U256::from(2000));
-        token.vote(true, U256::from(100));
+        token.vote(true, U256::from(1000));
 
         // The tokens should now be staked.
-        assert_eq!(token.balance_of(&env.get_account(0)), 900.into());
+        assert_eq!(token.balance_of(&env.get_account(0)), U256::zero());
 
         // Wait for the vote to end.
         env.advance_block_time(60 * 11 * 1000);
@@ -568,11 +566,11 @@ mod tests {
         token.tally();
 
         // The tokens should now be minted.
-        assert_eq!(token.balance_of(&env.get_account(1)), 2000.into());
+        assert_eq!(token.balance_of(&env.get_account(1)), U256::from(2000));
         assert_eq!(token.total_supply(), 3000.into());
 
         // The stake should be returned.
-        assert_eq!(token.balance_of(&env.get_account(0)), 1000.into());
+        assert_eq!(token.balance_of(&env.get_account(0)), U256::from(1000));
 
         // Now account 1 can mint new tokens with their voting power...
         env.set_caller(env.get_account(1));
@@ -588,7 +586,7 @@ mod tests {
         token.tally();
 
         // The power of community governance!
-        assert_eq!(token.balance_of(&env.get_account(1)), 4000.into());
+        assert_eq!(token.balance_of(&env.get_account(1)), U256::from(4000));
     }
 }
 ```

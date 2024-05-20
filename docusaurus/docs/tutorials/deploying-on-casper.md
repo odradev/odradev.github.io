@@ -178,7 +178,7 @@ lto = true
 opt-level = 3
 ```
 
-Finally, add the .env file with the following content:
+Finally, add the `.env` file with the following content:
 
 ```env title=".env"
 # Path to the secret key of the account that will be used to deploy the contracts.
@@ -245,7 +245,7 @@ We will use it in the next section to interact with the token. In our case it is
 
 ## Cspr.live
 
-First thing we will to is to explore Casper's network block explorer,
+The first thing we will do is to explore Casper's network block explorer,
 [cspr.live](https://cspr.live/). We can put the address of our token in the search bar
 to find it.
 

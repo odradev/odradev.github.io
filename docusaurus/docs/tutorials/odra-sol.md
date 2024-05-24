@@ -9,15 +9,14 @@ import TabItem from '@theme/TabItem';
 
 ## Introduction
 
-Hi a stranger Solidity developer! If you are looking to expand your horizons into Rust-based smart contract development, you've come to the right place. Odra is a high-level framework designed to simplify the development of smart contracts for Casper Network. This tutorial will guide you through the basics of transitioning from Solidity to Odra, highlighting key differences and providing practical examples. Before we delve into details. we have a first great info for you. From the very beginning we have thinking of you. Our main assumption was to design the framework that way to flatten the learning curve especially for Solidity developers.
+Hi, stranger Solidity developer! If you are looking to expand your horizons into Rust-based smart contract development, you've come to the right place. Odra is a high-level framework designed to simplify the development of smart contracts for the Casper Network. This tutorial will guide you through the basics of transitioning from Solidity to Odra, highlighting key differences and providing practical examples. Before we delve into the details, we have great news for you. From the very beginning, we have been thinking of you. Our main goal was to design the framework in a way that flattens the learning curve, especially for Solidity developers.
 
 ## Prerequisites
 To follow this guide, you should have:
 
-Basic knowledge of Solidity
-Familiarity with Ethereum and smart contract concepts
-A development environment set up for Solidity (e.g., Remix, Truffle, Hardhat)
-Basic understanding of Rust, as Odra is based on it
+* Knowledge of Solidity.
+* Familiarity with Ethereum and smart contract concepts.
+* Basic understanding of Rust, as Odra is based on it.
 
 ## Hello World
 
@@ -60,11 +59,10 @@ contract HelloWorld {
 </TabItem>
 </Tabs>
 
-As you may noticed the Odra code is slightly more verbose than the Solidity code. To define a contract in Odra, you need to create a struct and implement a module for it, both are annotated with the `odra::module` attribute. The struct contains the contract's state variables, while the module defines the contract's functions. In this example, the HelloWorld struct has a single state variable greet, which stores the greeting message. The module contains two functions: init to set the greeting message and get to retrieve it.
+As you may have noticed, the Odra code is slightly more verbose than the Solidity code. To define a contract in Odra, you need to create a struct and implement a module for it, both annotated with the `odra::module` attribute. The struct contains the contract's state variables, while the module defines the contract's functions. In this example, the `HelloWorld` struct has a single state variable greet, which stores the greeting message. The module contains two functions: `init` to `set` the greeting message and get to retrieve it.
 Two key differences are:
-1. Odra does not generate getters for public state variables automatically, so you need to define them explicitly. 
-2. To init values you have do it in the `init` function which is the contract constructor - you can't assign the default outside the constructor.
-
+1. Odra does not generate getters for public state variables automatically, so you need to define them explicitly.
+2. To initialize values, you must do it in the `init` function, which is the contract constructor. You can't assign defaults outside the constructor.
 
 ## Variable Storage and State Management
 
@@ -170,9 +168,9 @@ contract Primitives {
 </TabItem>
 </Tabs>
 
-The range of integer types in Odra is slightly different from Solidity. Odra provides a wide range of integer types: `u8`, `u16`, `u32`, `u64`, `U128`, `U256` for unsigned integers, `i32` and `i64` signed integers. 
+The range of integer types in Odra is slightly different from Solidity. Odra provides a wide range of integer types: `u8`, `u16`, `u32`, `u64`, `U128`, and `U256` for unsigned integers, and `i32` and `i64` for signed integers.
 
-The `Address` type in Odra is used to represent account and contract addresses. In Odra there is no default/zero value for the `Address` type, the workaround is to use `Option<Address>`. 
+The `Address` type in Odra is used to represent account and contract addresses. In Odra, there is no default/zero value for the `Address` type; the workaround is to use `Option<Address>`.
 
 The `Bytes` type is used to store byte arrays.
 
@@ -196,7 +194,6 @@ impl Constants {
         AccountHash([0u8; 32])
     );
 }
-
 ```
 </TabItem>
 
@@ -216,7 +213,7 @@ contract Constants {
 </TabItem>
 </Tabs>
 
-In Odra, you can define constants using the `const` keyword. Constants are immutable and can be of any type, including custom types. In addition to constants, Solidity also supports the `immutable` keyword, which is used to set the value of a variable once, in the constructor. Further attempts to alter this value results in a compile error. Rust does not have an equivalent to Solidity's `immutable` keyword.
+In Odra, you can define constants using the `const` keyword. Constants are immutable and can be of any type, including custom types. In addition to constants, Solidity also supports the `immutable` keyword, which is used to set the value of a variable once, in the constructor. Further attempts to alter this value result in a compile error. Odra/Rust does not have an equivalent to Solidity's `immutable` keyword.
 
 ### Variables
 
@@ -471,7 +468,7 @@ contract Array {
 </TabItem>
 </Tabs>
 
-For storing a collection of data as a single unit, Odra uses the `Vec` type for dynamic arrays and fixed-size arrays both wrapped with the `Var` container. As in Solidity you must be aware of that reading the entire array in one go can be expensive, so it's better to avoid it for large arrays. In many cases, you can use a `Mapping` or `List` instead of an array or vec to store data.
+For storing a collection of data as a single unit, Odra uses the Vec type for dynamic arrays and fixed-size arrays, both wrapped with the `Var` container. As in Solidity, you must be aware that reading the entire array in one go can be expensive, so it's better to avoid it for large arrays. In many cases, you can use a `Mapping` or `List` instead of an array or vector to store data.
 
 ### Custom types
 
@@ -565,7 +562,7 @@ contract Enum {
 </TabItem>
 </Tabs>
 
-In Odra, custom types are defined using the `#[odra::odra_type]` attribute. The enum can have a default value specified using the `#[default]` attribute if derive from the `Default` trait. The enum can be used as a state variable in a contract, and its value can be set and retrieved using the `set` and `get` functions. The value cannot be deleted, however it can be set using the `Default::default()` function.
+In Odra, custom types are defined using the `#[odra::odra_type]` attribute. The enum can have a default value specified using the `#[default]` attribute if derived from the Default trait. The enum can be used as a state variable in a contract, and its value can be set and retrieved using the set and get functions. The value cannot be deleted; however, it can be set using the `Default::default()` function.
 
 <Tabs>
 <TabItem value="rust" label="Odra">
@@ -666,19 +663,25 @@ Similarly to enums, custom structs are defined using the `#[odra::odra_type]` at
 
 ### Data Location
 
-In Solidity data location is an important concept that determines where the data is stored and how it can be accessed. The data location can be `memory`, `storage`, or `calldata`. In Odra, data location is not explicitly defined, but whenever interacting with storage primitives (e.g., `Var`, `Mapping`, `List`), the data is stored in the contract's storage.
+In Solidity, data location is an important concept that determines where the data is stored and how it can be accessed. The data location can be `memory`, `storage`, or `calldata`. In Odra, data location is not explicitly defined, but whenever interacting with storage primitives (e.g., `Var`, `Mapping`, `List`), the data is stored in the contract's storage.
 
 ## Functions
-Odra contracts define their functions and methods within the impl block. Here's an example of a transfer function:
+
+Odra contracts define their entry point and internal functions within the impl block. Here's an example of a transfer function:
 
 ```rust
 impl Erc20 {
     pub fn transfer(&mut self, recipient: &Address, amount: &U256) {
+        self.internal_transfer(&self.env().caller(), recipient, amount);
         // Transfer logic goes here
+    }
+
+    fn internal_transfer(&mut self, sender: &Address, recipient: &Address, amount: &U256) {
+        // Internal transfer logic goes here
     }
 }
 ```
-Functions can modify contract state and emit events using the env() function.
+Functions can modify contract state and emit events using the [`ContractEnv`](../basics/06-communicating-with-host.md) function.
 
 ### View and Pure
 
@@ -729,9 +732,7 @@ contract ViewAndPure {
 </TabItem>
 </Tabs>
 
-
-In Odra, you don't need to specify view or pure functions explicitly. All functions are considered view functions by default, meaning they can read contract state but not modify it. To modify the state, the first parameter (so called receiver parameter) should be `&mut self`. If you want to create a pure function that doesn't read or modify state, you can define it as a regular Rust function without any side effects.
-
+In Odra, you don't need to specify `view` or `pure` functions explicitly. All functions are considered `view` functions by default, meaning they can read contract state but not modify it. To modify the state, the first parameter (called the receiver parameter) should be `&mut self`. If you want to create a pure function that doesn't read or modify state, you can define it as a regular Rust function without any side effects.
 
 ### Modifiers
 
@@ -807,9 +808,9 @@ contract FunctionModifier {
 </TabItem>
 </Tabs>
 
-In Odra there is no direct equivalent to Solidity's function modifiers. Instead, you can define functions that perform certain actions before or after the main function logic. In the example above, the `lock` and `unlock` functions are called before and after the `decrement` function, respectively, but they must be called explicitly.
+In Odra, there is no direct equivalent to Solidity's function modifiers. Instead, you can define functions that perform certain actions before or after the main function logic. In the example above, the `lock` and `unlock` functions are called before and after the decrement function, respectively, but they must be called explicitly.
 
-As often as practicable, developers should inline functions by including the body of the function within their code using `#[inline]` attribute. In the context of coding for Casper blockchain purposes, this reduces the overhead of executed Wasm and prevents unexpected errors due to exceeding resource tolerances.
+As often as practicable, developers should inline functions by including the body of the function within their code using the `#[inline]` attribute. In the context of coding for Casper blockchain purposes, this reduces the overhead of executed Wasm and prevents unexpected errors due to exceeding resource tolerances.
 
 ### Visibility
 
@@ -845,41 +846,35 @@ State variables can be declared as public, private, or internal but not external
 <TabItem value="rust" label="Odra">
 
 ```rust showLineNumbers
-use odra::Var;
+use odra::{casper_types::U512, prelude::*, Address, ExecutionError, Var};
 
 #[odra::module]
-pub struct FunctionModifier {
-    x: Var<u32>,
-    locked: Var<bool>,  
+pub struct Payable {
+    owner: Var<Address>,
 }
 
 #[odra::module]
-impl FunctionModifier {
-    pub fn decrement(&mut self, i: u32) -> u32 {
-        self.lock();
-        self.x.set(self.x.get_or_default() - i);
-
-        if i > 1 {
-            self.decrement(i - 1);
-        }
-        self.unlock();
+impl Payable {
+    pub fn init(&mut self) {
+        self.owner.set(self.env().caller());
     }
 
-    #[inline]
-    fn lock(&mut self) {
-        if self.locked.get_or_default() {
-            self.env().revert("No reentrancy");
-        }
-
-        self.locked.set(true);
+    #[odra(payable)]
+    pub fn deposit(&self) {
     }
 
-    #[inline]
-    fn unlock(&mut self) {
-        self.locked.set(false);
+    pub fn not_payable(&self) {
+    }
+
+    pub fn withdraw(&self) {
+        let amount = self.env().self_balance();
+        self.env().transfer_tokens(&self.owner.get_or_revert_with(ExecutionError::UnwrapError), &amount);
+    }
+
+    pub fn transfer(&self, to: Address, amount: U512) {
+        self.env().transfer_tokens(&to, &amount);
     }
 }
-
 ```
 </TabItem>
 
@@ -928,9 +923,11 @@ contract Payable {
 </TabItem>
 </Tabs>
 
+In Odra, you can define a function with the `#[odra::payable]` attribute to indicate that the function can receive CSPRs. In Solidity, the payable keyword is used to define functions that can receive Ether.
+
 ### Selectors
 
-In Solidity, when a function is called, the first 4 bytes of calldata specifies which function to call. It is is called a function selector.
+In Solidity, when a function is called, the first 4 bytes of calldata specify which function to call. This is called a function selector.
 
 ```sol showLineNumbers
 contract_addr.call(
@@ -938,7 +935,7 @@ contract_addr.call(
 )
 ```
 
-Odra does not support such mechanism, you must have access to the contract interface to call a function.
+Odra does not support such a mechanism. You must have access to the contract interface to call a function.
 
 ## Events and Logging
 
@@ -1000,11 +997,10 @@ contract Event {
 ```
 </TabItem>
 </Tabs>
-
 In Odra, events are regular structs defined using the `#[odra::event]` attribute. The event struct can contain multiple fields, which can be of any type (primitive or custom Odra type). To emit an event, use the env's `emit_event()` function, passing the event struct as an argument.
 
 :::note
-Events in Solidity are used to emit logs that off-chain services can capture. However, Casper does not support events natively, however, Odra mimics this feature. Read more about it in the [Basics](../basics/09-events.md) section.
+Events in Solidity are used to emit logs that off-chain services can capture. However, Casper does not support events natively. Odra mimics this feature. Read more about it in the [Basics](../basics/09-events.md) section.
 :::
 
 ## Error Handling
@@ -1093,7 +1089,7 @@ contract Error {
 </TabItem>
 </Tabs>
 
-In Solidity, there are four ways to handle errors: `require`, `revert`, `assert`, and custom error. In Odra there is only one way to revert the execution of a function - by using the `env().revert()` function. The function takes an error type as an argument and stops the execution of the function. You define an error type using the `#[odra::odra_error]` attribute. On Casper, an error is only a number, so you can't pass a message with the error.
+In Solidity, there are four ways to handle errors: `require`, `revert`, `assert`, and custom errors. In Odra, there is only one way to revert the execution of a function - by using the `env().revert()` function. The function takes an error type as an argument and stops the execution of the function. You define an error type using the `#[odra::odra_error]` attribute. On Casper, an error is only a number, so you can't pass a message with the error.
 
 ## Composition vs. Inheritance
 In Solidity, developers often use inheritance to reuse code and establish relationships between contracts. However, Odra and Rust follow a different paradigm known as composition. Instead of inheriting behavior from parent contracts, Odra encourages the composition of contracts by embedding one contract within another.
@@ -1247,9 +1243,9 @@ contract F is A, B {
 </TabItem>
 </Tabs>
 
-Solidity supports both single and multiple inheritance. This means a contract can inherit from one or more contracts. Solidity uses a technique called "C3 linearization" to resolve the order in which base contracts are inherited in the case of multiple inheritance. This helps to ensure a consistent method resolution order. However, multiple inheritance can lead to complex code and potential issues especially for unexperienced developers.
+Solidity supports both single and multiple inheritance. This means a contract can inherit from one or more contracts. Solidity uses a technique called "C3 linearization" to resolve the order in which base contracts are inherited in the case of multiple inheritance. This helps to ensure a consistent method resolution order. However, multiple inheritance can lead to complex code and potential issues, especially for inexperienced developers.
 
-In contrary Rust does not have a direct equivalent to the inheritance model, but it achieves similar goals through composition. Each contract is defined as a struct, and contracts can be composed by embedding one struct within another. This approach provides a more flexible and modular way to reuse code and establish relationships between contracts.
+In contrast, Rust does not have a direct equivalent to the inheritance model, but it achieves similar goals through composition. Each contract is defined as a struct, and contracts can be composed by embedding one struct within another. This approach provides a more flexible and modular way to reuse code and establish relationships between contracts.
 
 ## Libraries and Utility
 
@@ -1390,15 +1386,15 @@ contract TestArray {
 </TabItem>
 </Tabs>
 
-In Solidity libraries are similar to contracts, but can't declare any state variable and can't receive ether. In the sample code above, the Math library contains a square root function, while the Array library provides a function to remove an element from an array. Both libraries are consumed in a different way: the `TestMath` contract calls the `sqrt` function directly, while the `TestArray` contract uses the `using` keyword, which extends the type `uint256[]` adding the `remove` function.
+In Solidity, libraries are similar to contracts but can't declare any state variables and can't receive Ether. In the sample code above, the `Math` library contains a square root function, while the Array library provides a function to remove an element from an array. Both libraries are consumed in different ways: the `TestMath` contract calls the `sqrt` function directly, while the `TestArray` contract uses the using keyword, which extends the type `uint256[]` by adding the `remove` function.
 
-In `Odra` you use language level features: modules and traits. The `mod` keyword defines a module, which is similar to a library in Solidity. Modules can contain functions, types, and other items that can be reused across multiple contracts. Traits are similar to interfaces in other programming languages, defining a set of functions that a type must implement. Implementing the `Removable` trait for the `Var<Vec<U256>>` type allows the `remove` function to be called on a variable that stores a vector of `U256` values.
+In Odra, you use language-level features: modules and traits. The mod keyword defines a module, which is similar to a library in Solidity. Modules can contain functions, types, and other items that can be reused across multiple contracts. Traits are similar to interfaces in other programming languages, defining a set of functions that a type must implement. Implementing the `Removable` trait for the `Var<Vec<U256>>` type allows the `remove` function to be called on a variable that stores a vector of `U256` values.
 
 ## Fallback and Receive Functions
 
 In Solidity, a contract receiving Ether must implement a `receive()` and/or `fallback()` function. The `receive()` function is called when Ether is sent to the contract with no data, while the `fallback()` function is called when the contract receives Ether with data or when a function that does not exist is called.
 
-Odra does not have a direct equivalent to the `receive()` and `fallback()` functions. Instead, you can define a function with the `#[payable]` attribute to indicate that the function can receive CSPRs.
+Odra does not have a direct equivalent to the `receive()` and `fallback()` functions. Instead, you can define a function with the `#[odra(payable)]` attribute to indicate that the function can receive CSPRs.
 
 ## Miscellaneous
 
@@ -1484,7 +1480,7 @@ contract GuessTheMagicWord {
 </TabItem>
 </Tabs>
 
-The key difference between the two is that in Solidity, the `keccak256` function is used to hash data, while in Odra, the `env.hash()` function is used which implements `blake2b` algorithm. Both functions take a byte array as input and return a 32-byte hash.
+The key difference between the two is that in Solidity, the `keccak256` function is used to hash data, while in Odra, the `env.hash()` function is used, which implements the `blake2b` algorithm. Both functions take a byte array as input and return a 32-byte hash.
 
 ### Try-catch
 
@@ -1574,11 +1570,15 @@ contract OtherContract {
 
 In Solidity, `try/catch` is a feature that allows developers to handle exceptions and errors more gracefully. The `try/catch` statement allows developers to catch and handle exceptions that occur during external function calls and contract creation.
 
-In Odra there is no direct equivalent to the `try/catch` statement in Solidity. However, you can use the `Result` type to handle errors in a similar way. The `Result` type is an enum that represents either success (`Ok`) or failure (`Err`). You can use the `match` statement to handle the `Result` type and execute different code based on the result. However, if an unexpected error occurs on the way, the whole transaction reverts.
+In Odra, there is no direct equivalent to the `try/catch` statement in Solidity. However, you can use the `Result` type to handle errors in a similar way. The `Result` type is an enum that represents either success (`Ok`) or failure (`Err`). You can use the match statement to handle the Result type and execute different code based on the result. However, if an unexpected error occurs on the way, the whole transaction reverts.
 
 ## Conclusion
-Congratulations! You've now learned the basics of writing smart contracts with the Odra Framework. By understanding the structure, initialization, error handling, and the composition pattern in Odra, you can effectively transition from Solidity to Odra for Casper blockchain development.
+Congratulations! You've now learned the main differences in writing smart contracts with the Odra Framework. By understanding the structure, initialization, error handling, and the composition pattern in Odra, you can effectively transition from Solidity to Odra for Casper blockchain development.
 
 Experiment with the provided code samples, explore more advanced features, and unleash the full potential of the Odra Framework.
 
-If you have any further questions or need clarification on specific topics, feel free to ask!
+Read more about the Odra Framework in the [Basics](../category/basics) and [Advanced](../category/advanced/) sections.
+
+Learn by example with our [Tutorial](../category/tutorials) series, you will find there a contract you likely familiar with - the [Erc20](../tutorials/erc20.md) standard implementation.
+
+If you have any further questions or need clarification on specific topics, feel free to join our [Discord](https://discord.com/invite/Mm5ABc9P8k)!

@@ -84,7 +84,8 @@ const config = {
             navbar: {
                 logo: {
                     alt: 'Odra Logo',
-                    src: 'img/small_logo.png',
+                    src: 'img/small_logo_light.png',
+                    srcDark: 'img/small_logo_dark.png',
                 },
                 items: [
                     {

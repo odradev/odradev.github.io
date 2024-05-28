@@ -1,5 +1,8 @@
 ---
 sidebar_position: 9
+slug: odra-solidity
+image: "/img/odra-sol.png"
+description: Learn how to transition from Solidity to Odra.
 ---
 
 import Tabs from '@theme/Tabs';

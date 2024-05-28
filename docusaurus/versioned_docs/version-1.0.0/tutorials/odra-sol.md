@@ -1,5 +1,8 @@
 ---
 sidebar_position: 9
+slug: odra-solidity
+image: "/img/odra-sol.png"
+description: Odra for Solidity developers
 ---
 
 import Tabs from '@theme/Tabs';

@@ -997,6 +997,7 @@ contract Event {
 ```
 </TabItem>
 </Tabs>
+
 In Odra, events are regular structs defined using the `#[odra::event]` attribute. The event struct can contain multiple fields, which can be of any type (primitive or custom Odra type). To emit an event, use the env's `emit_event()` function, passing the event struct as an argument.
 
 :::note

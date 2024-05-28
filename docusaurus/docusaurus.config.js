@@ -35,7 +35,8 @@ const config = {
                 'docs/0.6.0/**/*',
                 'docs/0.7.0/**/*',
                 'docs/0.8.0/**/*',
-                'docs/0.9.0/**/*'
+                'docs/0.9.0/**/*',
+                'docs/0.9.1/**/*',
             ]
         }]],
 
@@ -53,7 +54,7 @@ const config = {
                     sidebarPath: require.resolve('./sidebars.js'),
                     includeCurrentVersion: true,
                     showLastUpdateTime: true,
-                    lastVersion: '0.9.1',
+                    lastVersion: '1.0.0',
                     versions: {
                         current: {
                             label: 'next',
@@ -84,7 +85,8 @@ const config = {
             navbar: {
                 logo: {
                     alt: 'Odra Logo',
-                    src: 'img/small_logo.png',
+                    src: 'img/small_logo_light.png',
+                    srcDark: 'img/small_logo_dark.png',
                 },
                 items: [
                     {

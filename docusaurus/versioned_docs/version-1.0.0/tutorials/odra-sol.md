@@ -926,7 +926,7 @@ contract Payable {
 </TabItem>
 </Tabs>
 
-In Odra, you can define a function with the `#[odra::payable]` attribute to indicate that the function can receive CSPRs. In Solidity, the payable keyword is used to define functions that can receive Ether.
+In Odra, you can define a function with the `#[odra(payable)]` attribute to indicate that the function can receive CSPRs. In Solidity, the payable keyword is used to define functions that can receive Ether.
 
 ### Selectors
 

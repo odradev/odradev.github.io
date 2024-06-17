@@ -248,10 +248,10 @@ graph TD;
 [deploy]: https://docs.rs/casper-execution-engine/latest/casper_execution_engine/core/engine_state/deploy_item/struct.DeployItem.html
 [Casper Event Standard]: https://github.com/make-software/casper-event-standard
 [Casper's 'Writing On-Chain Code']: https://docs.casper.network/writing-contracts/
-[proxy_caller.wasm]: https://github.com/odradev/odra/blob/release/1.0.0/odra-casper/test-vm/resources/proxy_caller.wasm
+[proxy_caller.wasm]: https://github.com/odradev/odra/blob/release/1.1.0/odra-casper/test-vm/resources/proxy_caller.wasm
 [CasperPackageHash]: https://docs.rs/casper-types/latest/casper_types/contracts/struct.ContractPackageHash.html
 [RuntimeArgs]: https://docs.rs/casper-types/latest/casper_types/runtime_args/struct.RuntimeArgs.html
 [Bytes]: https://docs.rs/casper-types/latest/casper_types/bytesrepr/struct.Bytes.html
-[ERC721]: https://github.com/odradev/odra/blob/release/1.0.0/modules/src/erc721_token.rs
-[ERC1155]: https://github.com/odradev/odra/blob/release/1.0.0/modules/src/erc1155_token.rs
+[ERC721]: https://github.com/odradev/odra/blob/release/1.1.0/modules/src/erc721_token.rs
+[ERC1155]: https://github.com/odradev/odra/blob/release/1.1.0/modules/src/erc1155_token.rs
 [Tutorial section]: ../tutorials/using-proxy-caller

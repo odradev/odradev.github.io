@@ -200,5 +200,5 @@ ODRA_CASPER_LIVENET_ENV=integration cargo run --bin erc20_on_livenet --features=
 
 To sum up - this command will firstly load the `integration.env` file and then load the missing values from `.env` file.
 
-[.env.sample]: https://github.com/odradev/odra/blob/release/1.0.0/examples/.env.sample
-[erc20_on_livenet.rs]: https://github.com/odradev/odra/blob/release/1.0.0/examples/bin/erc20_on_livenet.rs
+[.env.sample]: https://github.com/odradev/odra/blob/release/1.1.0/examples/.env.sample
+[erc20_on_livenet.rs]: https://github.com/odradev/odra/blob/release/1.1.0/examples/bin/erc20_on_livenet.rs

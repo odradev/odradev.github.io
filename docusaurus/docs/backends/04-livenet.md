@@ -54,7 +54,14 @@ ODRA_CASPER_LIVENET_CHAIN_NAME=integration-test
 # Main secret key will be 0th account.
 ODRA_CASPER_LIVENET_KEY_1=.keys/secret_key_1.pem
 ODRA_CASPER_LIVENET_KEY_2=.keys/secret_key_2.pem
+
+# If using CSPR.cloud, you can set the auth token here.
+# CSPR_CLOUD_AUTH_TOKEN=
 ```
+
+:::note
+CSPR.cloud is a service that provides mainnet and testnet Casper nodes on demand.
+:::
 
 With the proper value in place, we can write our tests or deploy scenarios. In the examples, we can find
 a simple binary that deploys a contract and calls it. The test is located in the [erc20_on_livenet.rs] file.

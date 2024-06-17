@@ -238,7 +238,7 @@ pub mod tests {
 
         // Then a Transfer event was emitted.
         assert!(env.emitted_event(
-            erc20.address(),
+            &erc20,
             &Transfer {
                 from: None,
                 to: Some(env.get_account(0)),
@@ -269,7 +269,7 @@ pub mod tests {
 
         // Then Transfer event was emitted.
         assert!(env.emitted_event(
-            erc20.address(),
+            &erc20,
             &Transfer {
                 from: Some(sender),
                 to: Some(recipient),
@@ -308,7 +308,7 @@ pub mod tests {
         // Allowance was recorded.
         assert_eq!(erc20.allowance(&owner, &spender), approved_amount);
         assert!(env.emitted_event(
-            erc20.address(),
+            &erc20,
             &Approval {
                 owner,
                 spender,
@@ -327,7 +327,7 @@ pub mod tests {
         );
         assert_eq!(erc20.balance_of(&recipient), transfer_amount);
         assert!(env.emitted_event(
-            erc20.address(),
+            &erc20,
             &Approval {
                 owner,
                 spender,
@@ -335,7 +335,7 @@ pub mod tests {
             }
         ));
         assert!(env.emitted_event(
-            erc20.address(),
+            &erc20,
             &Transfer {
                 from: Some(owner),
                 to: Some(recipient),

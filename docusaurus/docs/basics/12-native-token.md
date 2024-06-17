@@ -63,3 +63,15 @@ mod tests {
     }
 }
 ```
+
+## HostEnv
+In a broader context of the host environment (test, livenet), you can also transfer `CSPR` tokens between accounts:
+
+```rust showLineNumbers
+let env = odra_casper_livenet_env::env();
+//let env = odra_test::env();
+let (alice, bob) = (env.get_account(0), env.get_account(1));
+
+env.set_caller(alice);
+let result = env.transfer_tokens(bob, odra::casper_types::U512::from(100));
+```

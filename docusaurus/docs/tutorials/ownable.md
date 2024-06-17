@@ -146,7 +146,7 @@ mod tests {
         assert_eq!(ownable.get_owner(), owner);
        
         env.emitted_event(
-            ownable.address(),
+            &ownable,
             &OwnershipChanged {
                 prev_owner: None,
                 new_owner: owner
@@ -164,7 +164,7 @@ mod tests {
         assert_eq!(ownable.get_owner(), new_owner);
 
         env.emitted_event(
-            ownable.address(),
+            &ownable,
             &OwnershipChanged {
                 prev_owner: Some(owner),
                 new_owner
@@ -192,7 +192,7 @@ mod tests {
 :::note
 You may have noticed, we use here the term `module` interchangeably with `contract`. The reason is once we deploy our module onto a virtual blockchain it may be considered a contract.
 :::
-* **L19-25** - On the contract, only the `init()` function has been called, so we expect one event to have been emitted. To assert that, let's use `HostEnv`. To get the env, we call `env()` on the contract, then call `HostEnv::emitted_event`. As the first argument, pass the contract address you want to read events from, followed by an event as you expect it to have occurred.
+* **L19-25** - On the contract, only the `init()` function has been called, so we expect one event to have been emitted. To assert that, let's use `HostEnv`. To get the env, we call `env()` on the contract, then call `HostEnv::emitted_event`. As the first argument, pass the contract you want to read events from, followed by an event as you expect it to have occurred.
 * **L31** - Because we know the initial owner is the 0th account, we must select a different account. It could be any index from 1 to 19 - the `HostEnv` predefines 20 accounts.
 * **L33** - As mentioned, the default is the 0th account, if you want to change the executor, call the `HostEnv::set_caller()` function. 
 :::note

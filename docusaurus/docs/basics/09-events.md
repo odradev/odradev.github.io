@@ -61,23 +61,23 @@ Odra's `HostEnv` comes with a few functions which lets you easily test the event
 
 ```rust title="examples/src/features/events.rs"
 use super::{PartyContractHostRef, PartyStarted};
-use odra::host::{Deployer, HostEnv, HostRef, NoArgs};
+use odra::host::{Deployer, HostEnv, NoArgs};
 
 #[test]
 fn test_party() {
     let test_env: HostEnv = odra_test::env();
     let party_contract = PartyContractHostRef::deploy(&test_env, NoArgs);
     test_env.emitted_event(
-        party_contract.address(),
+        &party_contract,
         &PartyStarted {
             caller: test_env.get_account(0),
             block_time: 0
         }
     );
     // If you do not want to check the exact event, you can use `emitted` function
-    test_env.emitted(party_contract.address(), "PartyStarted");
+    test_env.emitted(&party_contract, "PartyStarted");
     // You can also check how many events were emitted.
-    assert_eq!(test_env.events_count(party_contract.address()), 1);
+    assert_eq!(test_env.events_count(&party_contract), 1);
 }
 ```
 

@@ -121,7 +121,7 @@ the function we are calling inside the contract.
 - `fn advance_block_time(&self, time_diff: u64)` - increases the current value of `block_time`
 - `fn get_account(&self, n: usize) -> Address` - returns an n-th address that was prepared for you by Odra in advance;
   by default, you start with the 0-th account
-- `fn emitted_event<T: ToBytes + EventInstance>(&self, contract_address: &Address, event: &T) -> bool` - verifies if the event was emitted by the contract
+- `fn emitted_event<T: ToBytes + EventInstance, R: Addressable>(&self, contract_address: &R, event: &T) -> bool` - verifies if the event was emitted by the contract
 
 Full list of functions can be found in the [`HostEnv`] documentation.
 

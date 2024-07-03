@@ -743,7 +743,7 @@ In Odra, you don't need to specify `view` or `pure` functions explicitly. All fu
 <TabItem value="rust" label="Odra">
 
 ```rust showLineNumbers
-use odra::Var;
+use odra::{module::Module, Var};
 
 #[odra::module]
 pub struct FunctionModifier {
@@ -753,7 +753,7 @@ pub struct FunctionModifier {
 
 #[odra::module]
 impl FunctionModifier {
-    pub fn decrement(&mut self, i: u32) -> u32 {
+    pub fn decrement(&mut self, i: u32) {
         self.lock();
         self.x.set(self.x.get_or_default() - i);
 
@@ -766,7 +766,7 @@ impl FunctionModifier {
     #[inline]
     fn lock(&mut self) {
         if self.locked.get_or_default() {
-            self.env().revert("No reentrancy");
+            self.env().revert(Error::NoReentrancy);
         }
 
         self.locked.set(true);
@@ -776,6 +776,11 @@ impl FunctionModifier {
     fn unlock(&mut self) {
         self.locked.set(false);
     }
+}
+
+#[odra::odra_error]
+pub enum Error {
+    NoReentrancy = 1,
 }
 
 ```

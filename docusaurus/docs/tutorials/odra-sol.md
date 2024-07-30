@@ -1497,11 +1497,11 @@ The key difference between the two is that in Solidity, the `keccak256` function
 <TabItem value="rust" label="Odra">
 
 ```rust showLineNumbers
-use odra::{module::Module, Address, ContractRef, Var};
+use odra::{module::Module, Address, ContractRef, External, Var};
 
 #[odra::module]
 pub struct Example {
-    other_contract: Var<Address>,
+    other_contract: External<OtherContractContractRef>,
 }
 
 #[odra::module]
@@ -1511,15 +1511,13 @@ impl Example {
     }
 
     pub fn execute_external_call(&self) {
-        if let Some(addr) = self.other_contract.get() {
-            let result = OtherContractContractRef::new(self.env(), addr).some_function();
-            match result {
-                Ok(success) => {
-                    // Code to execute if the external call was successful
-                }
-                Err(reason) => {
-                    // Code to execute if the external call failed
-                }
+        let result = self.other_contract.some_function();
+        match result {
+            Ok(success) => {
+                // Code to execute if the external call was successful
+            }
+            Err(reason) => {
+                // Code to execute if the external call failed
             }
         }
     }

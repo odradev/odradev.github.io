@@ -8,12 +8,11 @@ description: Contracts calling contracts
 To show how to handle calls between contracts, first, let's implement two of them:
 
 ```rust title="examples/src/features/cross_calls.rs"
-use odra::prelude::*;
-use odra::{Address, UnwrapOrRevert, Var};
+use odra::{prelude::*, Address, External};
 
 #[odra::module]
 pub struct CrossContract {
-    pub math_engine: Var<Address>
+    pub math_engine: External<MathEngineContractRef>
 }
 
 #[odra::module]
@@ -23,8 +22,7 @@ impl CrossContract {
     }
 
     pub fn add_using_another(&self) -> u32 {
-        let math_engine_address = self.math_engine.get().unwrap_or_revert(&self.env());
-        MathEngineContractRef::new(self.env(), math_engine_address).add(3, 5)
+        self.math_engine.add(3, 5)
     }
 }
 
@@ -38,11 +36,26 @@ impl MathEngine {
     }
 }
 ```
-`MathEngine` contract can add two numbers. `CrossContract` takes an `Address` in its init function and saves it in
+`MathEngine` contract can add two numbers. `CrossContract` takes an `Address` in its `init` function and saves it in
 storage for later use. If we deploy the `MathEngine` first and take note of its address, we can then deploy
 `CrossContract` and use `MathEngine` to perform complicated calculations for us!
 
-To perform a cross-contact call, we use the `{{ModuleName}}ContractRef` that was created for us by Odra:
+To perform a cross-contact call, we use the `External` module component and wrap the `{{ModuleName}}ContractRef` 
+that was created for us by Odra:
+
+```rust title="examples/src/features/cross_calls.rs"
+pub struct CrossContract {
+    pub math_engine: External<MathEngineContractRef>
+}
+```
+
+and then we use the `math_engine` like any other contract/module:
+
+```rust title="examples/src/features/cross_calls.rs"
+self.math_engine.add(3, 5)
+```
+
+Alternatively, we could store a raw `Address`, then use the `{{ModuleName}}ContractRef` directly:
 
 ```rust title="examples/src/features/cross_calls.rs"
 MathEngineContractRef::new(self.env(), math_engine_address).add(3, 5)
@@ -53,10 +66,8 @@ We mentioned `HostRef` already in our [Testing](07-testing.md) article - a host 
 
 In the module context we use a `ContractRef` instead, to call other contracts.
 
-Similarly to a `{{ModuleName}}HostRef`, the `{{ModuleName}}ContractRef` is generated automatically, 
+Similarly to the `{{ModuleName}}HostRef`, the `{{ModuleName}}ContractRef` is generated automatically, 
 by the `#[odra::module]` attribute.
-
-To obtain an instance of a contract reference, we simply call the constructor - `{{ModuleName}}ContractRef::new(env: Rc<ContractEnv>, address: Address)`, as shown above.
 
 The reference implements all the public endpoints to the contract (those marked as `pub` in `#[odra::module]`
 impl), and the `{{ModuleName}}ContractRef::address()` function, which returns the address of the contract.
@@ -78,6 +89,18 @@ pub trait Adder {
 Analogously to modules, Odra creates the `AdderContractRef` struct (and `AdderHostRef` to be used in tests, but do not implement the `Deployer` trait). Having an address, in the module context we can call:
 
 ```rust
+struct Contract {
+    adder: External<AdderContractRef>
+}
+// in some function
+self.adder.add(3, 5)
+
+// or
+
+struct Contract {
+    adder: Var<Address>
+}
+// in some function
 AdderContractRef::new(self.env(), address).add(3, 5)
 ```
 

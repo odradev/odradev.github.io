@@ -131,6 +131,43 @@ casper-client put-deploy \
 
 For a more in-depth tutorial, please refer to the [Casper's 'Writing On-Chain Code'].
 
+### Example: Deploy with Odra's Livenet
+
+The same can be implemented using the Odra's Livenet interface.
+
+```rust
+struct Cfg {
+    name: String,
+    is_upgradable: bool,
+    allow_key_override: bool
+}
+
+impl odra::host::OdraConfig for Cfg {
+    fn package_hash(&self) -> String {
+        self.name.clone()
+    }
+
+    fn is_upgradable(&self) -> bool {
+        self.is_upgradable
+    }
+
+    fn allow_key_override(&self) -> bool {
+        self.allow_key_override
+    }
+}
+
+let env = odra_casper_livenet_env::env();
+let result = MyContract::try_deploy_with_cfg(
+    &env,
+    NoArgs,
+    Cfg {
+        name: "my_contract".to_string(),
+        is_upgradable: false,
+        allow_key_override: false
+    }
+);
+```
+
 ### Example: Deploy ERC721
 
 Odra comes with a standard ERC721 token implementation.

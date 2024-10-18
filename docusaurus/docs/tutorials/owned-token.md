@@ -21,7 +21,6 @@ Let's define a module called `OwnedToken` that is a composition of `Ownable` and
 ```rust title=owned_token.rs showLineNumbers
 use crate::{erc20::Erc20, ownable::Ownable};
 use odra::prelude::*;
-use odra::module::SubModule;
 
 #[odra::module]
 pub struct OwnedToken {
@@ -36,7 +35,7 @@ As you can see, we do not need any storage definition - we just take advantage o
 
 ```rust title=owned_token.rs showLineNumbers
 ...
-use odra::{Address, casper_types::U256};
+use odra::casper_types::U256;
 ...
 
 #[odra::module]

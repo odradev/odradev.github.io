@@ -22,7 +22,6 @@ Events definition is highly uncomplicated: `Paused` and `Unpaused` events holds 
 
 ```rust title=pauseable.rs showLineNumbers
 use odra::prelude::*;
-use odra::Address;
 
 #[odra::odra_error]
 pub enum Error {
@@ -46,9 +45,6 @@ pub struct Unpaused {
 The module storage is extremely simple - has a single `Var` of type bool, that indicates if a contract is paused.
 
 ```rust title=pauseable.rs showLineNumbers
-use odra::Var;
-...
-
 #[odra::module(events = [Paused, Unpaused])]
 pub struct Pausable {
     is_paused: Var<bool>
@@ -117,8 +113,6 @@ impl Pausable {
 In the end, let's use the module in a contract. For this purpose, we will implement a mock contract called `PausableCounter`. The contract consists of a Var `value` and a `Pausable` module. The counter can only be incremented if the contract is in a normal state (is not paused).
 
 ```rust title=pauseable.rs showLineNumbers
-...
-use odra::SubModule;
 ...
 
 #[odra::module]

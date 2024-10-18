@@ -12,7 +12,7 @@ For further explanation of how this code works, see [Flipper Internals](../basic
 ## Let's flip
 
 ```rust title="flipper.rs" showLineNumbers
-use odra::Var;
+use odra::prelude::*;
 
 /// A module definition. Each module struct consists Vars and Mappings
 /// or/and another modules.

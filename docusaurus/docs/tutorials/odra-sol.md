@@ -29,7 +29,7 @@ Let's start with a simple "Hello World" contract in Odra. The following code sni
 <TabItem value="rust" label="Odra">
 
 ```rust showLineNumbers
-use odra::{prelude::*, Var};
+use odra::prelude::*;
 
 #[odra::module]
 pub struct HelloWorld {
@@ -76,12 +76,7 @@ Two key differences are:
 
 ```rust showLineNumbers
 use core::str::FromStr;
-use odra::{
-    casper_types::{bytesrepr::Bytes, U256},
-    module::Module,
-    prelude::*,
-    Address, UnwrapOrRevert, Var,
-};
+use odra::{casper_types::{bytesrepr::Bytes, U256}, prelude::*};
 
 #[odra::module]
 pub struct Primitives {
@@ -185,7 +180,7 @@ Values are stored in units called `Named Keys` and `Dictionaries`. Additionally,
 <TabItem value="rust" label="Odra">
 
 ```rust showLineNumbers
-use odra::{casper_types::{account::AccountHash, U256}, Address};
+use odra::{casper_types::{account::AccountHash, U256}, prelude::*};
 
 #[odra::module]
 pub struct Constants;
@@ -224,7 +219,7 @@ In Odra, you can define constants using the `const` keyword. Constants are immut
 <TabItem value="rust" label="Odra">
 
 ```rust showLineNumbers
-use odra::{casper_types::U256, prelude::*, Var};
+use odra::{casper_types::U256, prelude::*};
 
 #[odra::module]
 pub struct Variables {
@@ -282,7 +277,7 @@ In Solidity there are three types of variables: state variables, local variables
 <TabItem value="rust" label="Odra">
 
 ```rust showLineNumbers
-use odra::{casper_types::U256, Address, Mapping};
+use odra::{casper_types::U256, prelude::*};
 
 #[odra::module]
 pub struct MappingContract {
@@ -374,7 +369,7 @@ contract NestedMapping {
 <TabItem value="rust" label="Odra">
 
 ```rust showLineNumbers
-use odra::{prelude::*, Var};
+use odra::prelude::*;
 
 #[odra::module]
 pub struct Array {
@@ -479,7 +474,7 @@ For storing a collection of data as a single unit, Odra uses the Vec type for dy
 <TabItem value="rust" label="Odra">
 
 ```rust showLineNumbers
-use odra::{prelude::*, Var};
+use odra::prelude::*;
 
 #[odra::odra_type]
 #[derive(Default)]
@@ -571,7 +566,7 @@ In Odra, custom types are defined using the `#[odra::odra_type]` attribute. The 
 <TabItem value="rust" label="Odra">
 
 ```rust showLineNumbers
-use odra::{prelude::*, List};
+use odra::prelude::*;
 
 #[odra::odra_type]
 pub struct Todo {
@@ -692,7 +687,7 @@ Functions can modify contract state and emit events using the [`ContractEnv`](..
 <TabItem value="rust" label="Odra">
 
 ```rust showLineNumbers
-use odra::Var;
+use odra::prelude::*;
 
 #[odra::module]
 pub struct ViewAndPure {
@@ -743,7 +738,7 @@ In Odra, you don't need to specify `view` or `pure` functions explicitly. All fu
 <TabItem value="rust" label="Odra">
 
 ```rust showLineNumbers
-use odra::{module::Module, Var};
+use odra::prelude::*;
 
 #[odra::module]
 pub struct FunctionModifier {
@@ -854,7 +849,7 @@ State variables can be declared as public, private, or internal but not external
 <TabItem value="rust" label="Odra">
 
 ```rust showLineNumbers
-use odra::{casper_types::U512, prelude::*, Address, ExecutionError, Var};
+use odra::{casper_types::U512, prelude::*};
 
 #[odra::module]
 pub struct Payable {
@@ -951,7 +946,7 @@ Odra does not support such a mechanism. You must have access to the contract int
 <TabItem value="rust" label="Odra">
 
 ```rust showLineNumbers
-use odra::{prelude::*, Address};
+use odra::prelude::*;
 
 #[odra::event]
 pub struct Log {
@@ -1109,7 +1104,7 @@ Let's take a look at the difference between inheritance in Solidity and composit
 <TabItem value="rust" label="Odra">
 
 ```rust showLineNumbers
-use odra::{prelude::*, SubModule};
+use odra::prelude::*;
 
 #[odra::module]
 pub struct A;
@@ -1262,7 +1257,7 @@ In contrast, Rust does not have a direct equivalent to the inheritance model, bu
 <TabItem value="rust" label="Odra">
 
 ```rust showLineNumbers
-use odra::{casper_types::U256, prelude::*, UnwrapOrRevert, Var};
+use odra::{casper_types::U256, prelude::*};
 
 mod math {
     use odra::casper_types::U256;
@@ -1413,11 +1408,7 @@ Odra does not have a direct equivalent to the `receive()` and `fallback()` funct
 <TabItem value="rust" label="Odra">
 
 ```rust showLineNumbers
-use odra::{
-    casper_types::{bytesrepr::ToBytes, U256},
-    prelude::*,
-    Address, UnwrapOrRevert, Var,
-};
+use odra::{casper_types::{bytesrepr::ToBytes, U256}, prelude::*};
 
 #[odra::module]
 pub struct HashFunction;
@@ -1497,7 +1488,7 @@ The key difference between the two is that in Solidity, the `keccak256` function
 <TabItem value="rust" label="Odra">
 
 ```rust showLineNumbers
-use odra::{module::Module, Address, ContractRef, External, Var};
+use odra::prelude::*;
 
 #[odra::module]
 pub struct Example {

@@ -15,13 +15,13 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-odra = "1.1.0"
+odra = "1.4.0"
 
 [dev-dependencies]
-odra-test = "1.1.0"
+odra-test = "1.4.0"
 
 [build-dependencies]
-odra-build = "1.1.0"
+odra-build = "1.4.0"
 
 [[bin]]
 name = "my_project_build_contract"
@@ -45,8 +45,8 @@ To use `odra-modules`, edit your `dependency` and `features` sections.
 
 ```toml title=Cargo.toml
 [dependencies]
-odra = "1.1.0"
-odra-modules = "1.1.0"
+odra = "1.4.0"
+odra-modules = "1.4.0"
 ```
 
 Now, the only thing left is to add a module to your contract.
@@ -55,7 +55,7 @@ Let's write an example of `MyToken` based on `Erc20` module.
 
 ```rust
 use odra::prelude::*;
-use odra::{Address, casper_types::U256, module::SubModule};
+use odra::casper_types::U256;
 use odra_modules::erc20::Erc20;
 
 #[odra::module]

@@ -9,7 +9,7 @@ regular Rust unit and integration tests. Have a look at how we test the Dog Cont
 previous article:
 
 ```rust title="examples/src/features/storage/list.rs"
-use odra::{List, Var};
+use odra::prelude::*;
 
 #[cfg(test)]
 mod tests {

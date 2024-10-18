@@ -16,11 +16,7 @@ Consider the following basic example for better understanding:
 
 ```rust
 use crate::{erc20::Erc20, ownable::Ownable};
-use odra::{
-    Address, casper_types::U256,
-    module::SubModule,
-    prelude::*
-};
+use odra::{casper_types::U256, prelude::*};
 
 #[odra::module]
 pub struct OwnedToken {
@@ -70,11 +66,7 @@ Let's take a look at another example.
 
 ```rust
 use crate::{erc20::Erc20, ownable::Ownable, exchange::Exchange};
-use odra::{
-    Address, casper_types::U256, 
-    module::SubModule,
-    prelude::*
-};
+use odra::{casper_types::U256, prelude::*};
 
 #[odra::module]
 pub struct DeFiPlatform {

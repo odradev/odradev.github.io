@@ -42,7 +42,6 @@ There are three actions that can be performed concerning a `Role`: granting, rev
 
 ```rust title=events.rs showLineNumbers
 use odra::prelude::*;
-use odra::Address;
 use super::access_control::Role;
 
 #[odra::event]
@@ -66,8 +65,8 @@ pub struct RoleAdminChanged {
     pub new_admin_role: Role
 }
 ```
-* **L5-L17** - to describe the grant or revoke actions, our events specify the `Role`, and `Address`es indicating who receives or loses access and who provides or withdraws it.
-* **L19-L24** - the event describing the admin role change, requires the subject `Role`, the previous and the current admin `Role`.
+* **L4-L16** - to describe the grant or revoke actions, our events specify the `Role`, and `Address`es indicating who receives or loses access and who provides or withdraws it.
+* **L18-L23** - the event describing the admin role change, requires the subject `Role`, the previous and the current admin `Role`.
 
 ```rust title=errors.rs
 #[odra::odra_error]
@@ -89,7 +88,6 @@ Now, we are stepping into the most interesting part: the module definition and i
 use super::events::*;
 use super::errors::Error;
 use odra::prelude::*;
-use odra::{Address, Mapping};
 
 pub type Role = [u8; 32];
 
@@ -174,15 +172,15 @@ impl AccessControl {
     }
 }
 ```
-* **L6** - Firstly, we need the `Role` type. It is simply an alias for a 32-byte array.
-* **L8** - The default role is an array filled with zeros.
+* **L5** - Firstly, we need the `Role` type. It is simply an alias for a 32-byte array.
+* **L7** - The default role is an array filled with zeros.
 * **L10-L13** - The storage consists of two mappings:
 1. `roles` - a nested mapping that stores information about whether a certain Role is granted to a given `Address`.
 2. `role_admin` - each `Role` can have a single admin `Role`.
-* **L18-L20** - This is a simple check to determine if a `Role` has been granted to a given `Address`. It is an exposed entry point and an important building block widely used throughout the entire module.
-* **L49** - This is a non-exported block containing helper functions.
-* **L50-L54** - The `check_role()` function serves as a guard function. Before a `Role` is granted or revoked, we must ensure that the caller is allowed to do so. For this purpose, the function reads the roles mapping. If the role has not been granted to the address, the contract reverts with `Error::MissingRole`.
-* **L56-L64** - The `set_admin_role()` function simply updates the role_admin mapping and emits the `RoleAdminChanged` event.
-* **L66-L86** - The `unchecked_grant_role()` and `unchecked_revoke_role()` functions are mirror functions that update the roles mapping and post `RoleGranted` or `RoleRevoked` events. If the role is already granted, `unchecked_grant_role()` has no effect (the opposite check is made in the case of revoking a role).
-* **L22-L29** - The `get_role_admin()` entry point reads the role_admin. If there is no admin role for a given role, it returns the default role.
-* **L31-L46** - This is a combination of `check_role()` and `unchecked_*_role()`. Entry points fail on unauthorized access.
+* **L17-L19** - This is a simple check to determine if a `Role` has been granted to a given `Address`. It is an exposed entry point and an important building block widely used throughout the entire module.
+* **L48** - This is a non-exported block containing helper functions.
+* **L49-L53** - The `check_role()` function serves as a guard function. Before a `Role` is granted or revoked, we must ensure that the caller is allowed to do so. For this purpose, the function reads the roles mapping. If the role has not been granted to the address, the contract reverts with `Error::MissingRole`.
+* **L55-L63** - The `set_admin_role()` function simply updates the role_admin mapping and emits the `RoleAdminChanged` event.
+* **L65-L85** - The `unchecked_grant_role()` and `unchecked_revoke_role()` functions are mirror functions that update the roles mapping and post `RoleGranted` or `RoleRevoked` events. If the role is already granted, `unchecked_grant_role()` has no effect (the opposite check is made in the case of revoking a role).
+* **L21-L28** - The `get_role_admin()` entry point reads the role_admin. If there is no admin role for a given role, it returns the default role.
+* **L30-L45** - This is a combination of `check_role()` and `unchecked_*_role()`. Entry points fail on unauthorized access.

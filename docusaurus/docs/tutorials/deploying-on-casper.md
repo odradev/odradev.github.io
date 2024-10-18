@@ -62,7 +62,7 @@ use std::str::FromStr;
 
 use odra::casper_types::U256;
 use odra::host::{Deployer, HostEnv, HostRef, HostRefLoader};
-use odra::Address;
+use odra::prelude::Address;
 use ourcoin::token::{OurToken, OurToken, OurTokenInitArgs};
 
 fn main() {
@@ -141,15 +141,15 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-odra = { version = "1.1.0", features = [], default-features = false }
-odra-modules = { version = "1.1.0", features = [], default-features = false }
-odra-casper-livenet-env = { version = "1.1.0", optional = true }
+odra = { version = "1.4.0", features = [], default-features = false }
+odra-modules = { version = "1.4.0", features = [], default-features = false }
+odra-casper-livenet-env = { version = "1.4.0", optional = true }
 
 [dev-dependencies]
-odra-test = { version = "1.1.0", features = [], default-features = false }
+odra-test = { version = "1.4.0", features = [], default-features = false }
 
 [build-dependencies]
-odra-build = { version = "1.1.0", features = [], default-features = false }
+odra-build = { version = "1.4.0", features = [], default-features = false }
 
 [features]
 default = []

@@ -16,7 +16,7 @@ For this tutorial, we will use the `TimeLockWallet` contract from our examples.
 
 ```rust title=examples/src/contracts/tlw.rs showLineNumbers
 use odra::prelude::*;
-use odra::{casper_types::U512, Address, Mapping, Var};
+use odra::casper_types::U512;
 
 #[odra::module(errors = Error, events = [Deposit, Withdrawal])]
 pub struct TimeLockWallet {
@@ -122,13 +122,13 @@ To interact with the contract, we use the `livenet` backend. It allows to write 
 ```toml title=Cargo.toml
 [package]
 name = "odra-examples"
-version = "1.1.0"
+version = "1.4.0"
 edition = "2021"
 
 [dependencies]
 odra = { path = "../odra", default-features = false }
 ... # other dependencies
-odra-casper-livenet-env = { version = "1.1.0", optional = true }
+odra-casper-livenet-env = { version = "1.4.0", optional = true }
 
 ... # other sections
 
@@ -151,7 +151,7 @@ test = false
 //! Deploys an [odra_examples::contracts::tlw::TimeLockWallet] contract, then deposits and withdraw some CSPRs.
 use odra::casper_types::{AsymmetricType, PublicKey, U512};
 use odra::host::{Deployer, HostRef};
-use odra::Address;
+use odra::prelude::*;
 use odra_examples::contracts::tlw::{TimeLockWallet, TimeLockWalletInitArgs};
 
 const DEPOSIT: u64 = 100;

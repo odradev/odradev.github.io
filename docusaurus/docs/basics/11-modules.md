@@ -11,7 +11,6 @@ example from the previous article, to use a single contract, but still separate 
 
 ```rust title="examples/src/features/modules.rs"
 use crate::features::cross_calls::MathEngine;
-use odra::module::SubModule;
 use odra::prelude::*;
 
 #[odra::module]

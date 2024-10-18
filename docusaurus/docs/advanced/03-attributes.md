@@ -79,7 +79,7 @@ impl NonReentrantCounter {
 #[cfg(test)]
 mod test {
     use super::*;
-    use odra::{host::{Deployer, NoArgs}, ExecutionError};
+    use odra::host::{Deployer, NoArgs};
 
     #[test]
     fn ref_recursion_not_allowed() {

@@ -9,7 +9,6 @@ In the EVM world events are stored as logs within the blockchain's transaction r
 
 ```rust title="examples/src/features/events.rs"
 use odra::prelude::*;
-use odra::Address;
 
 #[odra::module(events = [PartyStarted])]
 pub struct PartyContract;

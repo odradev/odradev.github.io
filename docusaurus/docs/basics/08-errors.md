@@ -10,7 +10,6 @@ following example of a simple owned contract:
 
 ```rust title="examples/src/features/handling_errors.rs"
 use odra::prelude::*;
-use odra::{Address, Var};
 
 #[odra::module(errors = Error)]
 pub struct OwnedContract {

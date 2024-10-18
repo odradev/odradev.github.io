@@ -33,7 +33,7 @@ Let's start implementing the `TicketOffice` contract by modify the code generate
 
 ```rust showLineNumbers title="src/token.rs"
 use odra::{
-    args::Maybe, casper_types::U512, prelude::*, Address, Mapping, SubModule, UnwrapOrRevert
+    args::Maybe, casper_types::U512, prelude::*
 };
 use odra_modules::access::Ownable;
 use odra_modules::cep78::{
@@ -294,7 +294,7 @@ cargo odra generate -c ticket_operator
 
 ```rust showLineNumbers title="src/ticket_operator.rs"
 use crate::token::{TicketId, TicketOfficeContractRef};
-use odra::{casper_types::U512, prelude::*, Address, UnwrapOrRevert, Var};
+use odra::{casper_types::U512, prelude::*};
 
 #[odra::odra_error]
 pub enum Error {
@@ -342,10 +342,6 @@ impl TicketOperator {
 Now we need to adjust the `TicketOffice` contract to use the `TicketOperator` contract to buy tickets.
 
 ```rust showLineNumbers title="src/token.rs"
-use odra::Var;
-
-... 
-
 #[odra::odra_error]
 pub enum Error {
     ...
@@ -413,10 +409,10 @@ impl TicketOffice {
     }
 }
 ```
-* **L15** - the contract stores the operator address.
-* **L22-L29** - a new function `register_operator` allows the owner to register an operator. Also calls the `register` entry point on the operator contract.
-* **L36-38** - modify the `issue_ticket` function: once a new token is minted, approves the operator to transfer the ticket later.
-* **L44-L57** - modify the `buy_ticket` function: check if the caller is the operator, do not transfer cspr to the contract - now the operator collect funds.
+* **L11** - the contract stores the operator address.
+* **L18-L25** - a new function `register_operator` allows the owner to register an operator. Also calls the `register` entry point on the operator contract.
+* **L32-36** - modify the `issue_ticket` function: once a new token is minted, approves the operator to transfer the ticket later.
+* **L40-L53** - modify the `buy_ticket` function: check if the caller is the operator, do not transfer cspr to the contract - now the operator collect funds.
 * We also added two helper functions: `is_operator` and `operator` to check if the caller is the operator and get the operator address. Two new errors were added: `MissingOperator` and `Unauthorized`.
 
 Now we need to update our tests to create a scenario we presented in the sequence diagram.
@@ -425,7 +421,7 @@ Now we need to update our tests to create a scenario we presented in the sequenc
 use odra::{
     casper_types::U512,
     host::{Deployer, HostRef, NoArgs},
-    OdraResult,
+    prelude::*
 };
 
 use crate::{

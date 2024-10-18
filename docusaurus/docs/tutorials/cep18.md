@@ -321,7 +321,7 @@ and using tools from the Casper Ecosystem to interact with it.
 Here is the complete code of the `OurToken` module:
 
 ```rust showLineNumbers title="src/token.rs"
-use odra::{casper_types::U256, prelude::*, Address, List, SubModule, Var};
+use odra::{casper_types::U256, prelude::*};
 use odra_modules::cep18_token::Cep18;
 
 /// A ballot cast by a voter.

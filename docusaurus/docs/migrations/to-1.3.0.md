@@ -1,6 +1,6 @@
 ---
-sidebar_position: 1
-description: Migration guide to v0.8.0
+sidebar_position: 3
+description: Migration guide to v1.3.0
 ---
 
 import Tabs from '@theme/Tabs';

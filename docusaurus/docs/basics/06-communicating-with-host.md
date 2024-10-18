@@ -10,7 +10,6 @@ what is the current time? Who called me? Following example shows how to do this:
 
 ```rust title="examples/src/features/host_functions.rs"
 use odra::prelude::*;
-use odra::{Address, Var};
 
 #[odra::module]
 pub struct HostContract {

@@ -10,7 +10,7 @@ their funds and anyone can withdraw them:
 
 ```rust title="examples/src/features/native_token.rs"
 use odra::prelude::*;
-use odra::{casper_types::U512, module::Module};
+use odra::casper_types::U512;
 
 #[odra::module]
 pub struct PublicWallet;

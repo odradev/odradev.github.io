@@ -41,7 +41,7 @@ However, there are more advanced scenarios where the value of the Mapping repres
 Let's consider the following example:
 
 ```rust title="examples/src/features/storage/mapping.rs"
-use odra::{casper_types::U256, Mapping, UnwrapOrRevert};
+use odra::casper_types::U256;
 use odra::prelude::*;
 use crate::owned_token::OwnedToken;
 
@@ -87,7 +87,7 @@ Secondly, rather than utilizing the `Mapping::get()` function, call `Mapping::mo
 The given code snippet showcases the `AdvancedStorage` contract that incorporates these storage concepts.
 
 ```rust
-use odra::{Address, casper_types::U512, Sequence, Mapping};
+use odra::casper_types::U512;
 use odra::prelude::*;
 use crate::modules::Token;
 

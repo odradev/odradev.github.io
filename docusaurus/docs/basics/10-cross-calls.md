@@ -8,7 +8,7 @@ description: Contracts calling contracts
 To show how to handle calls between contracts, first, let's implement two of them:
 
 ```rust title="examples/src/features/cross_calls.rs"
-use odra::{prelude::*, Address, External};
+use odra::prelude::*;
 
 #[odra::module]
 pub struct CrossContract {
@@ -149,7 +149,7 @@ Let's continue assuming there is a contract featuring the `add()` function that 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use odra::{Address, host::{Deployer, HostRef, NoArgs}};
+    use odra::{host::{Deployer, HostRef, NoArgs}};
     
     #[test]
     fn test_ext() {

@@ -18,7 +18,6 @@ If you forget to register events and errors in the module attribute, the definit
 
 ```rust showLineNumbers title="src/contract.rs"
 use odra::prelude::*;
-use odra::{Address, Var};
 
 #[odra::module(
     // the name of the contract, default is the module name

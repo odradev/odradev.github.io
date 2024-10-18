@@ -27,7 +27,7 @@ It is designed to store the following data:
 ## Module definition
 ```rust title=erc20.rs showLineNumbers
 use odra::prelude::*;
-use odra::{Address, casper_types::U256, Mapping, Var};
+use odra::casper_types::U256;
 
 #[odra::module(events = [Transfer, Approval])]
 pub struct Erc20 {
@@ -99,8 +99,6 @@ pub struct Transfer {
 * **L28** - The second `impl` is not an Odra module; in other words, these functions will not be part of the contract's public interface.
 * **L29-L38** - The `mint` function is public, so, like in regular Rust code, it will be accessible from the outside. `mint()` uses the notation `self.balances.add(address, *amount);`, which is syntactic sugar for:
 ```rust
-use odra::UnwrapOrRevert;
-
 let current_balance = self.balances.get(address).unwrap_or_default();
 let new_balance = <U256 as OverflowingAdd>::overflowing_add(current_balance, current_balance).unwrap_or_revert(&self.env());
 self.balances.set(address, new_balance);

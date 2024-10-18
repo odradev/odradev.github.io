@@ -29,7 +29,6 @@ Before we write any code, we define functionalities we would like to implement.
 
 ```rust title=ownable.rs showLineNumbers
 use odra::prelude::*;
-use odra::{Address, Var};
 
 #[odra::module(events = [OwnershipChanged])]
 pub struct Ownable {
@@ -38,8 +37,8 @@ pub struct Ownable {
 ```
 That was easy, but it is crucial to understand the basics before we move on.
 
-* **L4** - Firstly, we need to create a struct called `Ownable` and apply `#[odra::module(events = [OwnershipChanged])]` attribute to it. The `events` attribute is optional but informs the Odra toolchain about the events that will be emitted by the module and includes them in the contract's metadata. `OwnershipChanged` is a type that will be defined later.
-* **L6** - Then we can define the layout of our module. It is extremely simple - just a single state value. What is most important is that you can never leave a raw type; you must always wrap it with `Var`.
+* **L3** - Firstly, we need to create a struct called `Ownable` and apply `#[odra::module(events = [OwnershipChanged])]` attribute to it. The `events` attribute is optional but informs the Odra toolchain about the events that will be emitted by the module and includes them in the contract's metadata. `OwnershipChanged` is a type that will be defined later.
+* **L5** - Then we can define the layout of our module. It is extremely simple - just a single state value. What is most important is that you can never leave a raw type; you must always wrap it with `Var`.
 
 ### Init the module
 

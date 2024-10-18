@@ -13,7 +13,6 @@ variable in the `Var` type. Let's look at a "real world" example of a contract t
 
 ```rust title="examples/src/features/storage/variable.rs"
 use odra::prelude::*;
-use odra::Var;
 
 #[odra::module]
 pub struct DogContract {
@@ -105,7 +104,6 @@ uses `Mapping` to store information about our dog's friends and how many times t
 
 ```rust title="examples/src/features/storage/mapping.rs"
 use odra::prelude::*;
-use odra::{Mapping, Var};
 
 #[odra::module]
 pub struct DogContract2 {
@@ -139,7 +137,7 @@ If you take a look into List implementation in Odra, you'll see that in fact it 
 a Var working together:
 
 ```rust title="core/src/list.rs"
-use odra::{List, Var};
+use odra::prelude::*;
 
 pub struct List<T> {
     values: Mapping<u32, T>,
@@ -153,7 +151,7 @@ Going back to our DogContract example - let's revisit the walk case. This time, 
 we'll use the list:
 
 ```rust title="examples/src/features/storage/list.rs"
-use odra::{prelude::*, List, Var};
+use odra::prelude::*;
 
 #[odra::module]
 pub struct DogContract3 {
@@ -206,7 +204,7 @@ By default you can store only built-in types like numbers, Options, Results, Str
 Implementing custom types is straightforward, your type must add `#[odra::odra_type]` attribute. Let's see how to implement a `Dog` type: 
 
 ```rust
-use odra::Address;
+use odra::prelude::*;
 
 #[odra::odra_type]
 pub struct Dog {

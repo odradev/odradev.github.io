@@ -28,7 +28,7 @@ We will expose two methods:
 2. The method `set_data` which sets the value of the numeric field and the values of the mapping.
 
 ```rust title=custom_item.rs showLineNumbers
-use odra::{casper_types::U256, prelude::*, Mapping, SubModule, Var};
+use odra::{casper_types::U256, prelude::*};
 
 // A custom type with a vector of another custom type
 #[odra::odra_type]

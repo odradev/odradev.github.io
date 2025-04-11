@@ -48,6 +48,6 @@ You will learn more functions that Odra exposes from host and types it uses in f
 In the next article, we'll dive into testing your contracts with Odra, so you can check that the code
 we presented in fact works!
 
-[`Module::env()`]: https://docs.rs/odra/1.1.0/odra/module/trait.Module.html#tymehtod.env
-[`ContractEnv`]: https://docs.rs/odra/1.1.0/odra/struct.ContractEnv.html
+[`Module::env()`]: https://docs.rs/odra/2.0.0/odra/module/trait.Module.html#tymehtod.env
+[`ContractEnv`]: https://docs.rs/odra/2.0.0/odra/struct.ContractEnv.html
 [`Backend section`]: ../backends/01-what-is-a-backend.md#contract-env

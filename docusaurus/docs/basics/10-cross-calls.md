@@ -9,6 +9,7 @@ To show how to handle calls between contracts, first, let's implement two of the
 
 ```rust title="examples/src/features/cross_calls.rs"
 use odra::prelude::*;
+use odra::ContractRef;
 
 #[odra::module]
 pub struct CrossContract {
@@ -109,7 +110,7 @@ Sometimes it is useful to load the deployed contract instead of deploying it by 
 our contracts in [Livenet](../backends/04-livenet.md) backend. We can load the contract using `load` method on the `Deployer`:
 
 ```rust title="examples/bin/erc20_on_livenet.rs"
-fn _load(env: &HostEnv) -> Erc20HostRef {
+fn _load_erc20(env: &HostEnv) -> Erc20HostRef {
     let address = "hash-d26fcbd2106e37be975d2045c580334a6d7b9d0a241c2358a4db970dfd516945";
     let address = Address::from_str(address).unwrap();
     Erc20::load(env, address)

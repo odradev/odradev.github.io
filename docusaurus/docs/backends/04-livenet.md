@@ -117,7 +117,7 @@ fn main() {
     // Non-mutable calls are free! Neat, huh? More on that later.
     println!("Token name: {}", token.name());
 
-    // The next call is mutable, but the cost is lower that the deployment,
+    // The next call is mutable, but the cost is lower than the deployment,
     // so we change the amount of gas
     env.set_gas(3_000_000_000u64);
     token.transfer(recipient, U256::from(1000));

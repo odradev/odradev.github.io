@@ -11,13 +11,12 @@ the Odra-specific sections of the code.
 ## Header
 
 ```rust title="flipper.rs"
-use odra::prelude::*;
+use odra::Var;
 ```
 
-The first line of the file imports the `odra` crate. The `prelude` module contains all the necessary
-types and traits that you will need to write your contract. It is a good practice to import the
-`odra::prelude::*` module in every file that contains Odra code. This way, you will not have to
-import each type or trait separately.
+Pretty straightforward. Odra wraps the code of the specific blockchains SDKs into its own implementation
+that can be reused between targets. In the above case, we're importing `Var`, which is responsible
+for storing simple values on the blockchain's storage.
 
 ## Struct
 
@@ -62,7 +61,7 @@ functions that are not available for calling outside the contract, do not make t
 you can create a separate `impl` section without the attribute - all functions defined there, even marked
 with `pub` will be not callable.
 
-The function named `init` is the constructor of the contract. This function will be limited only
+The function named `init` is the constructor of the contract. This function will be limited to only
 to a single call, all further calls to it will result in an error. The `init` function is optional,
 if your contract does not need any initialization, you can skip it.
 
@@ -92,8 +91,7 @@ mod tests {
     #[test]
     fn flipping() {
         let env = odra_test::env();
-        // To test a module we need to deploy it. `Flipper` implements `Deployer` trait, 
-        // so we can use it to deploy the module.
+        // To test a module we need to deploy it.
         let mut contract = Flipper::deploy(&env, NoArgs);
         assert!(!contract.get());
         contract.flip();

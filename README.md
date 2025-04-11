@@ -13,6 +13,12 @@ The code is automatically published after push to the `master` branch.
 $ just install
 $ just develop
 ```
+## Create new version
+
+```
+just docs-new-version version
+```
 
 ## Contact
 You can reach us at **contact@odra.dev**.
+

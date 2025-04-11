@@ -38,8 +38,6 @@ cargo odra new -t blank --name my-project
 The third available template is `workspace`, which creates a workspace with two projects, similar to the one created 
 with the `full` template.
 
-There are also two templates which create a project with a sample tokens native to Casper Network: cep18 and cep78.
-
 By default, the latest release of Odra will be used for the template and as a dependency.
 You can pass a source of Odra you want to use, by using `-s` parameter:
 
@@ -127,15 +125,6 @@ If you want to build specific contract, you can use `-c` option:
 
 ```bash
 cargo odra build -c counter # you pass many comma separated contracts
-```
-
-## Skipping building
-
-As building wasm files can take a long time, especially if you have a lot of contracts. If you did not change anything
-in your contracts and you just want to rerun the tests for the casper backend, use the `-s` option:
-
-```bash
-cargo odra test -b casper -s
 ```
 
 ## Generating contract schema

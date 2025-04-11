@@ -11,7 +11,6 @@ To start working with Odra, you need to have the following installed on your mac
 
 - Rust toolchain installed (see [rustup.rs](https://rustup.rs/))
 - wasmstrip tool installed (see [wabt](https://github.com/WebAssembly/wabt))
-- wasm-opt tool installed (see [binaryen](https://github.com/WebAssembly/binaryen))
 
 We do not provide exact commands for installing these tools, as they are different for different operating systems.
 Please refer to the documentation of the tools themselves.

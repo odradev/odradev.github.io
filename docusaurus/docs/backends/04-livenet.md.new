@@ -58,9 +58,9 @@ ODRA_CASPER_LIVENET_KEY_2=.keys/secret_key_2.pem
 # CSPR_CLOUD_AUTH_TOKEN=
 ```
 
-:::note
+::::note
 CSPR.cloud is a service that provides mainnet and testnet Casper nodes on demand.
-:::
+::::
 
 With the proper value in place, we can write our tests or deploy scenarios. In the examples, we can find
 a simple binary that deploys a contract and calls it. The test is located in the [erc20_on_livenet.rs] file.
@@ -126,7 +126,7 @@ fn main() {
 }
 ```
 
-:::note
+::::note
 The above example is a rust binary, not a test. Note that it is also added as a section of the
 `Cargo.toml` file:
 ```toml
@@ -136,7 +136,7 @@ path = "src/bin/erc20_on_livenet.rs"
 required-features = ["livenet"]
 test = false
 ```
-:::
+::::
 
 ## Usage
 
@@ -146,9 +146,9 @@ To run the above code, we simply need to run the binary with the `livenet` featu
 cargo run --bin erc20_on_livenet --features=livenet
 ```
 
-:::note
+::::note
 Before executing the binary, make sure you built a wasm file.
-:::
+::::
 
 A part of a sample output should look like this:
 
@@ -163,13 +163,13 @@ Recipient's balance: 4000
 ```
 Those logs are a result of the last 4 lines of the above listing.
 Each deployment or a call to the blockchain will be noted and will take some time to execute.
-We can see that the `transfer` call took over 15 seconds to execute. But calling `balance_of` was nearly instant
+We can see that the `transfer` call took over 30 seconds to execute. But calling `balance_of` was nearly instant
 and cost us nothing. How it is possible?
 
-:::info
+::::info
 You can see the deployment on http://cspr.live/ - the transfer from the example
 can be seen [here](https://integration.cspr.live/deploy/65b1a5d21174a62c675f89683aba995c453b942c705b404a1f8bbf6f0f6de32a).
-:::
+::::
 
 ## How Livenet backend works
 All calls of entrypoints executed on a Casper blockchain cost gas - even if they do not change the state.

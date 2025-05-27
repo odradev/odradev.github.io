@@ -11,5 +11,5 @@ If you are using version older than 1.4, make sure you followed previous migrati
 Update `rust-toolchain` file in your project:
 
 ```title="rust-toolchain"
-nightly-2024-07-02
-``kkk`
+nightly-2024-07-31
+```

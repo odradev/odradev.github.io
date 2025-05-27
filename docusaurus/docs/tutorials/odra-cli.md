@@ -63,7 +63,7 @@ deploys the contract and adds it to a container. The main function creates a new
 making it available for the user.
 
 ## How to use it
-Assuming the correct [livenet](/backends/livenet) environment is set up, you can run the cli tool using the following command:
+Assuming the correct [livenet](../backends/04-livenet.md) environment is set up, you can run the cli tool using the following command:
 
 ```bash
 cargo run --bin odra-cli

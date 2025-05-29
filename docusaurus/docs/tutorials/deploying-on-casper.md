@@ -141,15 +141,15 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-odra = { version = "1.4.0", features = [], default-features = false }
-odra-modules = { version = "1.4.0", features = [], default-features = false }
-odra-casper-livenet-env = { version = "1.4.0", optional = true }
+odra = { version = "2.0.1", features = [], default-features = false }
+odra-modules = { version = "2.0.1", features = [], default-features = false }
+odra-casper-livenet-env = { version = "2.0.1", optional = true }
 
 [dev-dependencies]
-odra-test = { version = "1.4.0", features = [], default-features = false }
+odra-test = { version = "2.0.1", features = [], default-features = false }
 
 [build-dependencies]
-odra-build = { version = "1.4.0", features = [], default-features = false }
+odra-build = { version = "2.0.1", features = [], default-features = false }
 
 [features]
 default = []

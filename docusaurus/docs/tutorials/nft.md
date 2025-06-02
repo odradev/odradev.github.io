@@ -3,15 +3,15 @@ sidebar_position: 6
 ---
 
 # Ticketing System
+
 Non-fungible tokens (NFTs) are digital assets that represent ownership of unique items or pieces of content. They are commonly used for digital art, collectibles, in-game items, and other unique assets. In this tutorial, we will create a simple ticketing system based on NFT tokens.
 
-Our contract will adhere to the CEP-78 standard, which is the standard for NFTs on the Casper blockchain.
+Our contract will adhere to the CEP-95 standard, which is the standard for NFTs on the Casper blockchain.
 
-Learn more about the CEP-78 standard [here](https://github.com/casper-ecosystem/cep-78-enhanced-nft/tree/dev/docs).
-
-### Ticket Office Contract
+## Ticket Office Contract
 
 Our TicketOffice contract will include the following features:
+
 * Compliance with the CEP-78 standard.
 * Ownership functionality.
 * Only the owner can issue new event tickets.
@@ -19,29 +19,24 @@ Our TicketOffice contract will include the following features:
 * Tickets are limited to a one-time sale.
 * Public access to view the total income of the `TicketOffice`.
 
-### Setup the project
+## Setup the project
 
-Creating a new NFT token with Odra is straightforward. Use the `cargo odra new` command to create a new project with the CEP-78 template:
+Creating a new NFT token with Odra is straightforward. Use the `cargo odra new` command to create a new project with the CEP-95 template:
 
 ```bash
-cargo odra new --name ticket-office --template cep78
+cargo odra new --name ticket-office --template cep95
 ```
 
-### Contract implementation
+## Contract implementation
 
-Let's start implementing the `TicketOffice` contract by modify the code generated from the template. 
+Let's start implementing the `TicketOffice` contract by modify the code generated from the template.
 
 ```rust showLineNumbers title="src/token.rs"
-use odra::{
-    args::Maybe, casper_types::U512, prelude::*
-};
+use odra::{casper_types::{U256, U512}, prelude::*};
 use odra_modules::access::Ownable;
-use odra_modules::cep78::{
-    modalities::{MetadataMutability, NFTIdentifierMode, NFTKind, NFTMetadataKind, OwnershipMode},
-    token::Cep78,
-};
+use odra_modules::cep95::{CEP95Interface, Cep95};
 
-pub type TicketId = u64;
+pub type TicketId = U256;
 
 #[odra::odra_type]
 pub enum TicketStatus {
@@ -82,29 +77,19 @@ pub enum Error {
     errors = Error
 )]
 pub struct TicketOffice {
-    token: SubModule<Cep78>,
+    token: SubModule<Cep95>,
     ownable: SubModule<Ownable>,
     tickets: Mapping<TicketId, TicketInfo>,
+    token_id_counter: Var<TicketId>,
+    total_supply: Var<u64>,
 }
 
 #[odra::module]
 impl TicketOffice {
     pub fn init(&mut self, collection_name: String, collection_symbol: String, total_supply: u64) {
-        self.ownable.init();
-        let receipt_name = format!("cep78_{}", collection_name);
-        self.token.init(
-            collection_name,
-            collection_symbol,
-            total_supply,
-            OwnershipMode::Transferable,
-            NFTKind::Digital,
-            NFTIdentifierMode::Ordinal,
-            NFTMetadataKind::Raw,
-            MetadataMutability::Immutable,
-            receipt_name,
-            // remaining args are optional and can set to Maybe::None
-            ...
-        );
+        let caller = self.env().caller();
+        self.ownable.init(caller);
+        self.token.init(collection_name, collection_symbol);
     }
 
     pub fn issue_ticket(&mut self, event_name: String, price: U512) {
@@ -112,11 +97,8 @@ impl TicketOffice {
         let caller = env.caller();
         self.ownable.assert_owner(&caller);
         // mint a new token
-        let (_, _, token_id) = self.token.mint(caller, "".to_string(), Maybe::None);
-        let ticket_id: u64 = token_id
-            .parse()
-            .map_err(|_| Error::InvalidTicketId)
-            .unwrap_or_revert(&env);
+        let ticket_id = self.token_id_counter.get_or_default();
+        self.token.mint(caller, ticket_id, Default::default());
         // store ticket info
         self.tickets.set(
             &ticket_id,
@@ -126,6 +108,7 @@ impl TicketOffice {
                 status: TicketStatus::Available,
             },
         );
+        self.token_id_counter.set(ticket_id + 1);
         // emit an event
         env.emit_event(OnTicketIssue {
             ticket_id,
@@ -141,7 +124,7 @@ impl TicketOffice {
         let buyer = env.caller();
         let value = env.attached_value();
         // only tokens owned by the owner can be sold
-        if self.token.owner_of(Maybe::Some(ticket_id), Maybe::None) != owner {
+        if self.token.owner_of(ticket_id) != Some(owner) {
             env.revert(Error::TicketNotAvailableForSale);
         }
         let mut ticket = self
@@ -159,8 +142,7 @@ impl TicketOffice {
         // transfer csprs to the owner
         env.transfer_tokens(&owner, &value);
         // transfer the ticket to the buyer
-        self.token
-            .transfer(Maybe::Some(ticket_id), Maybe::None, owner, buyer);
+        self.token.transfer_from(owner, buyer, ticket_id);
         ticket.status = TicketStatus::Sold;
         self.tickets.set(&ticket_id, ticket);
 
@@ -172,15 +154,17 @@ impl TicketOffice {
     }
 }
 ```
-* **L10-L44** - We define structures and enums that will be used in our contract. `TicketStatus` enum represents the status of a ticket, `TicketInfo` struct contains information about a ticket that is written to the storage, `TicketId` is a type alias for `u64`. `OnTicketIssue` and `OnTicketSell` are events that will be emitted when a ticket is issued or sold.
-* **L46-L49** - Register errors and events that will be used in our contract, required to produce a complete contract schema.
-* **L51-L53** - `TicketOffice` module definition. The module contains a `Cep78` token, an `Ownable` module, and a `Mapping` that stores information about tickets.
-* **L58-L74** - The `init` function has been generated from the template and there is no need to modify it, except the `Ownable` module initialization.
-* **L76-L94** - The `issue_ticket` function allows the owner to issue a new ticket. The function mints a new token, stores information about the ticket, and emits an `OnTicketIssue` event.
-* **L103** - The `payable` attribute indicates that the `buy_ticket` function can receive funds.
-* **L104-L134** - The `buy_ticket` function checks if the ticket is available for sale, if the buyer sends enough funds, and transfers the ticket to the buyer. Finally, the function updates the ticket status and emits an `OnTicketSell` event.
+
+* **L7-L39** - We define structures and enums that will be used in our contract. `TicketStatus` enum represents the status of a ticket, `TicketInfo` struct contains information about a ticket that is written to the storage, `TicketId` is a type alias for `u64`. `OnTicketIssue` and `OnTicketSell` are events that will be emitted when a ticket is issued or sold.
+* **L41-L44** - Register errors and events that will be used in our contract, required to produce a complete contract schema.
+* **L45-L51** - `TicketOffice` module definition. The module contains a `Cep95` token, an `Ownable` module, a `Mapping` that stores information about tickets and `Var`s `token_id_counter` and `total_supply` to keep track of the total number of tickets issued.
+* **L55-L59** - The `init` function has been generated from the template and there is no need to modify it, except the `Ownable` module initialization.
+* **L61-L84** - The `issue_ticket` function allows the owner to issue a new ticket. The function mints a new token, stores information about the ticket, and emits an `OnTicketIssue` event.
+* **L86** - The `payable` attribute indicates that the `buy_ticket` function can receive funds.
+* **L87-L116** - The `buy_ticket` function checks if the ticket is available for sale, if the buyer sends enough funds, and transfers the ticket to the buyer. Finally, the function updates the ticket status and emits an `OnTicketSell` event.
 
 Lets test the contract. The test scenario will be as follows:
+
 1. Deploy the contract.
 2. Issue two tickets.
 3. Try to buy a ticket with insufficient funds.
@@ -214,55 +198,60 @@ fn it_works() {
     assert_eq!(
         contract
             .with_tokens(U512::from(50))
-            .try_buy_ticket(0),
+            .try_buy_ticket(0.into()),
         Err(Error::InsufficientFunds.into())
     );
 
     assert_eq!(
         contract
             .with_tokens(U512::from(100))
-            .try_buy_ticket(0),
+            .try_buy_ticket(0.into()),
         Ok(())
     );
     assert_eq!(
         contract
             .with_tokens(U512::from(50))
-            .try_buy_ticket(1),
+            .try_buy_ticket(1.into()),
         Ok(())
     );
 
     assert_eq!(
         contract
             .with_tokens(U512::from(100))
-            .try_buy_ticket(0),
+            .try_buy_ticket(0.into()),
         Err(Error::TicketNotAvailableForSale.into())
     );
 }
 ```
 
-Unfortunately, the test failed. The first assertion succeeds because the buyer sends insufficient funds to buy the ticket. However, the second assertion fails even though the buyer sends enough funds to purchase the ticket. The buy_ticket function reverts with `Cep78Error::InvalidTokenOwner` because the buyer attempts to transfer a token that they do not own, are not approved for, or are not an operator of.
+Unfortunately, the test failed. The first assertion succeeds because the buyer sends insufficient funds to buy the ticket. However, the second assertion fails even though the buyer sends enough funds to purchase the ticket. The `buy_ticket` function reverts with CEP-95 `Error::NotAnOwnerOrApproved` because the buyer attempts to transfer a token that they do not own, are not approved for, or are not an operator of.
 
-```rust title="odra/modules/src/cep78/token78.rs"
-pub fn transfer(
-    &mut self,
-    token_id: Maybe<u64>,
-    token_hash: Maybe<String>,
-    source_key: Address,
-    target_key: Address
-) -> TransferReceipt {
-    ...
+```rust title="odra/modules/src/cep95.rs"
+fn transfer_from(&mut self, from: Address, to: Address, token_id: U256) {
+    self.assert_exists(&token_id);
 
-    if !is_owner && !is_approved && !is_operator {
-        self.revert(CEP78Error::InvalidTokenOwner);
+    let caller = self.env().caller();
+    let owner = self
+        .owner_of(token_id)
+        .unwrap_or_revert_with(self, Error::ValueNotSet);
+    // Only the owner or an approved spender can transfer the token.
+    if (owner != from || owner != caller) && !self.is_approved_for_all(from, caller) {
+        if let Some(approved) = self.approved_for(token_id) {
+            if approved != caller {
+                self.env().revert(Error::NotAnOwnerOrApproved);
+            }
+        } else {
+            self.env().revert(Error::NotAnOwnerOrApproved);
+        }
     }
 
-    ...
+   ...
 }
 ```
 
 Let's fix it by redesigning our little system.
 
-### Redesign
+## Redesign
 
 Since a buyer cannot purchase a ticket directly, we need to introduce an intermediary — an operator who will be responsible for buying tickets on behalf of the buyer. The operator will be approved by the ticket office to transfer tickets.
 
@@ -284,7 +273,8 @@ sequenceDiagram;
     Operator->>TicketOffice: call buy_ticket
     TicketOffice->>Buyer: Transfer ticket
 ```
-#### Ticket Operator Contract
+
+### Ticket Operator Contract
 
 As shown in the sequence diagram, a new contract will act as an operator for the ticket office. To create this new contract, use the `cargo odra generate` command.
 
@@ -294,7 +284,7 @@ cargo odra generate -c ticket_operator
 
 ```rust showLineNumbers title="src/ticket_operator.rs"
 use crate::token::{TicketId, TicketOfficeContractRef};
-use odra::{casper_types::U512, prelude::*};
+use odra::{casper_types::{U256, U512}, ContractRef, prelude::*};
 
 #[odra::odra_error]
 pub enum Error {
@@ -338,7 +328,6 @@ impl TicketOperator {
 * **L16-L18** - The `register` function sets the address of the ticketing office.
 * **L20-L32** - The `buy_ticket` function buys a ticket on behalf of the buyer using the ticket office address. The function forwards the call to the ticketing office contract. We simply create a `TicketOfficeContractRef` to interact we the `TicketOffice` contract. Note that, the operator's `buy_ticket` now receives funds.
 
-
 Now we need to adjust the `TicketOffice` contract to use the `TicketOperator` contract to buy tickets.
 
 ```rust showLineNumbers title="src/token.rs"
@@ -374,8 +363,7 @@ impl TicketOffice {
 
         // approve the operator to transfer the ticket
         let operator = self.operator();
-        self.token
-            .approve(operator, Maybe::Some(ticket_id), Maybe::None);
+        self.token.approve(operator, ticket_id);
 
         // emit an event
         ...
@@ -409,6 +397,7 @@ impl TicketOffice {
     }
 }
 ```
+
 * **L11** - the contract stores the operator address.
 * **L18-L25** - a new function `register_operator` allows the owner to register an operator. Also calls the `register` entry point on the operator contract.
 * **L32-36** - modify the `issue_ticket` function: once a new token is minted, approves the operator to transfer the ticket later.
@@ -447,13 +436,13 @@ fn it_works() {
     env.set_caller(buyer);
 
     assert_eq!(
-        buy_ticket(&operator, 0, 50),
+        buy_ticket(&operator, 0.into(), 50),
         Err(Error::InsufficientFunds.into())
     );
-    assert_eq!(buy_ticket(&operator, 0, 100), Ok(()));
-    assert_eq!(buy_ticket(&operator, 1, 50), Ok(()));
+    assert_eq!(buy_ticket(&operator, 0.into(), 100), Ok(()));
+    assert_eq!(buy_ticket(&operator, 1.into(), 50), Ok(()));
     assert_eq!(
-        buy_ticket(&operator, 0, 100),
+        buy_ticket(&operator, 0.into(), 100),
         Err(Error::TicketNotAvailableForSale.into())
     );
 
@@ -466,6 +455,6 @@ fn buy_ticket(operator: &TicketOperatorHostRef, id: TicketId, price: u64) -> Odr
 
 ```
 
-### Conclusion
+## Conclusion
 
-In this tutorial, we created a simple ticketing system using the CEP-78 standard. This guide demonstrates how to combine various Odra features, including modules, events, errors, payable functions, and cross-contract calls.
+In this tutorial, we created a simple ticketing system using the CEP-95 standard. This guide demonstrates how to combine various Odra features, including modules, events, errors, payable functions, and cross-contract calls.

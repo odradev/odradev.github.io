@@ -15,13 +15,13 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-odra = "1.4.0"
+odra = "2.0.1"
 
 [dev-dependencies]
-odra-test = "1.4.0"
+odra-test = "2.0.1"
 
 [build-dependencies]
-odra-build = "1.4.0"
+odra-build = "2.0.1"
 
 [[bin]]
 name = "my_project_build_contract"
@@ -45,8 +45,8 @@ To use `odra-modules`, edit your `dependency` and `features` sections.
 
 ```toml title=Cargo.toml
 [dependencies]
-odra = "1.4.0"
-odra-modules = "1.4.0"
+odra = "2.0.1"
+odra-modules = "2.0.1""
 ```
 
 Now, the only thing left is to add a module to your contract.
@@ -121,10 +121,12 @@ Odra modules comes with couple of ready-to-use modules and reusable extensions.
 ### Tokens
 
 #### CEP-18
+
 Casper Ecosystem Proposal 18 (CEP-18) is a standard interface for the CSPR and the custom made tokens. Inspired by the ERC20 standard. Read more about the CEP-18 [here](https://github.com/casper-network/ceps/blob/master/text/0018-token-standard.md).
 
-#### CEP-78
-Casper Ecosystem Proposal 78 (CEP-78) is an enhanced NFT standard focused on ease of use and installation. Inspired by the ERC721 standard. Read more about the CEP-78 [here](https://github.com/casper-network/ceps/blob/master/text/0078-enhanced-nft-standard.md).
+#### CEP-95
+
+Casper Ecosystem Proposal 95 (CEP-95) is a Casper NFT Standard. It aims to replace CEP-47 and CEP-78, which have flaws that complicate their support in the ecosystem. This standard is aligned with Ethereum's ERC-721, but makes adjustments relevant for the Casper Ecosystem. Similarly to ERC-721, this standard can be used to represent a various range of tokenized assets Read more about the CEP-95 [here](https://github.com/casper-network/ceps/blob/master/text/0095-nft-standard.md).
 
 #### Erc20
 
@@ -157,23 +159,27 @@ it was inspired by the WETH.
 ### Access
 
 #### AccessControl
+
 This module enables the implementation of role-based access control mechanisms for children
 modules. Roles are identified by their 32-bytes identifier, which should be unique and exposed in the external API.
 
 #### Ownable
+
 This module provides a straightforward access control feature that enables exclusive access to particular functions by an account, known as the owner.
 
 The account that initiates the module is automatically assigned as the owner. However, ownership can be transferred later by using the
 `transfer_ownership()` function.
 
 #### Ownable2Step
-An extension of the `Ownable` module. 
+
+An extension of the `Ownable` module.
 
 Ownership can be transferred in a two-step process by using `transfer_ownership()` and `accept_ownership()` functions.
 
 ### Security
 
 #### Pausable
+
 A module allowing to implement an emergency stop mechanism that can be triggered by any account.
 
 [Installation guide]: ../getting-started/installation.md

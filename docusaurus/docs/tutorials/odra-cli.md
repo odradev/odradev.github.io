@@ -212,7 +212,7 @@ This gives us the following output:
 
 ```bash
 cargo run --bin odra_cli -- deploy
-   Compiling odra-examples v2.0.0 (/home/kuba/Projekty/odra/odra/examples)
+   Compiling odra-examples v2.1.0 (/home/kuba/Projekty/odra/odra/examples)
     Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.65s
      Running `../target/debug/odra_cli deploy`
 💁  INFO : Found wasm under "wasm/DogContract.wasm".

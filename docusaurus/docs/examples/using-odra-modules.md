@@ -15,13 +15,13 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-odra = "2.0.1"
+odra = "2.1.0"
 
 [dev-dependencies]
-odra-test = "2.0.1"
+odra-test = "2.1.0"
 
 [build-dependencies]
-odra-build = "2.0.1"
+odra-build = "2.1.0"
 
 [[bin]]
 name = "my_project_build_contract"
@@ -45,8 +45,8 @@ To use `odra-modules`, edit your `dependency` and `features` sections.
 
 ```toml title=Cargo.toml
 [dependencies]
-odra = "2.0.1"
-odra-modules = "2.0.1""
+odra = "2.1.0"
+odra-modules = "2.1.0""
 ```
 
 Now, the only thing left is to add a module to your contract.

@@ -29,7 +29,7 @@ It is designed to store the following data:
 use odra::prelude::*;
 use odra::casper_types::U256;
 
-#[odra::module(events = [Transfer, Approval])]
+#[odra::module(events = [Transfer, Approval], errors = Error)]
 pub struct Erc20 {
     decimals: Var<u8>,
     symbol: Var<String>,
@@ -198,7 +198,11 @@ Now, compare the code we have written, with [Open Zeppelin code][erc20-open-zepp
 #[cfg(test)]
 pub mod tests {
     use super::*;
-    use odra::{casper_types::U256, host::{Deployer, HostEnv, HostRef}};
+    use odra::{
+        casper_types::U256,
+        host::{Deployer, HostEnv},
+        prelude::*
+    };
 
     const NAME: &str = "Plascoin";
     const SYMBOL: &str = "PLS";
@@ -307,7 +311,7 @@ pub mod tests {
         assert_eq!(erc20.allowance(&owner, &spender), approved_amount);
         assert!(env.emitted_event(
             &erc20,
-            &Approval {
+            Approval {
                 owner,
                 spender,
                 value: approved_amount
@@ -326,7 +330,7 @@ pub mod tests {
         assert_eq!(erc20.balance_of(&recipient), transfer_amount);
         assert!(env.emitted_event(
             &erc20,
-            &Approval {
+            Approval {
                 owner,
                 spender,
                 value: approved_amount - transfer_amount
@@ -334,13 +338,13 @@ pub mod tests {
         ));
         assert!(env.emitted_event(
             &erc20,
-            &Transfer {
+            Transfer {
                 from: Some(owner),
                 to: Some(recipient),
                 amount: transfer_amount
             }
         ));
-        // assert!(env.emitted(erc20.address(), "Transfer"));
+        // assert!(env.emitted(&erc20, "Transfer"));
     }
 
     #[test]

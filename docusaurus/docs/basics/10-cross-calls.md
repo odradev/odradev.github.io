@@ -124,7 +124,8 @@ Let's see how we can test our cross calls using this knowledge:
 #[cfg(test)]
 mod tests {
     use super::{CrossContract, CrossContractInitArgs, MathEngineHostRef};
-    use odra::host::{Deployer, HostRef, NoArgs};
+    use odra::host::{Deployer, NoArgs};
+    use odra::prelude::*;
 
     #[test]
     fn test_cross_calls() {
@@ -150,7 +151,8 @@ Let's continue assuming there is a contract featuring the `add()` function that 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use odra::{host::{Deployer, HostRef, NoArgs}};
+    use odra::host::{Deployer, NoArgs};
+    use odra::prelude::*;
     
     #[test]
     fn test_ext() {
@@ -161,7 +163,7 @@ mod tests {
 
     fn get_adder_address(test_env: &HostEnv) -> Address {
         let contract = MathEngine::deploy(test_env, NoArgs);
-        *contract.address()
+        contract.address()
     }
 }
 ```

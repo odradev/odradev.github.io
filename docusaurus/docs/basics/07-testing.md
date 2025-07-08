@@ -120,11 +120,11 @@ the function we are calling inside the contract.
 `HostEnv` comes with a set of functions that will let you write better tests:
 
 - `fn set_caller(&self, address: Address)` - you've seen it in action just now
-- `fn balance_of(&self, address: &Address) -> U512` - returns the balance of the account associated with the given address
+- `fn balance_of<T: Addressable>(&self, addr: &T) -> U512` - returns the balance of the account associated with the given address
 - `fn advance_block_time(&self, time_diff: u64)` - increases the current value of `block_time`
 - `fn get_account(&self, n: usize) -> Address` - returns an n-th address that was prepared for you by Odra in advance;
   by default, you start with the 0-th account
-- `fn emitted_event<T: ToBytes + EventInstance, R: Addressable>(&self, contract_address: &R, event: &T) -> bool` - verifies if the event was emitted by the contract
+- `fn emitted_event<T: ToBytes + EventInstance, R: Addressable>(&self, contract_address: &R, event: T) -> bool` - verifies if the event was emitted by the contract
 
 Full list of functions can be found in the [`HostEnv`] documentation.
 

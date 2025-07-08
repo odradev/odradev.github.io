@@ -354,7 +354,7 @@ pub enum GovernanceError {
 
 /// A module definition. Each module struct consists of Vars and Mappings
 /// or/and other modules.
-#[odra::module]
+#[odra::module(errors = GovernanceError)]
 pub struct OurToken {
     /// A submodule that implements the CEP-18 token standard.
     token: SubModule<Cep18>,

@@ -93,7 +93,7 @@ pub type Role = [u8; 32];
 
 pub const DEFAULT_ADMIN_ROLE: Role = [0u8; 32];
 
-#[odra::module(events = [RoleAdminChanged, RoleGranted, RoleRevoked])]
+#[odra::module(events = [RoleAdminChanged, RoleGranted, RoleRevoked], errors = Error)]
 pub struct AccessControl {
     roles: Mapping<(Role, Address), bool>,
     role_admin: Mapping<Role, Role>

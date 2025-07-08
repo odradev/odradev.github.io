@@ -45,7 +45,7 @@ pub struct Unpaused {
 The module storage is extremely simple - has a single `Var` of type bool, that indicates if a contract is paused.
 
 ```rust title=pauseable.rs showLineNumbers
-#[odra::module(events = [Paused, Unpaused])]
+#[odra::module(events = [Paused, Unpaused], errors = Error)]
 pub struct Pausable {
     is_paused: Var<bool>
 }

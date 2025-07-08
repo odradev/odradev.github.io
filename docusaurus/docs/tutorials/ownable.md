@@ -129,7 +129,7 @@ The above implementation relies on the concepts we have already used in this tut
 #[cfg(test)]
 mod tests {
     use super::*;
-    use odra::host::{Deployer, HostEnv, HostRef};
+    use odra::host::{Deployer, HostEnv};
 
     fn setup() -> (OwnableHostRef, HostEnv, Address) {
         let env: HostEnv = odra_test::env();
@@ -146,7 +146,7 @@ mod tests {
        
         env.emitted_event(
             &ownable,
-            &OwnershipChanged {
+            OwnershipChanged {
                 prev_owner: None,
                 new_owner: owner
             }
@@ -164,7 +164,7 @@ mod tests {
 
         env.emitted_event(
             &ownable,
-            &OwnershipChanged {
+            OwnershipChanged {
                 prev_owner: Some(owner),
                 new_owner
             }

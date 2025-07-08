@@ -99,8 +99,10 @@ mod tests {
 
         test_env.set_caller(not_an_owner);
         assert_eq!(
-            owned_contract.try_change_name("NewName".to_string()),
-            Err(Error::NotAnOwner.into())
+            owned_contract
+                .try_change_name("NewName".to_string())
+                .unwrap_err(),
+            Error::NotAnOwner.into()
         );
     }
 }

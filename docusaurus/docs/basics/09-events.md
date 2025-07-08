@@ -80,7 +80,6 @@ self.env().emit_native_event(NativePartyStarted {
 });
 ```
 
-
 Odra needs to determine all the events at compilation time to register them once the contract is deployed. To register events, add an `events` inner attribute to the struct's `#[odra::module]` attribute. The registered events will also be present in the contract [`schema`].
 
 The event collection process is recursive; if your module consists of other modules, and they have already registered their events, you don't need to add them to the parent module.
@@ -99,14 +98,14 @@ fn test_party() {
     let party_contract = PartyContract::deploy(&test_env, NoArgs);
     assert!(test_env.emitted_event(
         &party_contract,
-        &PartyStarted {
+        PartyStarted {
             caller: test_env.get_account(0),
             block_time: 0
         }
     ));
     assert!(test_env.emitted_native_event(
         &party_contract,
-        &NativePartyStarted {
+        NativePartyStarted {
             caller: test_env.get_account(0),
             block_time: 0
         }

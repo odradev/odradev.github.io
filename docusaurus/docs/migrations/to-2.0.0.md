@@ -1,3 +1,8 @@
+---
+sidebar_position: 4
+description: Migration guide to v2.0.0
+---
+
 # Migration guide to v2.0.0 from 1.*
 
 In spite of being a major update, almost no breaking changes were introduced in the Odra v2.0.0. We tried our best to

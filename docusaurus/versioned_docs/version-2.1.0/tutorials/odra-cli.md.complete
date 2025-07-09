@@ -1,0 +1,77 @@
+# Odra CLI
+The Odra CLI library allows creating cli clients for your contracts. Instead of using `casper-client` with 
+complex incantations, you can use the Odra CLI library to create a client that will be able to call your contract methods
+directly, by name, and with the correct arguments.
+
+## Deploy script
+Let's go through an example available in the odra repository to see how to use the Odra CLI library.
+It creates a cli tool for a useful "DogContract".
+
+To use the Odra CLI library in your project, you need to add `odra-cli` to your `Cargo.toml` file, alongside a new binary:
+
+```toml
+[dependencies]
+...
+odra-cli = "2"
+...
+
+[[bin]]
+name = "odra-cli"
+path = "src/bin/odra-cli.rs"
+```
+
+Then, create a new file in the `src/bin` directory named `odra-cli.rs`:
+
+```rust
+/// Deploys the `DogContract` and adds it to the container.
+pub struct DeployDogScript;
+impl DeployScript for DeployDogScript {
+    fn deploy(
+        &self,
+        env: &HostEnv,
+        container: &mut DeployedContractsContainer
+    ) -> Result<(), odra_cli::deploy::Error> {
+        env.set_gas(350_000_000_000);
+        let dog_contract = DogContract::try_deploy(
+            env,
+            DogContractInitArgs {
+                barks: true,
+                weight: 10,
+                name: "Mantus".to_string()
+            }
+        )?;
+
+        container.add_contract(&dog_contract)?;
+
+        Ok(())
+    }
+}
+
+/// Main function to run the CLI tool.
+pub fn main() {
+    OdraCli::new()
+        .about("Dog contract cli tool")
+        .deploy(DeployDogScript)
+        .contract::<DogContract>()
+        .build()
+        .run();
+}
+```
+
+In the example above, we see an implementation of a simple DeployScript for our DogContract. It sets the gas limit,
+deploys the contract and adds it to a container. The main function creates a new OdraCli instance, and sets the deploy script,
+making it available for the user.
+
+## How to use it
+Assuming the correct [livenet](/backends/livenet) environment is set up, you can run the cli tool using the following command:
+
+```bash
+cargo run --bin odra-cli
+```
+
+Which will display all of our options:
+
+```bash
+Dog contract cli tool
+
+Usage: odra-cli

@@ -46,7 +46,7 @@ To use `odra-modules`, edit your `dependency` and `features` sections.
 ```toml title=Cargo.toml
 [dependencies]
 odra = "2.1.0"
-odra-modules = "2.1.0""
+odra-modules = "2.1.0"
 ```
 
 Now, the only thing left is to add a module to your contract.

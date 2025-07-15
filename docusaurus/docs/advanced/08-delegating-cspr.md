@@ -124,3 +124,30 @@ specific to the network or backend.
 
 We used `currently_delegated_amount` in the example, it uses `delegated_amount` method from ContractEnv, but it is also
 possible to query this information from the HostEnv using `delegated_amount` method.
+
+## Implementation details
+
+To keep the parity of behaviour between Odra VM and Casper VM,
+we implemented some not-so-obvious behaviours and parameters that
+can influence your code.
+
+### Minimum delegation amount
+
+Each validator can define the minimum delegation amount. Delegator
+cannot delegate a smaller amount but can increase the delegation
+in smaller steps.
+
+If the delegation amount falls below it, all the delegated
+funds will be undelegated.
+
+By default, the Odra VM and Casper VM are booted up with
+5 validators, each with `MINIMUM_DELEGATION_AMOUNT` set to
+500 CSPR.
+
+### Rewards calculation
+
+As mentioned above, VMs are started with 5 validators, each
+is delegating `DEFAULT_BID_AMOUNT`, which is set to `5_000_000_000_000_000_000u64` (5 000 000 000 CSPR).
+
+At each auction `DEFAULT_REWARD_AMOUNT` (2500 CSPR) is divided equally between 
+all validators and delegators based on their share in the pool.

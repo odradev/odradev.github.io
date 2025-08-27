@@ -90,6 +90,10 @@ There would be no point in writing a contract if you couldn't deploy it to the b
 You can do it in two ways: provided by the Casper itself: using the `casper-client` tool
 or using the Odra's Livenet integration.
 
+:::note
+In the commands below, we use `casper-client` version 5.0.0.
+:::
+
 Let's explore the first option to better understand the process.
 
 :::note
@@ -104,6 +108,7 @@ Every contract written in Odra expects those arguments to be set:
 - `odra_cfg_package_hash_key_name` - `String` type. The key under which the package hash of the contract will be stored.
 - `odra_cfg_allow_key_override` - `Bool` type. If `true` and the key specified in `odra_cfg_package_hash_key_name` already exists, it will be overwritten.
 - `odra_cfg_is_upgradable` - `Bool` type. If `true`, the contract will be deployed as upgradable.
+- `odra_cfg_is_upgrade` - `Bool` type. If `true`, the contract will be upgraded. If we want to install a contract to should be set to `false`.
 
 Additionally, if required by the contract, you can pass constructor arguments.
 
@@ -117,15 +122,18 @@ To deploy your contract with a constructor using `casper-client`, you need to pa
 Additionally, you need to pass the `value` argument, which sets the arbitrary initial value for the counter.
 
 ```bash
-casper-client put-deploy \
+casper-client put-transaction session \
   --node-address [NODE_ADDRESS] \
   --chain-name casper-test \
   --secret-key [PATH_TO_YOUR_KEY]/secret_key.pem \
   --payment-amount 5000000000000 \
-  --session-path ./wasm/counter.wasm \
+  --gas-price-tolerance 1 \
+  --standard-payment true \
+  --wasm-path ./wasm/counter.wasm \
   --session-arg "odra_cfg_package_hash_key_name:string:'counter_package_hash'" \
   --session-arg "odra_cfg_allow_key_override:bool:'true'" \
   --session-arg "odra_cfg_is_upgradable:bool:'true'" \
+  --session-arg "odra_cfg_is_upgrade:bool:'false'" \
   --session-arg "value:u32:42" 
 ```
 
@@ -145,15 +153,18 @@ It produces the `erc721_token.wasm` file in the `wasm` directory.
 
 Now it's time to deploy the contract.
 ```bash
-casper-client put-deploy \
+casper-client put-transaction session \
   --node-address [NODE_ADDRESS] \
   --chain-name casper-test \
   --secret-key [PATH_TO_YOUR_KEY]/secret_key.pem \
   --payment-amount 300000000000 \
-  --session-path ./wasm/erc721_token.wasm \
+  --gas-price-tolerance 1 \
+  --standard-payment true \
+  --wasm-path ./wasm/erc721_token.wasm \
   --session-arg "odra_cfg_package_hash_key_name:string:'my_nft'" \
   --session-arg "odra_cfg_allow_key_override:bool:'false'" \
   --session-arg "odra_cfg_is_upgradable:bool:'true'" \
+  --session-arg "odra_cfg_is_upgrade:bool:'false'" \
   --session-arg "name:string:'MyNFT'" \
   --session-arg "symbol:string:'NFT'" \
   --session-arg "base_uri:string:'https://example.com/'"
@@ -178,15 +189,18 @@ cargo odra build -b casper -c erc1155_token
 
 Contract deployment:
 ```bash
-casper-client put-deploy \
+casper-client put-transaction session \
   --node-address [NODE_ADDRESS] \
   --chain-name casper-test \
   --secret-key [PATH_TO_YOUR_KEY]/secret_key.pem \
   --payment-amount 300000000000 \
-  --session-path ./wasm/erc1155_token.wasm \
+  --gas-price-tolerance 1 \
+  --standard-payment true \
+  --wasm-path ./wasm/erc1155_token.wasm \
   --session-arg "odra_cfg_package_hash_key_name:string:'my_tokens'" \
   --session-arg "odra_cfg_allow_key_override:bool:'false'" \
   --session-arg "odra_cfg_is_upgradable:bool:'true'" \
+  --session-arg "odra_cfg_is_upgrade:bool:'false'" \
   --session-arg "odra_cfg_constructor:string:'init'" \
 ```
 

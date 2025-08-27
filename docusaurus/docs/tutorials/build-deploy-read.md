@@ -117,6 +117,7 @@ casper-client put-transaction session \
   --session-arg "odra_cfg_package_hash_key_name:string:'test_contract_package_hash'" \
   --session-arg "odra_cfg_allow_key_override:bool:'true'" \
   --session-arg "odra_cfg_is_upgradable:bool:'true'" \
+  --session-arg "odra_cfg_is_upgrade:bool:'false'" \
   --session-arg "name:string='My Name'" \
   --session-arg "description:string='My Description'" \ 
   --session-arg "price_1:u256='101'" \

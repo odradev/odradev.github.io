@@ -258,6 +258,7 @@ export async function deploy_contract(): Promise<string> {
         odra_cfg_package_hash_key_name: CLValueBuilder.string("tlw"),
         odra_cfg_allow_key_override: CLValueBuilder.bool(true),
         odra_cfg_is_upgradable: CLValueBuilder.bool(true),
+        odra_cfg_is_upgrade: CLValueBuilder.bool(false),
         lock_duration: CLValueBuilder.u64(60 * 60)
     });
     

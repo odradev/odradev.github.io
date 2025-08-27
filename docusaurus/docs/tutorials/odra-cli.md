@@ -102,9 +102,11 @@ impl DeployScript for DeployDogScript {
 
 In the example above, we see a few alternative implementations of a simple `DeployScript` for our `DogContract`. All of them set the gas limit,
 deploy the contract and adds it to a container.
-The first one uses the `DogContract::try_deploy` method, which deploys the contract every time the script is run. The second also deploys a contract everytime,
-but passes [`InstallConfig`] instance to configure the deployment using a factory method `InstallConfig::upgradable`.
-A next option utilizes the [`DeployerExt`] trait, which checks if the contract is already deployed and returns the existing instance if it is, or deploys it if it is not. It is a convenient way to ensure that the contract is deployed only once. It is useful when you want to add more contracts to the script in the future and avoid redeploying previously deployed contracts. The last option is to use `load_or_deploy_with_cfg` that accepts a custom configuration.
+
+1. `DogContract::try_deploy` method, which deploys the contract every time the script is run. 
+2. `DogContract::try_deploy_with_cfg` also deploys a contract everytime, but passes [`InstallConfig`] instance to configure the deployment using a factory method `InstallConfig::upgradable`.
+3.  Utilizes the [`DeployerExt`] trait, which checks if the contract is already deployed and returns the existing instance if it is, or deploys it if it is not. It is a convenient way to ensure that the contract is deployed only once. It is useful when you want to add more contracts to the script in the future and avoid redeploying previously deployed contracts. 
+4. The last option is to use `DeployerExt::load_or_deploy_with_cfg` that works like the previous one, but accepts a custom configuration.
 
 The address of the deployed contract is stored in a TOML file in the `resources` directory, which is created automatically by the Odra CLI library.
 

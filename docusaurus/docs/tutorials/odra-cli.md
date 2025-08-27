@@ -1,3 +1,7 @@
+---
+sidebar_position: 12
+---
+
 # Odra CLI
 
 The Odra CLI library allows you to create CLI clients for your contracts. Instead of using `casper-client` with

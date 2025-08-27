@@ -59,5 +59,5 @@ mod tests {
 ## What's next
 We will see how to handle native token transfers.
 
-[OwnedToken example]: https://github.com/odradev/odra/blob/release/2.0.0/examples/src/contracts/owned_token.rs
+[OwnedToken example]: https://github.com/odradev/odra/blob/release/2.2.0/examples/src/contracts/owned_token.rs
 [Storage Layout]: ../advanced/04-storage-layout.md

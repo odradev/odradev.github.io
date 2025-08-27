@@ -112,5 +112,5 @@ The contract will be deployed on the VM you chose while running `cargo odra test
 ## What's next
 Now let's take a look at the different types of storage that Odra provides and how to use them.
 
-[`Deployer::deploy`]: https://docs.rs/odra/2.1.0/odra/host/trait.Deployer.html#tymethod.deploy
-[`InitArgs`]: https://docs.rs/odra/2.1.0/odra/host/trait.InitArgs.html
+[`Deployer::deploy`]: https://docs.rs/odra/2.2.0/odra/host/trait.Deployer.html#tymethod.deploy
+[`InitArgs`]: https://docs.rs/odra/2.2.0/odra/host/trait.InitArgs.html

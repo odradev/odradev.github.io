@@ -125,5 +125,5 @@ To explore more event testing functions, check the [`HostEnv`] documentation.
 ## What's next
 Read the next article to learn how to call other contracts from the contract context.
 
-[`HostEnv`]: https://docs.rs/odra/2.1.0/odra/host/struct.HostEnv.html
+[`HostEnv`]: https://docs.rs/odra/2.2.0/odra/host/struct.HostEnv.html
 [`schema`]: ./casper-contract-schema

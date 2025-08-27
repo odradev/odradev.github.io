@@ -94,11 +94,11 @@ pub struct Withdrawal {
 }
 ```
 
-Full code can be found [here](https://github.com/odradev/odra/blob/release/1.1.0/examples/src/contracts/tlw.rs).
+Full code can be found in [our Github repo].
 
 ## Client
 
-Before we can interact with the node, we need to set it up. We will use the [`casper-nctl-docker`](https://github.com/make-software/casper-nctl-docker) image.
+Before we can interact with the node, we need to set it up. We will use the [`casper-nctl-docker`] image.
 
 ```bash
 docker run --rm -it --name mynctl -d -p 11101:11101 -p 14101:14101 -p 18101:18101 makesoftware/casper-nctl
@@ -184,23 +184,29 @@ fn main() {
 To run the code, execute the following command:
 
 ```bash
-ODRA_CASPER_LIVENET_SECRET_KEY_PATH=.node-keys/secret_key.pem \
-ODRA_CASPER_LIVENET_NODE_ADDRESS=http://localhost:11101 \
-ODRA_CASPER_LIVENET_CHAIN_NAME=casper-net-1 \  
+ODRA_CASPER_LIVENET_SECRET_KEY_PATH=path/to/secret_key.pem \
+ODRA_CASPER_LIVENET_NODE_ADDRESS=[NODE_ADDRESS] \
+ODRA_CASPER_LIVENET_CHAIN_NAME=casper-test \
+ODRA_CASPER_LIVENET_EVENTS_URL=[EVENTS_STREAM_ADDRESS] \
 cargo run --bin tlw_on_livenet --features=livenet
-# Sample output
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.09s
+     Running `../target/debug/tlw_on_livenet`
+💁  INFO : Found wasm under "/Users/kpob/workspace/odra/examples/wasm/TimeLockWallet.wasm".
 💁  INFO : Deploying "TimeLockWallet".
-💁  INFO : Found wasm under "wasm/TimeLockWallet.wasm".
-🙄  WAIT : Waiting 15s for "74f0df4bc65cdf9e05bca70a8b786bd0f528858f26e11f5a9866dfe286551558".
-💁  INFO : Deploy "74f0df4bc65cdf9e05bca70a8b786bd0f528858f26e11f5a9866dfe286551558" successfully executed.
-💁  INFO : Contract "hash-cce6a97e0db6feea0c4d99f670196c9462e0789fb3cdedd3dfbc6dfcbf66252e" deployed.
-💁  INFO : Calling "hash-cce6a97e0db6feea0c4d99f670196c9462e0789fb3cdedd3dfbc6dfcbf66252e" with entrypoint "deposit" through proxy.
-🙄  WAIT : Waiting 15s for "bd571ab64c13d2b2fdb8e0e6dd8473b696349dfb5a891b55dbe9f33d017057d3".
-💁  INFO : Deploy "bd571ab64c13d2b2fdb8e0e6dd8473b696349dfb5a891b55dbe9f33d017057d3" successfully executed.
-Caller's balance: 100
-💁  INFO : Calling "hash-cce6a97e0db6feea0c4d99f670196c9462e0789fb3cdedd3dfbc6dfcbf66252e" with entrypoint "withdraw".
-🙄  WAIT : Waiting 15s for "57f9aadbd77cbfbbe9b2ba54759d025f94203f9230121289fa37585f8b17020e".
-💁  INFO : Deploy "57f9aadbd77cbfbbe9b2ba54759d025f94203f9230121289fa37585f8b17020e" successfully executed.
+🙄  WAIT : Waiting 10 for V1(TransactionV1Hash(5ab45ba29c9e7b9a91c4b5a5fbd2ba31735f03f99f94dce542d3584c8776ce8a)).
+🙄  WAIT : Waiting 10 for V1(TransactionV1Hash(5ab45ba29c9e7b9a91c4b5a5fbd2ba31735f03f99f94dce542d3584c8776ce8a)).
+💁  INFO : Transaction "5ab45ba29c9e7b9a91c4b5a5fbd2ba31735f03f99f94dce542d3584c8776ce8a" successfully executed.
+🔗  LINK : https://testnet.cspr.live/transaction/5ab45ba29c9e7b9a91c4b5a5fbd2ba31735f03f99f94dce542d3584c8776ce8a
+💁  INFO : Contract "contract-package-fe69f4dd63445cda6cdc3b4c066760227208a752857950af6bda8a41600781ea" deployed.
+💁  INFO : Calling "contract-package-fe69f4dd63445cda6cdc3b4c066760227208a752857950af6bda8a41600781ea" with entrypoint "deposit" through proxy.
+🙄  WAIT : Waiting 10 for V1(TransactionV1Hash(86d07f72dc9383f46144b5fdfd912ddf15c7be539cf2c34e43f1214244da25b3)).
+💁  INFO : Transaction "86d07f72dc9383f46144b5fdfd912ddf15c7be539cf2c34e43f1214244da25b3" successfully executed.
+🔗  LINK : https://testnet.cspr.live/transaction/86d07f72dc9383f46144b5fdfd912ddf15c7be539cf2c34e43f1214244da25b3
+Owner's balance: 100
+💁  INFO : Calling "contract-package-fe69f4dd63445cda6cdc3b4c066760227208a752857950af6bda8a41600781ea" directly with entrypoint "withdraw".
+🙄  WAIT : Waiting 10 for V1(TransactionV1Hash(cbdedd1d5f528754904feb23a0e2087a53ed6f6ed27298367a98bc2accc5792f)).
+💁  INFO : Transaction "cbdedd1d5f528754904feb23a0e2087a53ed6f6ed27298367a98bc2accc5792f" successfully executed.
+🔗  LINK : https://testnet.cspr.live/transaction/cbdedd1d5f528754904feb23a0e2087a53ed6f6ed27298367a98bc2accc5792f
 Remaining balance: 1
 ```
 
@@ -330,3 +336,6 @@ f40e3ca983034435d829462dd53d801df4e98013009cbf4a6654b3ee467063a1 # the deploy ha
 ## Conclusion
 
 In this tutorial, we learned how to use the `proxy_caller` wasm to make a payable function call. We deployed the `TimeLockWallet` contract, deposited tokens using the `proxy_caller` with attached CSPRs, and withdrew them. You got to try it out in both `Rust` and `TypeScript`, so you can choose whichever you prefer. `Rust` code seemed simpler, thanks to the Odra `livenet` backend making chain interactions easier to handle.
+
+[`casper-nctl-docker`]: https://github.com/make-software/casper-nctl-docker
+[our Github repo]: https://github.com/odradev/odra/blob/release/2.2.0/examples/src/contracts/tlw.rs

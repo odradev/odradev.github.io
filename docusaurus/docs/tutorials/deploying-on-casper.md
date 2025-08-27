@@ -17,8 +17,7 @@ Most of this tutorial will work with any Casper contract.
 ## Casper Wallet
 
 We will be using Casper Wallet to do some tasks in this tutorial.
-To install it, please follow the instructions on the
-[official website](https://www.casperwallet.io/).
+To install it, please follow the instructions on the [official website].
 
 After setting up the wallet, extract the private key of the account
 you want to use for our testing.
@@ -37,7 +36,7 @@ To deploy the contract on the Livenet, we need to have some CSPR.
 The easiest way to get them is to use the faucet, which will send
 us 1000 CSPR for free. Unfortunately, only on the Testnet.
 
-To use the faucet, go to the [Casper Testnet Faucet](https://testnet.cspr.live/tools/faucet).
+To use the faucet, go to the [Casper Testnet Faucet].
 Log in using your Casper Wallet account and click on the "Request Tokens" button.
 
 :::note
@@ -78,13 +77,13 @@ fn main() {
     // Deploy new contract.
     let mut token = deploy_our_token(&env);
     println!("Token address: {}", token.address().to_string());
+    
+    env.set_gas(2_500_000_000u64);
 
     // Propose minting new tokens.
-    env.set_gas(1_000_000_000u64);
     token.propose_new_mint(recipient, U256::from(1_000));
 
     // Vote, we are the only voter.
-    env.set_gas(1_000_000_000u64);
     token.vote(true, U256::from(1_000));
 
     // Let's advance the block time by 11 minutes, as
@@ -94,7 +93,6 @@ fn main() {
     env.advance_block_time(11 * 60 * 1000);
 
     // Tally the votes.
-    env.set_gas(1_500_000_000u64);
     token.tally();
 
     // Check the balances.
@@ -119,8 +117,13 @@ pub fn deploy_our_token(env: &HostEnv) -> OurTokenHostRef {
         initial_supply,
     };
 
-    env.set_gas(300_000_000_000u64);
+    env.set_gas(400_000_000_000u64);
     OurToken::deploy(env, init_args)
+    // OurToken::deploy_with_cfg(env, init_args, odra::host::InstallConfig {
+    //     package_named_key: String::from("OurToken"),
+    //     is_upgradable: true,
+    //     allow_key_override: true,
+    // })
 }
 
 /// Loads a contract. Just in case you need to load an existing contract later...
@@ -130,6 +133,9 @@ fn _load_our_token(env: &HostEnv) -> OurTokenHostRef {
     OurToken::load(env, address)
 }
 ```
+
+You can deploy a contract with the default configuration or with a custom configuration calling `deploy_with_cfg`.
+Read more about [`InstallConfig`] in the Odra documentation.
 
 In your `Cargo.toml` file, we need to add a new dependency, a feature and
 register the new binary. In the end, it should look like this:
@@ -182,13 +188,27 @@ Finally, add the `.env` file with the following content:
 
 ```env title=".env"
 # Path to the secret key of the account that will be used to deploy the contracts.
-ODRA_CASPER_LIVENET_SECRET_KEY_PATH=folder_with_your_secret_key/secret_key_file.pem
+ODRA_CASPER_LIVENET_SECRET_KEY_PATH=folder_with_your_secret_key/secret_key.pem
 
 # RPC address of the node that will be used to deploy the contracts.
-ODRA_CASPER_LIVENET_NODE_ADDRESS=http://138.201.80.141:7777
+# For CSPR.cloud, you can use the following addresses:
+# - https://node.cspr.cloud
+# - https://node.testnet.cspr.cloud
+# For nctl, default is:
+# - http://localhost:11101
+ODRA_CASPER_LIVENET_NODE_ADDRESS=<node_address>
 
-# Chain name of the network.
-ODRA_CASPER_LIVENET_CHAIN_NAME=casper-test
+# Chain name of the network. The mainnet is "casper" and test net is "casper-test".
+# The integration network uses the "integration-test" chain name.
+# For nctl default is "casper-net-1"
+ODRA_CASPER_LIVENET_CHAIN_NAME=<chain_name>
+
+# Events url
+# For CSPR.cloud, you can use the following addresses:
+# - https://node.cspr.cloud/events
+# For nctl, default is:
+# - http://localhost:18101/events
+ODRA_CASPER_LIVENET_EVENTS_URL=<events url>
 ```
 
 Of course, you need to replace the secret key's path
@@ -209,30 +229,32 @@ cargo run --bin our_token_livenet --features livenet
 If everything is set up correctly, you should see the output similar to this:
 
 ```
-     Running `target/debug/our_token_livenet`
+cargo run --bin our_token_livenet --features livenet
+   Compiling ourcoin v0.1.0 (/Users/kpob/workspace/odra/examples/ourcoin)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.33s
+     Running `../../target/debug/our_token_livenet`
+💁  INFO : Found wasm under "/Users/kpob/workspace/odra/examples/ourcoin/wasm/OurToken.wasm".
 💁  INFO : Deploying "OurToken".
-💁  INFO : Found wasm under "wasm/OurToken.wasm".
-🙄  WAIT : Waiting 15s for "e6b34772ebc3682702674102db87c633b0544242eafd5944e680371be4ea1227".
-🙄  WAIT : Waiting 15s for "e6b34772ebc3682702674102db87c633b0544242eafd5944e680371be4ea1227".
-💁  INFO : Deploy "e6b34772ebc3682702674102db87c633b0544242eafd5944e680371be4ea1227" successfully executed.
-💁  INFO : Contract "hash-565bd0bde39c8c3dd79e49c037e05eac8add2b2193e86a91a6bac068e0de7857" deployed.
-
-Token address: hash-565bd0bde39c8c3dd79e49c037e05eac8add2b2193e86a91a6bac068e0de7857
-
-💁  INFO : Calling "hash-565bd0bde39c8c3dd79e49c037e05eac8add2b2193e86a91a6bac068e0de7857" with entrypoint "propose_new_mint".
-🙄  WAIT : Waiting 15s for "2f89cc96b6f8f05b88f8e75bef3a2f0ba39e9ab761693afff49e4112aa9d7361".
-🙄  WAIT : Waiting 15s for "2f89cc96b6f8f05b88f8e75bef3a2f0ba39e9ab761693afff49e4112aa9d7361".
-💁  INFO : Deploy "2f89cc96b6f8f05b88f8e75bef3a2f0ba39e9ab761693afff49e4112aa9d7361" successfully executed.
-💁  INFO : Calling "hash-565bd0bde39c8c3dd79e49c037e05eac8add2b2193e86a91a6bac068e0de7857" with entrypoint "vote".
-🙄  WAIT : Waiting 15s for "aca9ae847cfcb97c81b4c64992515ff14d6f63a60f7c141558463f5b752058a5".
-🙄  WAIT : Waiting 15s for "aca9ae847cfcb97c81b4c64992515ff14d6f63a60f7c141558463f5b752058a5".
-💁  INFO : Deploy "aca9ae847cfcb97c81b4c64992515ff14d6f63a60f7c141558463f5b752058a5" successfully executed.
+🙄  WAIT : Waiting 10 for V1(TransactionV1Hash(c856983e995c79d8459540bd9d29d196535f63ceb8bac0f73ea747c5c9c74d76)).
+💁  INFO : Transaction "c856983e995c79d8459540bd9d29d196535f63ceb8bac0f73ea747c5c9c74d76" successfully executed.
+🔗  LINK : https://testnet.cspr.live/transaction/c856983e995c79d8459540bd9d29d196535f63ceb8bac0f73ea747c5c9c74d76
+💁  INFO : Contract "contract-package-e39aa2f8e4d509c0253dcd1709a9f08449477eef0f22f0ad5912fff327f509c8" deployed.
+Token address: hash-e39aa2f8e4d509c0253dcd1709a9f08449477eef0f22f0ad5912fff327f509c8
+💁  INFO : Calling "contract-package-e39aa2f8e4d509c0253dcd1709a9f08449477eef0f22f0ad5912fff327f509c8" directly with entrypoint "propose_new_mint".
+🙄  WAIT : Waiting 10 for V1(TransactionV1Hash(2d1aafe8f06748c7cfaf7972caee6b701de7a817430b52a73215f5ad9a175e77)).
+💁  INFO : Transaction "2d1aafe8f06748c7cfaf7972caee6b701de7a817430b52a73215f5ad9a175e77" successfully executed.
+🔗  LINK : https://testnet.cspr.live/transaction/2d1aafe8f06748c7cfaf7972caee6b701de7a817430b52a73215f5ad9a175e77
+💁  INFO : Calling "contract-package-e39aa2f8e4d509c0253dcd1709a9f08449477eef0f22f0ad5912fff327f509c8" directly with entrypoint "vote".
+🙄  WAIT : Waiting 10 for V1(TransactionV1Hash(b565acd01c2ebbab78fa91a3f0091b849a037f1984ca4c996788b92fcd9521db)).
+🙄  WAIT : Waiting 10 for V1(TransactionV1Hash(b565acd01c2ebbab78fa91a3f0091b849a037f1984ca4c996788b92fcd9521db)).
+💁  INFO : Transaction "b565acd01c2ebbab78fa91a3f0091b849a037f1984ca4c996788b92fcd9521db" successfully executed.
+🔗  LINK : https://testnet.cspr.live/transaction/b565acd01c2ebbab78fa91a3f0091b849a037f1984ca4c996788b92fcd9521db
 💁  INFO : advance_block_time called - Waiting for 660000 ms
-💁  INFO : Calling "hash-565bd0bde39c8c3dd79e49c037e05eac8add2b2193e86a91a6bac068e0de7857" with entrypoint "tally".
-🙄  WAIT : Waiting 15s for "223b135edbeadd88425183abaec0b0afb7d7770ffc57eba9054e3ea60e9e9cef".
-🙄  WAIT : Waiting 15s for "223b135edbeadd88425183abaec0b0afb7d7770ffc57eba9054e3ea60e9e9cef".
-💁  INFO : Deploy "223b135edbeadd88425183abaec0b0afb7d7770ffc57eba9054e3ea60e9e9cef" successfully executed.
-
+💁  INFO : Calling "contract-package-e39aa2f8e4d509c0253dcd1709a9f08449477eef0f22f0ad5912fff327f509c8" directly with entrypoint "tally".
+🙄  WAIT : Waiting 10 for V1(TransactionV1Hash(8d24de09298522b028073be5ba05542bf4efd0f03d0e8771d5c5a727832eba94)).
+🙄  WAIT : Waiting 10 for V1(TransactionV1Hash(8d24de09298522b028073be5ba05542bf4efd0f03d0e8771d5c5a727832eba94)).
+💁  INFO : Transaction "8d24de09298522b028073be5ba05542bf4efd0f03d0e8771d5c5a727832eba94" successfully executed.
+🔗  LINK : https://testnet.cspr.live/transaction/8d24de09298522b028073be5ba05542bf4efd0f03d0e8771d5c5a727832eba94
 Owner's balance: 1000
 Tutorial creator's balance: 1000
 ```
@@ -241,13 +263,12 @@ Congratulations, your contract is now deployed on the Casper network!
 Before we move on, note the address of the token!
 
 We will use it in the next section to interact with the token. In our case it is
-`hash-565bd0bde39c8c3dd79e49c037e05eac8add2b2193e86a91a6bac068e0de7857`.
+`hash-e39aa2f8e4d509c0253dcd1709a9f08449477eef0f22f0ad5912fff327f509c8`.
 
 ## Cspr.live
 
 The first thing we will do is to explore Casper's network block explorer,
-[cspr.live](https://cspr.live/). We can put the address of our token in the search bar
-to find it.
+[cspr.live]. We can put the address of our token in the search bar to find it.
 
 :::note
 If you deployed your contract on the Testnet, remember to make sure that the Testnet
@@ -276,7 +297,7 @@ account page. Here, on the Tokens tab, we can see all the tokens that the accoun
 has - and OurToken is one of them!
 
 If you wish, you can check the status of the contract deployed during the development
-of this tutorial [here](https://testnet.cspr.live/contract-package/565bd0bde39c8c3dd79e49c037e05eac8add2b2193e86a91a6bac068e0de7857).
+of this tutorial [here](https://testnet.cspr.live/contract-package/e39aa2f8e4d509c0253dcd1709a9f08449477eef0f22f0ad5912fff327f509c8).
 
 ## Transferring Tokens using Casper Wallet
 
@@ -298,5 +319,11 @@ using the Odra backend and Casper Wallet. We've also learned how to use the
 cspr.live block explorer to check the status of your contract.
 
 Odra, Cspr.live and Casper Wallet are just a few of the tools that the Casper ecosystem 
-provides. Feel free to explore them on [casperecosystem.io](https://casperecosystem.io/).
+provides. Feel free to explore them on [casperecosystem.io].
 
+
+[official website]: https://www.casperwallet.io/
+[cspr.live]: https://cspr.live/
+[Casper Testnet Faucet]: https://testnet.cspr.live/tools/faucet
+[casperecosystem.io]: https://casperecosystem.io/
+[`InstallConfig`]: https://docs.rs/odra/2.2.0/odra/host/struct.InstallConfig.html

@@ -106,30 +106,34 @@ cargo odra build -c custom_item
 Then, we can deploy the contract using the `casper-client` tool.
 
 ```sh
-casper-client put-deploy \
-    --node-address http://localhost:11101 \
-    --chain-name casper-net-1 \
-    --secret-key path/to/your/secret_key.pem \ 
-    --session-path [PATH_TO_WASM] \
-    --payment-amount 100000000000 \
-    --session-arg "odra_cfg_package_hash_key_name:string:'test_contract_package_hash'" \
-    --session-arg "odra_cfg_allow_key_override:bool:'true'" \
-    --session-arg "odra_cfg_is_upgradable:bool:'true'" \
-    --session-arg "name:string='My Name'" \
-    --session-arg "description:string='My Description'" \ 
-    --session-arg "price_1:u256='101'" \
-    --session-arg "price_2:u256='202'"
+casper-client put-transaction session \
+  --node-address http://localhost:11101 \
+  --chain-name casper-net-1 \
+  --secret-key path/to/your/secret_key.pem \ 
+  --wasm-path ./wasm/Erc20.wasm \
+  --payment-amount 450000000000 \
+  --gas-price-tolerance 1 \
+  --standard-payment true \
+  --session-arg "odra_cfg_package_hash_key_name:string:'test_contract_package_hash'" \
+  --session-arg "odra_cfg_allow_key_override:bool:'true'" \
+  --session-arg "odra_cfg_is_upgradable:bool:'true'" \
+  --session-arg "name:string='My Name'" \
+  --session-arg "description:string='My Description'" \ 
+  --session-arg "price_1:u256='101'" \
+  --session-arg "price_2:u256='202'"
 ```
 
 Finally, we can call the `set_data` method to set the values of the contract.
 
 ```sh
-casper-client put-deploy \
-    --node-address http://localhost:11101 \ 
+casper-client put-transaction package \
+    --node-address http://localhost:11101 \
     --chain-name casper-net-1 \
-    --secret-key ./keys/secret_key.pem \ 
-    --payment-amount 2000000000 \
-    --session-hash [DEPLOYED_CONTRACT_HASH] \
+    --secret-key path/to/your/secret_key.pem \
+    --gas-price-tolerance 1 \
+    --contract-package-hash "hash-..." \
+    --payment-amount 2500000000 \
+    --standard-payment "true" \
     --session-entry-point "set_data" \
     --session-arg "value:u32:'666'" \
     --session-arg "name:string='alice'" \ 

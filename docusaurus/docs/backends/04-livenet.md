@@ -36,23 +36,42 @@ more than one account in our tests. Those values are passed using environment va
 file to store them - let's take a look at an example .env file, created from the [.env.sample] file from the examples folder:
 
 ```env
-# Path to the secret key of the account that will be used
-# to deploy the contracts.
-# We're using .keys folder so we don't accidentally commit
-# the secret key to the repository.
-ODRA_CASPER_LIVENET_SECRET_KEY_PATH=.keys/secret_key.pem
+# .env file used by Livenet integration. You can use multiple .env files to manage deploys on multiple chains
+# by naming them casper-test.env, casper-livenet.env, etc. and calling the deploy script with the name of the
+# ennviroment provided in the "ODRA_CASPER_LIVENET_ENV" variable. For example:
+# ODRA_CASPER_LIVENET_ENV=casper-test cargo run --bin livenet_tests --features livenet
+# This will load integration.env file first, and then fill the missing values with the values from casper-test.env.
+
+# Path to the secret key of the account that will be used to deploy the contracts.
+# If you are using the nctl, you can use the following command to extract the secret key from the container:
+#    docker exec mynctl /bin/bash -c "cat /home/casper/casper-nctl/assets/net-1/users/user-1/secret_key.pem" > examples/.node-keys/secret_key.pem
+#   docker exec mynctl /bin/bash -c "cat  /home/casper/casper-nctl/assets/net-1/users/user-2/secret_key.pem" > examples/.node-keys/secret_key_1.pem
+ODRA_CASPER_LIVENET_SECRET_KEY_PATH=<path to secret_key.pem>
 
 # RPC address of the node that will be used to deploy the contracts.
-ODRA_CASPER_LIVENET_NODE_ADDRESS=localhost:7777
+# For CSPR.cloud, you can use the following addresses:
+# - https://node.cspr.cloud
+# - https://node.testnet.cspr.cloud
+# For nctl, default is:
+# - http://localhost:11101
+ODRA_CASPER_LIVENET_NODE_ADDRESS=<node address>
 
-# Chain name of the network. Known values:
-# - integration-test
-ODRA_CASPER_LIVENET_CHAIN_NAME=integration-test
+# Events url
+# For CSPR.cloud, you can use the following addresses:
+# - https://node.cspr.cloud/events
+# For nctl, default is:
+# - http://localhost:18101/events
+ODRA_CASPER_LIVENET_EVENTS_URL=<events url>
 
-# Paths to the secret keys of the additional accounts.
-# Main secret key will be 0th account.
-ODRA_CASPER_LIVENET_KEY_1=.keys/secret_key_1.pem
-ODRA_CASPER_LIVENET_KEY_2=.keys/secret_key_2.pem
+# Chain name of the network. The mainnet is "casper" and test net is "casper-test".
+# The integration network uses the "integration-test" chain name.
+# For nctl default is "casper-net-1"
+ ODRA_CASPER_LIVENET_CHAIN_NAME=<chain_name>
+
+# Optionally, paths to the secret keys of the additional acccounts. Main secret key will be 0th account.
+# The following will work for nctl if you used the command above to extract the secret keys:
+# ODRA_CASPER_LIVENET_KEY_1=./keys/secret_key_1.pem
+#ODRA_CASPER_LIVENET_KEY_1=<path to secret_key_1.pem>
 
 # If using CSPR.cloud, you can set the auth token here.
 # CSPR_CLOUD_AUTH_TOKEN=
@@ -67,62 +86,61 @@ a simple binary that deploys a contract and calls it. The test is located in the
 Let's go through the code:
 
 ```rust
+//! Deploys an ERC20 contract and transfers some tokens to another address.
+use odra::casper_types::U256;
+use odra::host::{Deployer, HostEnv, HostRefLoader, InstallConfig};
+use odra::prelude::*;
+use odra_modules::erc20::{Erc20, Erc20HostRef, Erc20InitArgs};
+use std::str::FromStr;
+
 fn main() {
-    // Similar to the OdraVM backend, we need to initialize
-    // the environment:
     let env = odra_casper_livenet_env::env();
 
-    // Most of the host env works the same as in the
-    // OdraVM backend.
     let owner = env.caller();
-    // Addresses are the real addresses on the blockchain,
-    // so we need to provide them
-    // if we did not import their secret keys.
-    let recipient = 
-        "hash-2c4a6ce0da5d175e9638ec0830e01dd6cf5f4b1fbb0724f7d2d9de12b1e0f840";
+    let recipient = "hash-2c4a6ce0da5d175e9638ec0830e01dd6cf5f4b1fbb0724f7d2d9de12b1e0f840";
     let recipient = Address::from_str(recipient).unwrap();
 
-    // Arguments for the contract init method.
+    // Deploy new contract.
+    let mut token = deploy_erc20(&env);
+    println!("Token address: {}", token.address().to_string());
+
+    // Uncomment to load existing contract.
+    // let mut token = load_erc20(&env);
+
+    println!("Token name: {}", token.name());
+
+    env.set_gas(3_000_000_000u64);
+    token.transfer(&recipient, &U256::from(1000));
+
+    println!("Owner's balance: {:?}", token.balance_of(&owner));
+    println!("Recipient's balance: {:?}", token.balance_of(&recipient));
+}
+
+/// Loads an ERC20 contract.
+fn _load_erc20(env: &HostEnv) -> Erc20HostRef {
+    let address = "hash-d26fcbd2106e37be975d2045c580334a6d7b9d0a241c2358a4db970dfd516945";
+    let address = Address::from_str(address).unwrap();
+    Erc20::load(env, address)
+}
+
+/// Deploys an ERC20 contract.
+pub fn deploy_erc20(env: &HostEnv) -> Erc20HostRef {
     let name = String::from("Plascoin");
     let symbol = String::from("PLS");
     let decimals = 10u8;
-    let initial_supply: U256 = U256::from(10_000);
-    
-    // The main difference between other backends - we need to specify
-    // the gas limit for each action.
-    // The limit will be used for every consecutive action
-    // until we change it.
-    env.set_gas(100_000_000_000u64);
-    
-    // Deploy the contract. The API is the same as in the OdraVM backend.
+    let initial_supply = Some(U256::from(10_000));
+
     let init_args = Erc20InitArgs {
         name,
         symbol,
         decimals,
-        initial_supply: Some(initial_supply)
+        initial_supply
     };
-    let mut token = Erc20::deploy(env, init_args);
-    
-    // We can now use the contract as we would in the OdraVM backend.
-    println!("Token address: {}", token.address().to_string());
 
-    // Uncomment to load existing contract.
-    // let address = "hash-d26fcbd2106e37be975d2045c580334a6d7b9d0a241c2358a4db970dfd516945";
-    // let address = Address::from_str(address).unwrap();
-    // We use the Livenet-specific `load` method to load the contract
-    // that is already deployed.
-    // let mut token = Erc20Deployer::load(env, address);
-
-    // Non-mutable calls are free! Neat, huh? More on that later.
-    println!("Token name: {}", token.name());
-
-    // The next call is mutable, but the cost is lower than the deployment,
-    // so we change the amount of gas
-    env.set_gas(3_000_000_000u64);
-    token.transfer(recipient, U256::from(1000));
-
-    println!("Owner's balance: {:?}", token.balance_of(owner));
-    println!("Recipient's balance: {:?}", token.balance_of(recipient));
+    env.set_gas(450_000_000_000u64);
+    // You may configure a deploy passing `InstallConfig`.
+    // Erc20::deploy_with_cfg(env, init_args, InstallConfig::upgradable::<Erc20>())
+    Erc20::deploy(env, init_args)
 }
 ```
 
@@ -154,12 +172,12 @@ A part of a sample output should look like this:
 
 ```bash
 ...
-💁  INFO : Calling "hash-d26fcbd210..." with entrypoint "transfer".
-🙄  WAIT : Waiting 15s for "65b1a5d21...".
-🙄  WAIT : Waiting 15s for "65b1a5d21...".
-💁  INFO : Deploy "65b1a5d21..." successfully executed.
-Owner's balance: 4004
-Recipient's balance: 4000
+💁  INFO : Calling "contract-package-b796cf8e527472d7ced8c4f8db5adb30eb577176f4c7ce956675590e0cac4bb8" directly with entrypoint "transfer".
+🙄  WAIT : Waiting 10 for V1(TransactionV1Hash(775913daa0ffbded9aaf2216942217d682f03d1c04e6e2560d1e4b3329ebd2d6)).
+💁  INFO : Transaction "775913daa0ffbded9aaf2216942217d682f03d1c04e6e2560d1e4b3329ebd2d6" successfully executed.
+🔗  LINK : 
+Owner's balance: 9000
+Recipient's balance: 1000
 ```
 Those logs are a result of the last 4 lines of the above listing.
 Each deployment or a call to the blockchain will be noted and will take some time to execute.
@@ -199,5 +217,5 @@ ODRA_CASPER_LIVENET_ENV=integration cargo run --bin erc20_on_livenet --features=
 
 To sum up - this command will firstly load the `integration.env` file and then load the missing values from `.env` file.
 
-[.env.sample]: https://github.com/odradev/odra/blob/release/1.1.0/examples/.env.sample
-[erc20_on_livenet.rs]: https://github.com/odradev/odra/blob/release/1.1.0/examples/bin/erc20_on_livenet.rs
+[.env.sample]: https://github.com/odradev/odra/blob/release/2.2.0/examples/.env.sample
+[erc20_on_livenet.rs]: https://github.com/odradev/odra/blob/release/2.2.0/examples/bin/erc20_on_livenet.rs

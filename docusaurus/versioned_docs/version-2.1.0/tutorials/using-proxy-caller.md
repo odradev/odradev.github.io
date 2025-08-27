@@ -122,13 +122,13 @@ To interact with the contract, we use the `livenet` backend. It allows to write 
 ```toml title=Cargo.toml
 [package]
 name = "odra-examples"
-version = "2.1.0"
+version = "2.2.0"
 edition = "2021"
 
 [dependencies]
 odra = { path = "../odra", default-features = false }
 ... # other dependencies
-odra-casper-livenet-env = { version = "2.1.0", optional = true }
+odra-casper-livenet-env = { version = "2.2.0", optional = true }
 
 ... # other sections
 

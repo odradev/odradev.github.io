@@ -230,6 +230,12 @@ The generated schema will be available in the `resources` directory. The schema 
         "optional": false
       },
       {
+        "name": "odra_cfg_is_upgrade",
+        "description": "The arg name for the contract upgrade setting.",
+        "ty": "Bool",
+        "optional": false
+      },
+      {
         "name": "name",
         "description": null,
         "ty": "String",

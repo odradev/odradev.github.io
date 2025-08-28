@@ -54,7 +54,7 @@ const config = {
                     sidebarPath: require.resolve('./sidebars.js'),
                     includeCurrentVersion: true,
                     showLastUpdateTime: true,
-                    lastVersion: '2.3.0',
+                    lastVersion: '2.3.1',
                     versions: {
                         current: {
                             label: 'next',

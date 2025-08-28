@@ -75,6 +75,9 @@ ODRA_CASPER_LIVENET_EVENTS_URL=<events url>
 
 # If using CSPR.cloud, you can set the auth token here.
 # CSPR_CLOUD_AUTH_TOKEN=
+
+# Optionally, you can set the TTL for the deploys. Default is 5 minutes.
+# ODRA_CASPER_LIVENET_TTL=
 ```
 
 :::note

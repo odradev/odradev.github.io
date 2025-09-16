@@ -38,7 +38,14 @@ const config = {
                 'docs/0.9.0/**/*',
                 'docs/0.9.1/**/*',
             ]
-        }]],
+        }],
+        [
+            "docusaurus-plugin-generate-llms-txt",
+            {
+                outputFile: "llms.txt", // defaults to llms.txt if not specified
+            },
+        ],
+    ],
 
     presets: [
         [

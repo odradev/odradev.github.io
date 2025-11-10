@@ -27,16 +27,10 @@ const config = {
     plugins: [
         [require.resolve('docusaurus-lunr-search'), {
             excludeRoutes: [
-                'docs/0.2.0/**/*',
-                'docs/0.3.0/**/*',
-                'docs/0.3.1/**/*',
-                'docs/0.4.0/**/*',
-                'docs/0.5.0/**/*',
-                'docs/0.6.0/**/*',
-                'docs/0.7.0/**/*',
-                'docs/0.8.0/**/*',
-                'docs/0.9.0/**/*',
-                'docs/0.9.1/**/*',
+                'docs/0.*/**/*',
+                'docs/1.*/**/*',
+                'docs/2.*/**/*',
+                'docs/next/**/*'
             ]
         }],
         [

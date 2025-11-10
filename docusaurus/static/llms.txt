@@ -829,6 +829,33 @@ specific to the network or backend.
 We used `currently_delegated_amount` in the example, it uses `delegated_amount` method from ContractEnv, but it is also
 possible to query this information from the HostEnv using `delegated_amount` method.
 
+## Implementation details
+
+To keep the parity of behaviour between Odra VM and Casper VM,
+we implemented some not-so-obvious behaviours and parameters that
+can influence your code.
+
+### Minimum delegation amount
+
+Each validator can define the minimum delegation amount. Delegator
+cannot delegate a smaller amount but can increase the delegation
+in smaller steps.
+
+If the delegation amount falls below it, all the delegated
+funds will be undelegated.
+
+By default, the Odra VM and Casper VM are booted up with
+5 validators, each with `MINIMUM_DELEGATION_AMOUNT` set to
+500 CSPR.
+
+### Rewards calculation
+
+As mentioned above, VMs are started with 5 validators, each
+is delegating `DEFAULT_BID_AMOUNT`, which is set to `5_000_000_000_000_000_000u64` (5 000 000 000 CSPR).
+
+At each auction `DEFAULT_REWARD_AMOUNT` (2500 CSPR) is divided equally between 
+all validators and delegators based on their share in the pool.
+
 ---
 
 // File: backends/01-what-is-a-backend
@@ -2234,7 +2261,9 @@ the function we are calling inside the contract.
 
 - `fn set_caller(&self, address: Address)` - you've seen it in action just now
 - `fn balance_of<T: Addressable>(&self, addr: &T) -> U512` - returns the balance of the account associated with the given address
-- `fn advance_block_time(&self, time_diff: u64)` - increases the current value of `block_time`
+- `fn block_time(&self) -> u64` - returns the current value of `block_time` in milliseconds, alias: `block_time_millis`
+- `fn block_time_secs(&self) -> u64` - retuns the current value of `block_time` in seconds
+- `fn advance_block_time(&self, time_diff: u64)` - increases the current value of `block_time` by `time_diff` in milliseconds
 - `fn get_account(&self, n: usize) -> Address` - returns an n-th address that was prepared for you by Odra in advance;
   by default, you start with the 0-th account
 - `fn emitted_event<T: ToBytes + EventInstance, R: Addressable>(&self, contract_address: &R, event: T) -> bool` - verifies if the event was emitted by the contract

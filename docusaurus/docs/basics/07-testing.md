@@ -128,9 +128,6 @@ the function we are calling inside the contract.
   by default, you start with the 0-th account
 - `fn emitted_event<T: ToBytes + EventInstance, R: Addressable>(&self, contract_address: &R, event: T) -> bool` - verifies if the event was emitted by the contract
 
-It also exposes functions that help discover the host's configuration:
-
-
 Full list of functions can be found in the [`HostEnv`] documentation.
 
 ## What's next

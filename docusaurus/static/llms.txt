@@ -7314,6 +7314,7 @@ casper-client put-transaction session \
   --payment-amount 450000000000 \
   --gas-price-tolerance 1 \
   --standard-payment true \
+  --install-upgrade \
   --session-arg "odra_cfg_package_hash_key_name:string:'test_contract_package_hash'" \
   --session-arg "odra_cfg_allow_key_override:bool:'true'" \
   --session-arg "odra_cfg_is_upgradable:bool:'true'" \

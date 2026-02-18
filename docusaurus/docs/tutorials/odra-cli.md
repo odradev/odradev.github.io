@@ -221,6 +221,7 @@ Commands:
   contract      Commands for interacting with contracts
   scenario      Commands for interacting with scenarios
   print-events  Prints the most recent events emitted by a contract
+  whoami        Prints the address of the current caller.
   help          Print this message or the help of the given subcommand(s)
 
 Options:
@@ -469,6 +470,25 @@ thread 'main' panicked at examples/bin/odra_cli.rs:59:9:
 assertion `left == right` failed: Dog name mismatch
   left: "Doggy"
  right: "Mantus"
+```
+
+### Whoami command
+
+The `whoami` command prints the address and public key of the current caller — that is, the account configured in your livenet environment. It is included automatically in every `OdraCli` build and requires no explicit registration.
+
+```bash
+cargo run --bin odra_cli -- whoami
+```
+
+This will output:
+
+```bash
+💁  INFO : Address: Account(AccountHash(a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3))
+💁  INFO : PublicKey::Ed25519(c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4)
+💁  INFO : Command executed successfully
+```
+
+This is useful for verifying which account will sign transactions before deploying or calling a contract.
 
 ## Conclusion
 

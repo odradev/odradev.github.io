@@ -147,15 +147,15 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-odra = { version = "2.2.0", features = [], default-features = false }
-odra-modules = { version = "2.2.0", features = [], default-features = false }
-odra-casper-livenet-env = { version = "2.2.0", optional = true }
+odra = { version = "2.6.0", features = [], default-features = false }
+odra-modules = { version = "2.6.0", features = [], default-features = false }
+odra-casper-livenet-env = { version = "2.6.0", optional = true }
 
 [dev-dependencies]
-odra-test = { version = "2.2.0", features = [], default-features = false }
+odra-test = { version = "2.6.0", features = [], default-features = false }
 
 [build-dependencies]
-odra-build = { version = "2.2.0", features = [], default-features = false }
+odra-build = { version = "2.6.0", features = [], default-features = false }
 
 [features]
 default = []
@@ -326,4 +326,4 @@ provides. Feel free to explore them on [casperecosystem.io].
 [cspr.live]: https://cspr.live/
 [Casper Testnet Faucet]: https://testnet.cspr.live/tools/faucet
 [casperecosystem.io]: https://casperecosystem.io/
-[`InstallConfig`]: https://docs.rs/odra/2.2.0/odra/host/struct.InstallConfig.html
+[`InstallConfig`]: https://docs.rs/odra/2.6.0/odra/host/struct.InstallConfig.html

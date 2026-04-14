@@ -150,5 +150,5 @@ It works! Now our contracts has three versions deployed:
 
 In this tutorial, we learned how to upgrade a smart contract on the blockchain using the Odra framework. We deployed a simple counter contract, made it upgradable, and then upgraded it twice: first to `CounterV2`, and then back to `CounterV1`. We also explored the testnet to verify our contract deployments.
 
-[upgrade configuration]: https://docs.rs/odra/2.3.0/odra/host/struct.UpgradeConfig.html
-[automatically generated]: https://docs.rs/odra/2.3.0/odra/host/trait.UpgradeArgs.html
+[upgrade configuration]: https://docs.rs/odra/2.6.0/odra/host/struct.UpgradeConfig.html
+[automatically generated]: https://docs.rs/odra/2.6.0/odra/host/trait.UpgradeArgs.html

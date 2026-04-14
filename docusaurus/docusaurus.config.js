@@ -34,9 +34,10 @@ const config = {
             ]
         }],
         [
-            "docusaurus-plugin-generate-llms-txt",
+            require.resolve('./plugins/llms-txt/index.js'),
             {
-                outputFile: "llms.txt", // defaults to llms.txt if not specified
+                docsDir: 'docs',
+                outputFile: 'llms.txt',
             },
         ],
     ],

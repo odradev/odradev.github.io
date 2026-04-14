@@ -123,7 +123,7 @@ Let's see how we can test our cross calls using this knowledge:
 ```rust title="examples/src/features/cross_calls.rs"
 #[cfg(test)]
 mod tests {
-    use super::{CrossContract, CrossContractInitArgs, MathEngineHostRef};
+    use super::{CrossContract, CrossContractInitArgs, MathEngine};
     use odra::host::{Deployer, NoArgs};
     use odra::prelude::*;
 
@@ -134,7 +134,7 @@ mod tests {
         let cross_contract = CrossContract::deploy(
             &test_env,
             CrossContractInitArgs {
-                math_engine_address: *math_engine_contract.address()
+                math_engine_address: math_engine_contract.address()
             }
         );
         assert_eq!(cross_contract.add_using_another(), 8);
@@ -157,7 +157,7 @@ mod tests {
     #[test]
     fn test_ext() {
         let test_env = odra_test::env();
-        let adder = Adder::new(&test_env, get_adder_address(&test_env)).add(3, 5)
+        let adder = AdderContractRef::new(&test_env, get_adder_address(&test_env));
         assert_eq!(adder.add(1, 2), 3);
     }
 

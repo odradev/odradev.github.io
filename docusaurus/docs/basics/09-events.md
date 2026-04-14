@@ -89,7 +89,7 @@ The event collection process is recursive; if your module consists of other modu
 Odra's `HostEnv` comes with a few functions which lets you easily test the events that a given contract has emitted:
 
 ```rust title="examples/src/features/events.rs"
-use super::{PartyContract, PartyStarted};
+use super::{NativePartyStarted, PartyContract, PartyStarted};
 use odra::host::{Deployer, HostEnv, NoArgs};
 
 #[test]

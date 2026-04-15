@@ -523,7 +523,7 @@ If you encounter any further issues after completing the migration steps, please
 [Odra Documentation]: https://docs.odra.dev
 [technical documentation]: https://docs.rs/odra/0.9.0/odra/index.html
 [Docs.rs]: https://docs.rs/odra/0.9.0/odra/index.html
-[examples]: https:://github.com/odradev/odra/tree/release/0.9.0/examples
-[Examples]: https:://github.com/odradev/odra/tree/release/0.9.0/examples
+[examples]: https://github.com/odradev/odra/tree/release/0.9.0/examples
+[Examples]: https://github.com/odradev/odra/tree/release/0.9.0/examples
 [Casper Contract Schema]: https://github.com/odradev/casper-contract-schema
 [previous guide]: ./to-0.8.0

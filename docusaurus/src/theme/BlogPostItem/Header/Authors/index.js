@@ -1,7 +1,7 @@
 import React from 'react';
 import clsx from 'clsx';
-import {useBlogPost} from '@docusaurus/theme-common/internal';
-import BlogPostItemHeaderAuthor from '@theme/BlogPostItem/Header/Author';
+import {useBlogPost} from '@docusaurus/plugin-content-blog/client';
+import BlogAuthor from '@theme/Blog/Components/Author';
 import styles from './styles.module.css';
 // Component responsible for the authors layout
 export default function BlogPostItemHeaderAuthors({className}) {
@@ -28,7 +28,7 @@ export default function BlogPostItemHeaderAuthors({className}) {
             imageOnly ? styles.imageOnlyAuthorCol : styles.authorCol,
           )}
           key={idx}>
-          <BlogPostItemHeaderAuthor
+          <BlogAuthor
             author={{
               ...author,
               // Handle author images using relative paths

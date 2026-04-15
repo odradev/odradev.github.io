@@ -3,7 +3,7 @@ sidebar_position: 2
 description: Files and folders in the Odra project
 ---
 
-## Directory structure
+# Directory structure
 
 After creating a new project using Odra and running the tests, you will be presented with the
 following files and directories:

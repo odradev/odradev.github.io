@@ -1,6 +1,8 @@
 // @ts-check
 // Note: type annotations allow type checking and IDEs autocompletion
 
+const {themes: prismThemes} = require('prism-react-renderer');
+
 /** @type {import('@docusaurus/types').Config} */
 const config = {
     title: 'Odra',
@@ -8,7 +10,6 @@ const config = {
     url: 'https://odra.dev',
     baseUrl: '/',
     onBrokenLinks: 'throw',
-    onBrokenMarkdownLinks: 'warn',
     favicon: 'img/favicon.ico',
 
     // GitHub pages deployment config.
@@ -72,6 +73,9 @@ const config = {
 
     markdown: {
         mermaid: true,
+        hooks: {
+            onBrokenMarkdownLinks: 'warn',
+        },
     },
     themes: ['@docusaurus/theme-mermaid'],
 
@@ -128,8 +132,8 @@ const config = {
                 copyright: 'by <a href="https://odra.dev">odra.dev<a>',
             },
             prism: {
-                theme: require('prism-react-renderer/themes/github'),
-                darkTheme: require('prism-react-renderer/themes/vsDark'),
+                theme: prismThemes.github,
+                darkTheme: prismThemes.vsDark,
                 additionalLanguages: ['rust', 'solidity'],
             },
         }),

@@ -119,6 +119,6 @@ we need to convert our custom error to `OdraError` using `Into::into()`.
 ## What's next
 We will learn how to emit and test events using Odra.
 
-[`OdraResult`]: https://docs.rs/odra/2.7.2/odra/type.OdraResult.html
-[`OdraError`]: https://docs.rs/odra/2.7.2/odra/enum.OdraError.html
+[`OdraResult`]: https://docs.rs/odra/2.8.0/odra/type.OdraResult.html
+[`OdraError`]: https://docs.rs/odra/2.8.0/odra/enum.OdraError.html
 [`schema`]: ./casper-contract-schema

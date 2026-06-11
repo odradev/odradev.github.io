@@ -37,13 +37,13 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-odra = "2.6.0"
+odra = "2.7.2"
 
 [dev-dependencies]
-odra-test = "2.6.0"
+odra-test = "2.7.2"
 
 [build-dependencies]
-odra-build = "2.6.0"
+odra-build = "2.7.2"
 
 [[bin]]
 name = "sample_build_contract"

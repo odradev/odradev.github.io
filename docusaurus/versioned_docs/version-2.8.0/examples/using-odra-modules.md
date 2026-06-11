@@ -51,61 +51,61 @@ odra-modules = "2.8.0"
 
 Now, the only thing left is to add a module to your contract.
 
-Let's write an example of `MyToken` based on `Erc20` module.
+Let's write an example of `MyToken` based on the `Cep18` module.
 
 ```rust
 use odra::prelude::*;
 use odra::casper_types::U256;
-use odra_modules::erc20::Erc20;
+use odra_modules::cep18_token::Cep18;
 
 #[odra::module]
 pub struct MyToken {
-    erc20: SubModule<Erc20>
+    token: SubModule<Cep18>
 }
 
 #[odra::module]
-impl OwnedToken {
+impl MyToken {
     pub fn init(&mut self, initial_supply: U256) {
-        let name = String::from("MyToken");
         let symbol = String::from("MT");
+        let name = String::from("MyToken");
         let decimals = 9u8;
-        self.erc20.init(name, symbol, decimals, initial_supply);
+        self.token.init(symbol, name, decimals, initial_supply);
     }
 
     pub fn name(&self) -> String {
-        self.erc20.name()
+        self.token.name()
     }
 
     pub fn symbol(&self) -> String {
-        self.erc20.symbol()
+        self.token.symbol()
     }
 
     pub fn decimals(&self) -> u8 {
-        self.erc20.decimals()
+        self.token.decimals()
     }
 
     pub fn total_supply(&self) -> U256 {
-        self.erc20.total_supply()
+        self.token.total_supply()
     }
 
-    pub fn balance_of(&self, address: Address) -> U256 {
-        self.erc20.balance_of(address)
+    pub fn balance_of(&self, address: &Address) -> U256 {
+        self.token.balance_of(address)
     }
 
-    pub fn allowance(&self, owner: Address, spender: Address) -> U256 {
-        self.erc20.allowance(owner, spender)
+    pub fn allowance(&self, owner: &Address, spender: &Address) -> U256 {
+        self.token.allowance(owner, spender)
     }
 
-    pub fn transfer(&mut self, recipient: Address, amount: U256) {
-        self.erc20.transfer(recipient, amount);
+    pub fn transfer(&mut self, recipient: &Address, amount: &U256) {
+        self.token.transfer(recipient, amount);
     }
 
-    pub fn transfer_from(&mut self, owner: Address, recipient: Address, amount: U256) {
-        self.erc20.transfer_from(owner, recipient, amount);
+    pub fn transfer_from(&mut self, owner: &Address, recipient: &Address, amount: &U256) {
+        self.token.transfer_from(owner, recipient, amount);
     }
 
-    pub fn approve(&mut self, spender: Address, amount: U256) {
-        self.erc20.approve(spender, amount);
+    pub fn approve(&mut self, spender: &Address, amount: &U256) {
+        self.token.approve(spender, amount);
     }
 }
 ```
@@ -127,6 +127,14 @@ Casper Ecosystem Proposal 18 (CEP-18) is a standard interface for the CSPR and t
 #### CEP-95
 
 Casper Ecosystem Proposal 95 (CEP-95) is a Casper NFT Standard. It aims to replace CEP-47 and CEP-78, which have flaws that complicate their support in the ecosystem. This standard is aligned with Ethereum's ERC-721, but makes adjustments relevant for the Casper Ecosystem. Similarly to ERC-721, this standard can be used to represent a various range of tokenized assets Read more about the CEP-95 [here](https://github.com/casper-network/ceps/blob/master/text/0095-nft-standard.md).
+
+#### CEP-2612
+
+The `CEP2612` module is an adaptation of [ERC-2612](https://eips.ethereum.org/EIPS/eip-2612) for the Casper Network. It extends a CEP-18 token with a `permit` entry point that lets a token holder grant an allowance via an off-chain EIP-712 signature instead of an on-chain `approve` transaction, making the approval gas-less from the holder's perspective.
+
+#### CEP-3009
+
+The `CEP3009` module is an adaptation of [ERC-3009](https://eips.ethereum.org/EIPS/eip-3009) ("Transfer With Authorization") for the Casper Network. It lets a CEP-18 token holder authorize a transfer of their tokens via an off-chain EIP-712 signature, which a third party (a relayer, or the recipient themselves) submits on-chain using `transfer_with_authorization` or `receive_with_authorization`. An unused authorization can be revoked with `cancel_authorization`.
 
 #### Erc20
 

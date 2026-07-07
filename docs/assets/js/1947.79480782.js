@@ -1,0 +1,1 @@
+"use strict";(globalThis.webpackChunkodra_website=globalThis.webpackChunkodra_website||[]).push([[1947],{1947(e,a,s){s.d(a,{createWardleyServices:()=>r.J});var r=s(22295);s(72519)}}]);

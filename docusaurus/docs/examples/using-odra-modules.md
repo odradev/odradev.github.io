@@ -15,13 +15,13 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-odra = "2.8.0"
+odra = "2.9.0"
 
 [dev-dependencies]
-odra-test = "2.8.0"
+odra-test = "2.9.0"
 
 [build-dependencies]
-odra-build = "2.8.0"
+odra-build = "2.9.0"
 
 [[bin]]
 name = "my_project_build_contract"
@@ -45,8 +45,8 @@ To use `odra-modules`, edit your `dependency` and `features` sections.
 
 ```toml title=Cargo.toml
 [dependencies]
-odra = "2.8.0"
-odra-modules = "2.8.0"
+odra = "2.9.0"
+odra-modules = "2.9.0"
 ```
 
 Now, the only thing left is to add a module to your contract.
@@ -128,6 +128,13 @@ Casper Ecosystem Proposal 18 (CEP-18) is a standard interface for the CSPR and t
 
 Casper Ecosystem Proposal 95 (CEP-95) is a Casper NFT Standard. It aims to replace CEP-47 and CEP-78, which have flaws that complicate their support in the ecosystem. This standard is aligned with Ethereum's ERC-721, but makes adjustments relevant for the Casper Ecosystem. Similarly to ERC-721, this standard can be used to represent a various range of tokenized assets Read more about the CEP-95 [here](https://github.com/casper-network/ceps/blob/master/text/0095-nft-standard.md).
 
+:::caution
+`Cep95::raw_transfer` clears the per-token approval before moving the token, so an approval never
+survives a change of ownership. If you build your own transfer flow on top of `raw_transfer`,
+remember it is not access-controlled - authorize the caller *before* calling it, as
+`transfer_from` does.
+:::
+
 #### CEP-2612
 
 The `CEP2612` module is an adaptation of [ERC-2612](https://eips.ethereum.org/EIPS/eip-2612) for the Casper Network. It extends a CEP-18 token with a `permit` entry point that lets a token holder grant an allowance via an off-chain EIP-712 signature instead of an on-chain `approve` transaction, making the approval gas-less from the holder's perspective.
@@ -135,6 +142,15 @@ The `CEP2612` module is an adaptation of [ERC-2612](https://eips.ethereum.org/EI
 #### CEP-3009
 
 The `CEP3009` module is an adaptation of [ERC-3009](https://eips.ethereum.org/EIPS/eip-3009) ("Transfer With Authorization") for the Casper Network. It lets a CEP-18 token holder authorize a transfer of their tokens via an off-chain EIP-712 signature, which a third party (a relayer, or the recipient themselves) submits on-chain using `transfer_with_authorization` or `receive_with_authorization`. An unused authorization can be revoked with `cancel_authorization`.
+
+:::caution
+Since Odra 2.9.0 the transferred amount is named `value`, not `amount`, in
+`transfer_with_authorization` and `receive_with_authorization` - matching the `value` field of the
+EIP-712 `TransferWithAuthorization` / `ReceiveWithAuthorization` structs. This renames the
+entry point arguments, so any client that calls them by argument name (including generated
+schemas and the [Odra CLI](../tutorials/odra-cli.md)) has to be updated. The signed digest itself
+is unchanged, so previously produced signatures stay valid.
+:::
 
 #### Erc20
 

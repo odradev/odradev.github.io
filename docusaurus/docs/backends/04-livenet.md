@@ -78,6 +78,9 @@ ODRA_CASPER_LIVENET_EVENTS_URL=<events url>
 
 # Optionally, you can set the TTL for the deploys. Default is 5 minutes.
 # ODRA_CASPER_LIVENET_TTL=
+
+# Optionally, you can set the gas price tolerance for the transactions. Default is 1.
+# ODRA_CASPER_LIVENET_GAS_PRICE_TOLERANCE=
 ```
 
 :::note
@@ -159,6 +162,52 @@ test = false
 ```
 :::
 
+:::caution
+Every deploy needs an explicit gas limit. If `set_gas()` was not called (or was called with `0`),
+the deploy is rejected upfront with a `Gas not set` error instead of being sent to the node and
+failing there.
+:::
+
+### Gas price tolerance
+
+`ODRA_CASPER_LIVENET_GAS_PRICE_TOLERANCE` sets the highest gas price multiplier a transaction
+is allowed to be executed at. The default is `1`, which means the transaction is only executed
+while the network runs at its base gas price. Raise it if you want your transactions to go
+through also when the network is congested and the gas price goes up - at the cost of paying
+more for the same call.
+
+:::note
+The default was lowered from `5` to `1` in Odra 2.8.2. If you relied on the old behaviour,
+set `ODRA_CASPER_LIVENET_GAS_PRICE_TOLERANCE=5` explicitly.
+:::
+
+### Debugging a transaction
+
+`ODRA_LOG_LEVEL` controls how much the Livenet backend prints. It accepts `none`, `error`, `warn`,
+`info` (the default) and `debug`. At `debug`, every transaction is pretty-printed as JSON right
+before it is sent to the node, which is the quickest way to see what was actually signed:
+
+```bash
+ODRA_LOG_LEVEL=debug cargo run --bin erc20_on_livenet --features=livenet
+```
+
+### Handling a missing configuration
+
+`odra_casper_livenet_env::env()` panics if any of the required variables is missing or if the
+secret key cannot be loaded. If you would rather handle this yourself - for example to prompt
+the user for the missing value, as the [Odra CLI](../tutorials/odra-cli.md) does - use
+`env_safe()`, which returns a `Result<HostEnv, LivenetError>` instead:
+
+```rust
+match odra_casper_livenet_env::env_safe() {
+    Ok(env) => { /* use the env */ }
+    Err(odra_casper_livenet_env::LivenetError::EnvVariableNotSet(var)) => {
+        println!("Please set the {var} environment variable.");
+    }
+    Err(e) => println!("Livenet misconfigured: {e}")
+}
+```
+
 ## Usage
 
 To run the above code, we simply need to run the binary with the `livenet` feature enabled:
@@ -220,5 +269,5 @@ ODRA_CASPER_LIVENET_ENV=integration cargo run --bin erc20_on_livenet --features=
 
 To sum up - this command will firstly load the `integration.env` file and then load the missing values from `.env` file.
 
-[.env.sample]: https://github.com/odradev/odra/blob/release/2.8.0/examples/.env.sample
-[erc20_on_livenet.rs]: https://github.com/odradev/odra/blob/release/2.8.0/examples/bin/erc20_on_livenet.rs
+[.env.sample]: https://github.com/odradev/odra/blob/release/2.9.0/examples/.env.sample
+[erc20_on_livenet.rs]: https://github.com/odradev/odra/blob/release/2.9.0/examples/bin/erc20_on_livenet.rs

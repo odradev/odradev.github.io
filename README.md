@@ -39,6 +39,12 @@ users and AI agents read first.
 Note that docs are versioned: an edit to `docusaurus/docs/` usually needs the same edit in
 `docusaurus/versioned_docs/version-<latest>/` to reach readers of the current release or release of the new version of the docs.
 
+A snapshot covers a **minor line**, not a patch release - `version-2.9` is labelled `2.9.*` on the
+site and serves everyone on 2.9.x. Patch-level fixes are copied into the existing snapshot; only a
+new minor gets `just docs-new-version <x.y>`. Name snapshots `2.9`, never `2.9.*` - the directory
+name would then contain `*`, which is an illegal filename character on Windows and would make the
+repository impossible to check out there.
+
 Adding, renaming or removing a page changes `static/llms.txt`, which is regenerated on every build
 and is what AI agents read. The Claude Code plugin keeps an annotated copy at
 `plugins/odra-plugin/reference/docs-map.md` in

@@ -50,6 +50,11 @@ impl ValidatorsContract {
         self.env().transfer_tokens(&self.env().caller(), &amount);
     }
 
+    /// How much this contract currently has delegated to its validator
+    pub fn currently_delegated_amount(&self) -> U512 {
+        self.env().delegated_amount(self.validator.get().unwrap())
+    }
+
     ...
 }
 ```

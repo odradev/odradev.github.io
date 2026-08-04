@@ -101,9 +101,16 @@ cargo odra schema # or pass -c flag to generate the schema for a specific contra
 
 ## Schema Output
 
-The generated schema will be available in the `resources` directory. The schema is a JSON file that contains all the information about the contract. Here is an example of the generated schema:
+`cargo odra schema` writes two files per contract:
 
-```json showLineNumbers title="resources/my_contract_schema.json"
+```
+resources/casper_contract_schemas/my_contract_schema.json   # the CCS format, shown below
+resources/legacy/my_contract_schema.json                    # the older CES-based format, kept for compatibility
+```
+
+The schema is a JSON file that contains all the information about the contract. Here is an example of the generated schema:
+
+```json showLineNumbers title="resources/casper_contract_schemas/my_contract_schema.json"
 {
   "casper_contract_schema_version": 1,
   "toolchain": "rustc 1.77.0-nightly (5bd5d214e 2024-01-25)",
@@ -219,7 +226,7 @@ The generated schema will be available in the `resources` directory. The schema 
       },
       {
         "name": "odra_cfg_allow_key_override",
-        "description": "The arg name for the allow key override.",
+        "description": "If true and the key specified in odra_cfg_package_hash_key_name already exists, it will be overwritten.",
         "ty": "Bool",
         "optional": false
       },
@@ -231,7 +238,7 @@ The generated schema will be available in the `resources` directory. The schema 
       },
       {
         "name": "odra_cfg_is_upgrade",
-        "description": "The arg name for the contract upgrade setting.",
+        "description": "The arg name for telling the installer that the contract is being upgraded.",
         "ty": "Bool",
         "optional": false
       },

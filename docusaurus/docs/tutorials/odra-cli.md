@@ -91,6 +91,7 @@ impl DeployScript for DeployDogScript {
         // You can use `load_or_deploy_with_cfg` to deploy the contract with a custom configuration
          _ = DogContract::load_or_deploy_with_cfg(
             env,
+            None, // an optional package name, e.g. Some("my_dog".to_string())
             DogContractInitArgs {
                 barks: true,
                 weight: 10,
@@ -194,7 +195,7 @@ Of course, there is no limit to how complex a scenario can be.
 
 :::tip
 Prefer returning a `scenario::Error` over panicking with `assert!`. A returned error is reported by
-the CLI as a failed command (and, with `--json`, as a proper JSON error), while a panic tears the
+the CLI as a failed command, while a panic tears the
 process down with a raw Rust backtrace. Use `odra_cli::log` to print progress from inside a
 scenario so the output matches the rest of the CLI.
 :::
@@ -329,6 +330,18 @@ This makes the CLI usable from scripts and CI without parsing the emoji-prefixed
 render a JSON report; `deploy`, `completions` and `repl` ignore the flag. Amounts that can exceed
 JSON's safe integer range (balances, transferred motes) are serialized as strings.
 
+:::caution
+`--json` only affects the final report of a successful command. Two things are always plain text:
+
+- **Errors.** Failures - a reverting scenario, a bad argument, a missing config - are printed as
+  emoji-prefixed text, never as a JSON error object.
+- **Transaction progress.** Mutable calls still log their deploy/wait/confirm lines to stdout before
+  the JSON block.
+
+A script should therefore check the exit code for success, and parse the *last* JSON object in stdout
+rather than treating the whole stream as JSON.
+:::
+
 ### Deploy command
 
 First, we need to deploy the contract:
@@ -354,13 +367,14 @@ cargo run --bin odra_cli -- deploy
 💁  INFO : Deployment completed successfully.
 ```
 
-This will run the deploy script and create a new file in the `resources` directory named `contracts.toml`:
+This will run the deploy script and create a new file in the `resources` directory - named `contracts.toml`, or `<chain>-contracts.toml` when `ODRA_CASPER_LIVENET_CHAIN_NAME` is set, as it normally is:
 
 ```toml
 last_updated = "2025-07-03T10:33:55Z"
 
 [[contracts]]
 name = "DogContract"
+package_name = "DogContract"
 package_hash = "hash-53b3486180b2a9506fbb0523ed159b1908cec628d091b19cbe74e057e7ebbc8b"
 ```
 
@@ -629,7 +643,7 @@ cargo run --bin odra_cli -- whoami
 This will output:
 
 ```bash
-💁  INFO : Address: Account(AccountHash(a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3))
+💁  INFO : Address: account-hash-a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3
 💁  INFO : Public key: 01c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4
 💁  INFO : Balance: 998.234 CSPR (998234000000 motes)
 ```
@@ -700,7 +714,7 @@ cargo run --bin odra_cli -- config
 💁  INFO :   Chain name: casper-net-1
 💁  INFO :   Events URL: http://localhost:18101/events
 💁  INFO :   Secret key path: ./keys/secret_key.pem
-💁  INFO : Caller address:  Account(AccountHash(a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3))
+💁  INFO : Caller address:  account-hash-a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3
 💁  INFO : Contracts file:  resources/casper-net-1-contracts.toml
 ```
 
@@ -723,7 +737,7 @@ cargo run --bin odra_cli -- transfer \
 ```bash
 💁  INFO : Transfer completed successfully.
  10500000000 motes (10.5 cspr) from
-Account(AccountHash(a2b3...a2b3)) -> Account(AccountHash(5e37...7364))
+account-hash-a2b3...a2b3 -> account-hash-5e37...7364
 ```
 
 Like every other CSPR amount in the CLI, `--amount` accepts a plain number of motes or a CSPR amount such as `"10.5 cspr"`.
@@ -753,7 +767,7 @@ cargo run --bin odra_cli -- repl
 
 ```bash
 💁  INFO : Odra CLI interactive session — chain `casper-net-1`
-💁  INFO : Caller: Account(AccountHash(a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3))
+💁  INFO : Caller: account-hash-a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3
 💁  INFO : Type `help` for available commands, `exit` or Ctrl-D to quit.
 ⬡ casper-net-1  ·  Account(AccountH…a2b3)  ·  casper-net-1-contracts.toml (1 contract)
 casper-net-1> contract DogContract name

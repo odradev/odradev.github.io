@@ -20,16 +20,21 @@ If you need a refresher on these topics, please refer to our [guide](../basics/0
 
 The `Sequence` in Odra is a basic module that stores a single value in the storage that can be read or incremented. Internally, holds a `Var` which keeps track of the current value. 
 
-```rust
+```rust title="simplified"
 pub struct Sequence<T>
 where
-    T: Num + One + ToBytes + FromBytes + CLTyped
+    T: Num + One + Zero + Default + Copy + ToBytes + FromBytes + CLTyped
 {
     value: Var<T>
 }
 ```
 
-The Sequence module provides functions `get_current_value` and `next_value` to get the current value and increment the value respectively.
+The Sequence module provides functions `get_current_value` and `next_value` to get the current value and advance the sequence respectively.
+
+:::caution
+`next_value()` returns `0` the first time it is called on a fresh `Sequence`, then `1`, `2`, and so on -
+it is a zero-based counter, not a pre-increment starting at `1`.
+:::
 
 ### Advanced Mapping
 
@@ -86,6 +91,30 @@ Secondly, rather than utilizing the `Mapping::get()` function, call `Mapping::mo
 
 The given code snippet showcases the `AdvancedStorage` contract that incorporates these storage concepts.
 
+`Token` here is an ordinary module - any `#[odra::module]` type will do. For this example it only
+needs to expose `mint` and `balance_of`:
+
+```rust title="modules.rs"
+use odra::casper_types::U512;
+use odra::prelude::*;
+
+#[odra::module]
+pub struct Token {
+    balances: Mapping<Address, U512>,
+}
+
+#[odra::module]
+impl Token {
+    pub fn mint(&mut self, amount: U512, to: Address) {
+        self.balances.add(&to, amount);
+    }
+
+    pub fn balance_of(&self, account: &Address) -> U512 {
+        self.balances.get_or_default(account)
+    }
+}
+```
+
 ```rust
 use odra::casper_types::U512;
 use odra::prelude::*;
@@ -97,6 +126,7 @@ pub struct AdvancedStorage {
     tokens: Mapping<(String, String), Token>,
 }
 
+#[odra::module]
 impl AdvancedStorage {
     pub fn current_value(&self) -> u32 {
         self.counter.get_current_value()

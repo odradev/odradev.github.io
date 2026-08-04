@@ -202,7 +202,7 @@ Ownership can be transferred in a two-step process by using `transfer_ownership(
 
 ### Security
 
-#### Pausable
+#### Pauseable
 
 A module allowing to implement an emergency stop mechanism that can be triggered by any account.
 

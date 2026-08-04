@@ -60,9 +60,9 @@ In your contract code, create a new file in the bin folder:
 use std::str::FromStr;
 
 use odra::casper_types::U256;
-use odra::host::{Deployer, HostEnv, HostRef, HostRefLoader};
-use odra::prelude::Address;
-use ourcoin::token::{OurToken, OurToken, OurTokenInitArgs};
+use odra::host::{Deployer, HostEnv, HostRefLoader};
+use odra::prelude::{Address, Addressable};
+use ourcoin::token::{OurToken, OurTokenHostRef, OurTokenInitArgs};
 
 fn main() {
     // Load the Casper livenet environment.

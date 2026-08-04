@@ -10,12 +10,20 @@ that Odra will build. Let's take a look at the file structure again:
 
 ```toml
 [[contracts]]
-fqn = "sample::Flipper"
+fqn = "flipper::Flipper"
 ```
 
-The `fqn` (Fully Qualified Name) is used by the building tools to locate and build the contract.
-The last segment of the `fqn` will be used as the name for your contract - the generated wasm file will 
-be in the above case named `flipper.wasm`.
+The `fqn` (Fully Qualified Name) is the Rust path to your contract's struct, and it is used by the
+building tools to locate and build the contract. In a single-crate project it has two segments:
+the module (here `flipper`, i.e. `src/flipper.rs`) and the struct (`Flipper`).
+
+The last segment of the `fqn` will be used as the name for your contract - the generated wasm file will
+be in the above case named `Flipper.wasm`, matching the struct name exactly, capital letter included.
+
+:::note
+In a workspace project (`cargo odra new -t workspace`) the `fqn` gains a third, leading segment - the
+crate name - so it reads `<crate>::<module>::<Struct>`, for example `flipper::flipper::Flipper`.
+:::
 
 
 ## Adding a new contract manually
@@ -28,10 +36,10 @@ look like this:
 
 ```toml
 [[contracts]]
-fqn = "sample::Flipper"
+fqn = "flipper::Flipper"
 
 [[contracts]]
-fqn = "sample::Counter"
+fqn = "counter::Counter"
 ```
 
 ## What's next

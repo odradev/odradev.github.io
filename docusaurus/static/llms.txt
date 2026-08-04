@@ -16,7 +16,7 @@
 > Basic concepts of Odra Framework
 
 - [Cargo Odra](https://odra.dev/docs/basics/cargo-odra)
-- [basics/directory-structure](https://odra.dev/docs/basics/directory-structure)
+- [Directory structure](https://odra.dev/docs/basics/directory-structure)
 - [Odra.toml](https://odra.dev/docs/basics/odra-toml)
 - [Flipper Internals](https://odra.dev/docs/basics/flipper-internals)
 - [Storage interaction](https://odra.dev/docs/basics/storage-interaction)

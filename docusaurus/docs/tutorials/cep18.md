@@ -126,7 +126,7 @@ we need to add a new function to our token module:
 /// Proposes a new mint for the contract.
 pub fn propose_new_mint(&mut self, account: Address, amount: U256) {
     // Only allow proposing a new mint if there is no vote in progress.
-    if self.is_vote_open().get_or_default() {
+    if self.is_vote_open.get_or_default() {
         self.env().revert(GovernanceError::VoteAlreadyOpen);
     }
 
@@ -350,6 +350,8 @@ pub enum GovernanceError {
     VoteEnded = 3,
     /// Only the token holders can propose a new mint.
     OnlyTokenHoldersCanPropose = 4,
+    /// Only the token owner can burn their own tokens.
+    Unauthorized = 5,
 }
 
 /// A module definition. Each module struct consists of Vars and Mappings
@@ -419,7 +421,9 @@ impl OurToken {
 
     /// Burns the given amount of tokens from the given address.
     pub fn burn(&mut self, owner: &Address, amount: &U256) {
-        self.token.assert_caller(owner);
+        if &self.env().caller() != owner {
+            self.env().revert(GovernanceError::Unauthorized);
+        }
 
         // Burn the tokens.
         self.token.raw_burn(owner, amount);

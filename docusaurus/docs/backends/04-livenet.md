@@ -30,7 +30,39 @@ use a slightly different workflow to test the contracts.
 
 ## Setup
 
-To use Livenet backend, we need to provide Odra with some information - the network address, our private
+### Project setup
+
+The Livenet backend lives in a separate crate that is not part of a freshly generated project, so first
+add it as an **optional** dependency and put it behind a `livenet` feature:
+
+```toml title="Cargo.toml"
+[dependencies]
+odra-casper-livenet-env = { version = "2.9.0", optional = true }
+
+[features]
+default = []
+livenet = ["odra-casper-livenet-env"]
+```
+
+Then register the binary you are about to write. Note the double brackets - `[[bin]]` is an array of
+tables, and a single `[bin]` is not valid Cargo syntax:
+
+```toml title="Cargo.toml"
+[[bin]]
+name = "erc20_on_livenet"
+path = "bin/erc20_on_livenet.rs"
+required-features = ["livenet"]
+test = false
+```
+
+:::note
+Odra projects keep their binaries in `bin/` at the project root, not in `src/bin/` - the same place
+`cargo odra new` puts `build_contract.rs` and `cli.rs`.
+:::
+
+### Environment setup
+
+Next, we need to provide Odra with some information - the network address, our private
 key and the name of the chain we want to use. Optionally, we can add multiple private keys to use
 more than one account in our tests. Those values are passed using environment variables. We can use .env
 file to store them - let's take a look at an example .env file, created from the [.env.sample] file from the examples folder:
@@ -151,21 +183,24 @@ pub fn deploy_erc20(env: &HostEnv) -> Erc20HostRef {
 ```
 
 :::note
-The above example is a rust binary, not a test. Note that it is also added as a section of the
-`Cargo.toml` file:
-```toml
-[bin]
-name = "erc20_on_livenet"
-path = "src/bin/erc20_on_livenet.rs"
-required-features = ["livenet"]
-test = false
-```
+The above example is a rust binary, not a test - it is the `[[bin]]` target we registered in
+[Project setup](#project-setup).
+:::
+
+:::note
+`ODRA_CASPER_LIVENET_KEY_1` adds a *second* account, reachable as `env.get_account(1)`. Numbering starts
+at 1 and continues with `ODRA_CASPER_LIVENET_KEY_2` and so on - there is no `_KEY_0`, because the 0th
+account is the one from `ODRA_CASPER_LIVENET_SECRET_KEY_PATH`.
 :::
 
 :::caution
 Every deploy needs an explicit gas limit. If `set_gas()` was not called (or was called with `0`),
 the deploy is rejected upfront with a `Gas not set` error instead of being sent to the node and
 failing there.
+
+The gas amounts above are specific to this ERC20 example. Every contract needs its own budget, and
+setting it too low is a different failure: the transaction *is* sent, you get a transaction hash back,
+and it fails on-chain with `Out of gas error`. Expect to tune these numbers per contract and per network.
 :::
 
 ### Gas price tolerance
@@ -217,8 +252,22 @@ cargo run --bin erc20_on_livenet --features=livenet
 ```
 
 :::note
-Before executing the binary, make sure you built a wasm file.
+Before executing the binary, make sure you built the wasm file - the Livenet backend deploys the
+artifact from `wasm/`, and fails with `Failed to find wasm file` if it is missing:
+
+```bash
+cargo odra build
+```
 :::
+
+To sum up, going from a generated project to a deployed contract takes five steps:
+
+1. Add the `odra-casper-livenet-env` optional dependency and the `livenet` feature to `Cargo.toml`.
+2. Register the binary with a `[[bin]]` entry pointing at `bin/<name>.rs`.
+3. Write the binary, remembering `env.set_gas(...)` before every deploy and every mutating call.
+4. Fill in the `.env` file.
+5. Build the wasm with `cargo odra build`, then run
+   `cargo run --bin <name> --features=livenet`.
 
 A part of a sample output should look like this:
 

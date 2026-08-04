@@ -166,7 +166,7 @@ contract Primitives {
 </TabItem>
 </Tabs>
 
-The range of integer types in Odra is slightly different from Solidity. Odra provides a wide range of integer types: `u8`, `u16`, `u32`, `u64`, `U128`, and `U256` for unsigned integers, and `i32` and `i64` for signed integers.
+The range of integer types in Odra is slightly different from Solidity. Odra provides a wide range of integer types: `u8`, `u32`, `u64`, `U128`, `U256` and `U512` for unsigned integers, and `i32` and `i64` for signed integers. Note there is no `u16`.
 
 The `Address` type in Odra is used to represent account and contract addresses. In Odra, there is no default/zero value for the `Address` type; the workaround is to use `Option<Address>`.
 
@@ -668,17 +668,29 @@ In Solidity, data location is an important concept that determines where the dat
 Odra contracts define their entry point and internal functions within the impl block. Here's an example of a transfer function:
 
 ```rust
+use odra::casper_types::U256;
+use odra::prelude::*;
+
+#[odra::module]
+pub struct Erc20;
+
+#[odra::module]
 impl Erc20 {
     pub fn transfer(&mut self, recipient: &Address, amount: &U256) {
         self.internal_transfer(&self.env().caller(), recipient, amount);
         // Transfer logic goes here
     }
+}
 
+impl Erc20 {
     fn internal_transfer(&mut self, sender: &Address, recipient: &Address, amount: &U256) {
         // Internal transfer logic goes here
     }
 }
 ```
+
+Only the `#[odra::module]`-annotated `impl` block produces entry points; helpers in a plain `impl` block
+stay internal to the contract.
 Functions can modify contract state and emit events using the [`ContractEnv`](../basics/06-communicating-with-host.md) function.
 
 ### View and Pure
@@ -748,6 +760,10 @@ pub struct FunctionModifier {
 
 #[odra::module]
 impl FunctionModifier {
+    pub fn init(&mut self) {
+        self.x.set(10);
+    }
+
     pub fn decrement(&mut self, i: u32) {
         self.lock();
         self.x.set(self.x.get_or_default() - i);
@@ -938,7 +954,18 @@ contract_addr.call(
 )
 ```
 
-Odra does not support such a mechanism. You must have access to the contract interface to call a function.
+Odra has no hash-based selector mechanism - entry points are called by name. Normally you call through the
+generated `{Contract}ContractRef`, which is type-checked at compile time. If you do not have the contract's
+Rust interface, you can still call it dynamically:
+
+```rust showLineNumbers
+use odra::casper_types::runtime_args;
+
+let _: () = env.call_contract(
+    address,
+    CallDef::new("transfer", true, runtime_args! { "to" => recipient, "amount" => 1234u32 })
+);
+```
 
 ## Events and Logging
 

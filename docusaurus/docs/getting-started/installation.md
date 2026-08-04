@@ -10,8 +10,8 @@ Hello fellow Odra user! This page will guide you through the installation proces
 To start working with Odra, you need to have the following installed on your machine:
 
 - Rust toolchain installed (see [rustup.rs](https://rustup.rs/))
-- wasmstrip tool installed (see [wabt](https://github.com/WebAssembly/wabt))
-- wasm-opt tool installed (see [binaryen](https://github.com/WebAssembly/binaryen))
+- `wasm-strip` tool installed (see [wabt](https://github.com/WebAssembly/wabt))
+- `wasm-opt` tool installed (see [binaryen](https://github.com/WebAssembly/binaryen))
 
 We do not provide exact commands for installing these tools, as they are different for different operating systems.
 Please refer to the documentation of the tools themselves.
@@ -24,6 +24,13 @@ rustup target add wasm32-unknown-unknown
 
 :::note
 `wasm32-unknown-unknown` is a target that will be used by Odra to compile your smart contracts to WASM files.
+:::
+
+:::note
+Odra projects pin a specific Rust **nightly** toolchain in a `rust-toolchain` file at the project root.
+You do not need to install it yourself - rustup picks it up and downloads it on the first build, which
+is why that build takes noticeably longer than the ones after it. If you prefer to add the wasm target
+ahead of time for exactly that toolchain, run the command above from inside the project directory.
 :::
 
 ## Installing Cargo Odra
@@ -50,7 +57,7 @@ If everything went fine, we can proceed to the next step.
 To create a new project, simply execute:
 
 ```bash
-cargo odra new --name my-project && cd my_project
+cargo odra new --name my_project && cd my_project
 ```
 
 This will create a new folder called `my_project` and initialize Odra there. Cargo Odra

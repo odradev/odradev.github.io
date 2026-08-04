@@ -60,9 +60,16 @@ operates.
 ## Key generation.
 
 Every element of a module (`struct`) with N elements is associated with an index
-ranging from 0 to N-1, represented as a u8 with a maximum of 256 elements. If an
-element of a module is another module (`SubModule<...>`), the associated index
-serves as a prefix for the indexes of the inner module.
+ranging from 1 to N, represented as a u8. If an element of a module is another
+module (`SubModule<...>`), the associated index serves as a prefix for the
+indexes of the inner module.
+
+:::note
+The compact, nibble-packed key format shown below is used only while every index
+along the path is 15 or lower - that is, up to 15 fields per module. Beyond that
+Odra switches to a longer key encoding. Nesting is also capped: a path deeper than
+8 levels reverts with `ExecutionError::PathIndexOutOfBounds`.
+:::
 
 While this may initially appear complex, it is easily understood through an
 example. In the example, indexes are presented as bytes, reflecting the actual

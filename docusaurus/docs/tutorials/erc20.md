@@ -25,6 +25,8 @@ It is designed to store the following data:
 4. Allowances, essentially indicating who is permitted to spend tokens on behalf of another user.
    
 ## Module definition
+Save the module as `src/erc20.rs` and declare it in `src/lib.rs` with `pub mod erc20;`.
+
 ```rust title=erc20.rs showLineNumbers
 use odra::prelude::*;
 use odra::casper_types::U256;
@@ -100,7 +102,7 @@ pub struct Transfer {
 * **L29-L38** - The `mint` function is public, so, like in regular Rust code, it will be accessible from the outside. `mint()` uses the notation `self.balances.add(address, *amount);`, which is syntactic sugar for:
 ```rust
 let current_balance = self.balances.get(address).unwrap_or_default();
-let new_balance = <U256 as OverflowingAdd>::overflowing_add(current_balance, current_balance).unwrap_or_revert(&self.env());
+let new_balance = <U256 as OverflowingAdd>::overflowing_add(current_balance, *amount).unwrap_or_revert(&self.env());
 self.balances.set(address, new_balance);
 ```
 
@@ -241,7 +243,7 @@ pub mod tests {
         // Then a Transfer event was emitted.
         assert!(env.emitted_event(
             &erc20,
-            &Transfer {
+            Transfer {
                 from: None,
                 to: Some(env.get_account(0)),
                 amount: INITIAL_SUPPLY.into()
@@ -272,7 +274,7 @@ pub mod tests {
         // Then Transfer event was emitted.
         assert!(env.emitted_event(
             &erc20,
-            &Transfer {
+            Transfer {
                 from: Some(sender),
                 to: Some(recipient),
                 amount

@@ -116,6 +116,19 @@ module.exports = function llmsTxtPlugin(context, options) {
         }
       }
 
+      // Extra, hand-written sections (e.g. links to the repositories and tooling
+      // that live outside of this docs site)
+      for (const section of options.extraSections || []) {
+        output += `\n## ${section.label}\n`;
+        if (section.description) {
+          output += `\n> ${section.description}\n`;
+        }
+        output += '\n';
+        for (const link of section.links) {
+          output += `- [${link.title}](${link.url})${link.note ? ` — ${link.note}` : ''}\n`;
+        }
+      }
+
       const outputFileName = options.outputFile || 'llms.txt';
       const staticDir = path.join(context.siteDir, 'static');
 

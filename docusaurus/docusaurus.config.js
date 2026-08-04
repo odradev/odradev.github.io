@@ -39,6 +39,39 @@ const config = {
             {
                 docsDir: 'docs',
                 outputFile: 'llms.txt',
+                extraSections: [
+                    {
+                        label: 'Repositories and tooling',
+                        description: 'Code and tools that live outside of this documentation site.',
+                        links: [
+                            {
+                                title: 'Odra framework',
+                                url: 'https://github.com/odradev/odra',
+                                note: 'source of the framework, project templates and examples',
+                            },
+                            {
+                                title: 'Cargo Odra',
+                                url: 'https://github.com/odradev/cargo-odra',
+                                note: 'project generator and build tool, `cargo install cargo-odra --locked`',
+                            },
+                            {
+                                title: 'Odra API reference',
+                                url: 'https://docs.rs/odra/latest/odra/',
+                                note: 'generated Rust documentation',
+                            },
+                            {
+                                title: 'Odra Claude Code plugin',
+                                url: 'https://github.com/odradev/odradev-plugins',
+                                note: 'skills for agentic Odra development, `/plugin marketplace add odradev/odradev-plugins`',
+                            },
+                            {
+                                title: 'Documentation source',
+                                url: 'https://github.com/odradev/odradev.github.io',
+                                note: 'the repository this file is generated from',
+                            },
+                        ],
+                    },
+                ],
             },
         ],
     ],

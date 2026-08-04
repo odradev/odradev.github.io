@@ -10,6 +10,7 @@
 
 - [Flipper example](https://odra.dev/docs/getting-started/flipper)
 - [Installation](https://odra.dev/docs/getting-started/installation)
+- [Ubuntu / WSL setup](https://odra.dev/docs/getting-started/ubuntu-wsl-setup)
 
 ## Basics
 
@@ -88,3 +89,13 @@
 - [Migration guide to v2.0.0 from 1.*](https://odra.dev/docs/migrations/to-2.0.0)
 - [Migration guide to v2.1.0 from 2.0.*](https://odra.dev/docs/migrations/to-2.1.0)
 - [Migration guide to v2.6.0 from 2.*](https://odra.dev/docs/migrations/to-2.6.0)
+
+## Repositories and tooling
+
+> Code and tools that live outside of this documentation site.
+
+- [Odra framework](https://github.com/odradev/odra) — source of the framework, project templates and examples
+- [Cargo Odra](https://github.com/odradev/cargo-odra) — project generator and build tool, `cargo install cargo-odra --locked`
+- [Odra API reference](https://docs.rs/odra/latest/odra/) — generated Rust documentation
+- [Odra Claude Code plugin](https://github.com/odradev/odradev-plugins) — skills for agentic Odra development, `/plugin marketplace add odradev/odradev-plugins`
+- [Documentation source](https://github.com/odradev/odradev.github.io) — the repository this file is generated from

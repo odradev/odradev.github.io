@@ -30,6 +30,7 @@ access-control
 │   │   ├── access_control.rs
 │   │   ├── events.rs
 │   │   └── errors.rs
+│   ├── access.rs
 │   └── lib.rs
 |── build.rs
 |── Cargo.toml
@@ -68,7 +69,21 @@ pub struct RoleAdminChanged {
 * **L4-L16** - to describe the grant or revoke actions, our events specify the `Role`, and `Address`es indicating who receives or loses access and who provides or withdraws it.
 * **L18-L23** - the event describing the admin role change, requires the subject `Role`, the previous and the current admin `Role`.
 
+`src/access.rs` ties the three files together, and `src/lib.rs` has to declare the `access` module:
+
+```rust title=access.rs
+pub mod access_control;
+pub mod errors;
+pub mod events;
+```
+
+```rust title=lib.rs
+pub mod access;
+```
+
 ```rust title=errors.rs
+use odra::prelude::*;
+
 #[odra::odra_error]
 pub enum Error {
     MissingRole = 20_000,
@@ -184,3 +199,91 @@ impl AccessControl {
 * **L65-L85** - The `unchecked_grant_role()` and `unchecked_revoke_role()` functions are mirror functions that update the roles mapping and post `RoleGranted` or `RoleRevoked` events. If the role is already granted, `unchecked_grant_role()` has no effect (the opposite check is made in the case of revoking a role).
 * **L21-L28** - The `get_role_admin()` entry point reads the role_admin. If there is no admin role for a given role, it returns the default role.
 * **L30-L45** - This is a combination of `check_role()` and `unchecked_*_role()`. Entry points fail on unauthorized access.
+
+## Usage
+
+`AccessControl` is a building block, not a contract to deploy on its own. Note that nothing in the module
+ever grants the first role: `grant_role()` calls `check_role()` against the role's admin, `get_role_admin()`
+falls back to `DEFAULT_ADMIN_ROLE`, and nobody - not even the deployer - holds it. Deployed standalone, the
+module is permanently locked out of its own admin-gated entry points.
+
+The contract embedding `AccessControl` has to bootstrap it, by calling the non-exported
+`unchecked_grant_role()` helper from its own constructor:
+
+Save this as `src/gated_token.rs` and declare it in `src/lib.rs` with `pub mod gated_token;` -
+an undeclared module is simply not compiled, and `cargo odra test` will happily report success
+without ever running its tests.
+
+```rust title=gated_token.rs
+use odra::prelude::*;
+use crate::access::access_control::{AccessControl, Role, DEFAULT_ADMIN_ROLE};
+
+pub const MINTER_ROLE: Role = [1u8; 32];
+
+#[odra::module]
+pub struct GatedToken {
+    access: SubModule<AccessControl>,
+    minted: Var<u32>,
+}
+
+#[odra::module]
+impl GatedToken {
+    pub fn init(&mut self) {
+        let deployer = self.env().caller();
+        self.access
+            .unchecked_grant_role(&DEFAULT_ADMIN_ROLE, &deployer);
+        self.access.set_admin_role(&MINTER_ROLE, &DEFAULT_ADMIN_ROLE);
+    }
+
+    pub fn grant_minter(&mut self, address: &Address) {
+        self.access.grant_role(&MINTER_ROLE, address);
+    }
+
+    pub fn mint(&mut self) {
+        self.access.check_role(&MINTER_ROLE, &self.env().caller());
+        self.minted.add(1);
+    }
+
+    pub fn minted(&self) -> u32 {
+        self.minted.get_or_default()
+    }
+
+    pub fn has_admin(&self, address: &Address) -> bool {
+        self.access.has_role(&DEFAULT_ADMIN_ROLE, address)
+    }
+}
+```
+
+The deployer becomes the admin, and only the admin can hand out `MINTER_ROLE`.
+
+## Test
+
+```rust title=gated_token.rs
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use odra::host::{Deployer, NoArgs};
+
+    #[test]
+    fn admin_can_delegate_minting() {
+        let env = odra_test::env();
+        let mut token = GatedToken::deploy(&env, NoArgs);
+        let admin = env.get_account(0);
+        let minter = env.get_account(1);
+
+        assert!(token.has_admin(&admin));
+
+        // The minter cannot mint yet.
+        env.set_caller(minter);
+        assert!(token.try_mint().is_err());
+
+        // The admin grants the role.
+        env.set_caller(admin);
+        token.grant_minter(&minter);
+
+        env.set_caller(minter);
+        token.mint();
+        assert_eq!(token.minted(), 1);
+    }
+}
+```

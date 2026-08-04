@@ -175,10 +175,14 @@ mod tests {
     fn non_owner_cannot_change_ownership() {
         let (mut ownable, env, _) = setup();
         let new_owner = env.get_account(1);
+
+        // The current owner (account 0) hands ownership over to account 1.
+        // This call succeeds - it is the setup, not the assertion.
         ownable.change_ownership(&new_owner);
-        
+
+        // The caller is still account 0, which is no longer the owner.
         assert_eq!(
-            ownable.try_change_ownership(&new_owner), 
+            ownable.try_change_ownership(&new_owner),
             Err(Error::NotOwner.into())
         );
     }
@@ -197,7 +201,7 @@ You may have noticed, we use here the term `module` interchangeably with `contra
 :::note
 The caller switch applies only the next contract interaction, the second call will be done as the default account.
 ::: 
-* **L46-55** -  If a non-owner account tries to change ownership, we expect it to fail. To capture the error, call `HostEnv::try_change_ownership()` instead of `HostEnv::change_ownership()`. `HostEnv` provides try_ functions for each contract's entrypoint. The `try` functions return `OdraResult` (an alias for `Result<T, OdraError>`) instead of panicking and halting the execution. In our case, we expect the contract to revert with the `Error::NotOwner` error. To compare the error, we use the `Error::into()` function, which converts the error into the `OdraError` type.
+* **L46-55** -  If a non-owner account tries to change ownership, we expect it to fail. Note how the test gets there: the first `change_ownership` call is made by the still-current owner and succeeds, moving ownership to account 1. Only the second call - issued by the same caller, now a non-owner - is the one expected to revert. To capture the error, call `HostEnv::try_change_ownership()` instead of `HostEnv::change_ownership()`. `HostEnv` provides try_ functions for each contract's entrypoint. The `try` functions return `OdraResult` (an alias for `Result<T, OdraError>`) instead of panicking and halting the execution. In our case, we expect the contract to revert with the `Error::NotOwner` error. To compare the error, we use the `Error::into()` function, which converts the error into the `OdraError` type.
 
 ## Summary
 The `Ownable` module is ready, and we can test it against any defined backend. Theoretically it can be deployed as a standalone contract, but in upcoming tutorials you will see how to use it to compose a more complex contract.

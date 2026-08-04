@@ -64,11 +64,33 @@ The generated factory contract does not include any public entry points beyond t
 
 The generated factory contract exposes a standardized set of management entry points. It does not have any other public entry points.
 
--  `new_contract(contract_name: String, name: String, price: u64) -> (Address, URref)`: Deploys a new instance of the child contract (`Product` in our case). The arguments required by the child's `init` function must be passed along with an unique contract name. It returns the address of the newly created contract and an access URref to it.
+-  `new_contract(contract_name: String, ...init_args) -> (Address, URef)`: Deploys a new instance of the child contract. The arguments required by the child's `init` function - for `Counter`, just `value: u32` - must be passed along with a unique contract name. It returns the address of the newly created contract and an access `URef` to it.
 -  `upgrade_child_contract(contract_name: String)`: Upgrades a single child contract (previously created by this factory) to the latest version of the child contract's Wasm. Except the contract name, it also takes the `upgrade` function arguments of the child contract.
 -  `batch_upgrade_child_contract<T: Into<odra::casper_types::RuntimeArgs>>(args: BTreeMap<String, T>)`: Upgrades a list of child contracts in a single transaction. This entry point is a more gas-efficient way to upgrade multiple child contracts at once but requires more complex argument handling.
 
 ## Testing the Factory
+
+:::caution
+Factory deployments are not supported by OdraVM. Any test that calls `new_contract` must be run against
+the Casper backend:
+
+```bash
+cargo odra test -b casper
+```
+
+Tests that only use the child contract as a standalone module still run fine on OdraVM.
+:::
+
+Remember to register both the child contract and the generated factory module in `Odra.toml`, otherwise
+their wasm files are never built:
+
+```toml
+[[contracts]]
+fqn = "counter::Counter"
+
+[[contracts]]
+fqn = "counter::CounterFactory"
+```
 
 With the factory being automatically generated, testing becomes straightforward. 
 

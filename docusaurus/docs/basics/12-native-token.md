@@ -68,10 +68,15 @@ mod tests {
 In a broader context of the host environment (test, livenet), you can also transfer `CSPR` tokens between accounts:
 
 ```rust showLineNumbers
-let env = odra_casper_livenet_env::env();
-//let env = odra_test::env();
+let env = odra_test::env();
+// or, against a real network:
+// let env = odra_casper_livenet_env::env();
 let (alice, bob) = (env.get_account(0), env.get_account(1));
 
 env.set_caller(alice);
-let result = env.transfer_tokens(bob, odra::casper_types::U512::from(100));
+let result = env.transfer(bob, odra::casper_types::U512::from(100));
 ```
+
+`HostEnv::transfer` returns an `OdraResult<()>`, so a failed transfer comes back as an `Err` rather
+than reverting. Note the livenet variant needs the `odra-casper-livenet-env` dependency and the
+`livenet` feature - see [Livenet](../backends/04-livenet.md).

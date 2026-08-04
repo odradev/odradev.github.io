@@ -81,7 +81,7 @@ cargo odra test -b casper
 If you want to just generate a wasm file, simply run:
 
 ```bash
-cargo odra build -b casper
+cargo odra build
 ```
 
 ## Deploying a contract to Casper network
@@ -146,7 +146,7 @@ Clone the main Odra repo and navigate to the `modules` directory.
 
 Firstly contract needs to be compiled.
 ```bash
-cargo odra build -b casper -c erc721_token
+cargo odra build -c erc721_token
 ```
 
 It produces the `erc721_token.wasm` file in the `wasm` directory.
@@ -184,7 +184,7 @@ The process is similar to the one described in the previous section.
 
 Contract compilation:
 ```bash
-cargo odra build -b casper -c erc1155_token
+cargo odra build -c erc1155_token
 ```
 
 Contract deployment:

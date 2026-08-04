@@ -17,12 +17,12 @@ When writing a smart contract, you need to make sure that money can be both sent
 pub fn deposit(&mut self) {
     // Extract values
     let caller: Address = self.env().caller();
-    let amount: U256 = self.env().attached_value();
+    let amount: U512 = self.env().attached_value();
     let current_block_time: u64 = self.env().get_block_time();
 
     // Multiple lock check
     if self.balances.get(&caller).is_some() {
-        self.env.revert(Error::CannotLockTwice)
+        self.env().revert(Error::CannotLockTwice)
     }
 
     // Update state, emit event
@@ -53,6 +53,9 @@ In Odra you can just apply the `#[odra(non_reentrant)]` attribute to your functi
 ### Example
 
 ```rust
+use odra::prelude::*;
+use odra::ContractRef;
+
 #[odra::module]
 pub struct NonReentrantCounter {
     counter: Var<u32>
@@ -64,7 +67,8 @@ impl NonReentrantCounter {
     pub fn count_ref_recursive(&mut self, n: u32) {
         if n > 0 {
             self.count();
-            ReentrancyMockRef::new(self.env(), self.env().self_address()).count_ref_recursive(n - 1);
+            NonReentrantCounterContractRef::new(self.env(), self.env().self_address())
+                .count_ref_recursive(n - 1);
         }
     }
 }
@@ -86,15 +90,22 @@ mod test {
         let test_env = odra_test::env();
         let mut contract = NonReentrantCounter::deploy(&test_env, NoArgs);
 
-        let result = contract.count_ref_recursive(11);
-        assert_eq!(result, ExecutionError::ReentrantCall.into());
+        let result = contract.try_count_ref_recursive(11);
+        assert_eq!(result.unwrap_err(), ExecutionError::ReentrantCall.into());
     }
 }
 ```
 
 ## Mixing attributes
 
-A function can accept more than one attribute. The only exclusion is a constructor cannot be payable.
+A function can accept more than one attribute, with one exception: a constructor cannot be payable.
+
+:::caution
+Marking `init` with `#[odra(payable)]` does not fail to compile - the attribute is simply dropped when
+the entry point is generated. There is no way to attach tokens to a deploy in the first place, so fund
+the contract with a separate payable entrypoint called right after deployment.
+:::
+
 To apply multiple attributes, you can write:
 
 ```rust

@@ -202,7 +202,7 @@ cargo run --bin tlw_on_livenet --features=livenet
 🙄  WAIT : Waiting 10 for V1(TransactionV1Hash(86d07f72dc9383f46144b5fdfd912ddf15c7be539cf2c34e43f1214244da25b3)).
 💁  INFO : Transaction "86d07f72dc9383f46144b5fdfd912ddf15c7be539cf2c34e43f1214244da25b3" successfully executed.
 🔗  LINK : https://testnet.cspr.live/transaction/86d07f72dc9383f46144b5fdfd912ddf15c7be539cf2c34e43f1214244da25b3
-Owner's balance: 100
+Caller's balance: 100
 💁  INFO : Calling "contract-package-fe69f4dd63445cda6cdc3b4c066760227208a752857950af6bda8a41600781ea" directly with entrypoint "withdraw".
 🙄  WAIT : Waiting 10 for V1(TransactionV1Hash(cbdedd1d5f528754904feb23a0e2087a53ed6f6ed27298367a98bc2accc5792f)).
 💁  INFO : Transaction "cbdedd1d5f528754904feb23a0e2087a53ed6f6ed27298367a98bc2accc5792f" successfully executed.

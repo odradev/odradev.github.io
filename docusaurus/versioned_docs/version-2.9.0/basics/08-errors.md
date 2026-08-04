@@ -51,11 +51,18 @@ impl OwnedContract {
 
 Firstly, we are using the `#[odra::odra_error]` attribute to define our own set of Errors that our contract will
 throw. Then, you can use those errors in your code - for example, instead of forcefully unwrapping Options, you can use
-`unwrap_or_revert_with` and pass an error as an argument:
+`get_or_revert_with` and pass an error as an argument:
 
 ```rust title="examples/src/features/handling_errors.rs"
-self.owner.get().unwrap_or_revert_with(Error::OwnerNotSet)
+self.owner.get_or_revert_with(Error::OwnerNotSet)
 ```
+
+:::note
+`Var` also exposes the underlying `unwrap_or_revert_with`, but that one comes from the `UnwrapOrRevert`
+trait and takes two arguments - the reverting module and the error:
+`self.owner.get().unwrap_or_revert_with(self, Error::OwnerNotSet)`. On a `Var`, prefer the single-argument
+`get_or_revert_with` shown above.
+:::
 
 You can also throw the error directly, by using `revert`:
 

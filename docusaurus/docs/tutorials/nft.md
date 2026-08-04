@@ -12,7 +12,7 @@ Our contract will adhere to the CEP-95 standard, which is the standard for NFTs 
 
 Our TicketOffice contract will include the following features:
 
-* Compliance with the CEP-78 standard.
+* Compliance with the CEP-95 standard.
 * Ownership functionality.
 * Only the owner can issue new event tickets.
 * Users can purchase tickets for events.
@@ -98,7 +98,7 @@ impl TicketOffice {
         self.ownable.assert_owner(&caller);
         // mint a new token
         let ticket_id = self.token_id_counter.get_or_default();
-        self.token.mint(caller, ticket_id, Default::default());
+        self.token.raw_mint(caller, ticket_id, Default::default());
         // store ticket info
         self.tickets.set(
             &ticket_id,
@@ -155,7 +155,7 @@ impl TicketOffice {
 }
 ```
 
-* **L7-L39** - We define structures and enums that will be used in our contract. `TicketStatus` enum represents the status of a ticket, `TicketInfo` struct contains information about a ticket that is written to the storage, `TicketId` is a type alias for `u64`. `OnTicketIssue` and `OnTicketSell` are events that will be emitted when a ticket is issued or sold.
+* **L7-L39** - We define structures and enums that will be used in our contract. `TicketStatus` enum represents the status of a ticket, `TicketInfo` struct contains information about a ticket that is written to the storage, `TicketId` is a type alias for `U256`. `OnTicketIssue` and `OnTicketSell` are events that will be emitted when a ticket is issued or sold.
 * **L41-L44** - Register errors and events that will be used in our contract, required to produce a complete contract schema.
 * **L45-L51** - `TicketOffice` module definition. The module contains a `Cep95` token, an `Ownable` module, a `Mapping` that stores information about tickets and `Var`s `token_id_counter` and `total_supply` to keep track of the total number of tickets issued.
 * **L55-L59** - The `init` function has been generated from the template and there is no need to modify it, except the `Ownable` module initialization.
@@ -178,7 +178,7 @@ use odra::{
     host::{Deployer, HostRef},
 };
 
-use crate::token::{Error, TicketOfficeHostRef, TicketOfficeInitArgs};
+use crate::token::{Error, TicketOffice, TicketOfficeHostRef, TicketOfficeInitArgs};
 
 #[test]
 fn it_works() {
@@ -330,6 +330,13 @@ impl TicketOperator {
 
 Now we need to adjust the `TicketOffice` contract to use the `TicketOperator` contract to buy tickets.
 
+:::note
+`src/token.rs` now calls into another contract, so its imports have to grow too - add
+`use crate::ticket_operator::TicketOperatorContractRef;` and widen the odra import to
+`use odra::{casper_types::{U256, U512}, ContractRef, prelude::*};`. `ContractRef` is what
+provides the `::new(env, address)` constructor.
+:::
+
 ```rust showLineNumbers title="src/token.rs"
 #[odra::odra_error]
 pub enum Error {
@@ -414,8 +421,8 @@ use odra::{
 };
 
 use crate::{
-    ticket_operator::TicketOperatorHostRef,
-    token::{Error, TicketId, TicketOfficeContractRef, TicketOfficeInitArgs},
+    ticket_operator::{TicketOperator, TicketOperatorHostRef},
+    token::{Error, TicketId, TicketOffice, TicketOfficeInitArgs},
 };
 
 #[test]
@@ -427,7 +434,7 @@ fn it_works() {
         total_supply: 100,
     };
     let operator = TicketOperator::deploy(&env, NoArgs);
-    let mut ticket_office = TicketOfficeContractRef::deploy(&env, init_args);
+    let mut ticket_office = TicketOffice::deploy(&env, init_args);
     ticket_office.register_operator(operator.address().clone());
     ticket_office.issue_ticket("Ev".to_string(), U512::from(100));
     ticket_office.issue_ticket("Ev".to_string(), U512::from(50));

@@ -16,7 +16,7 @@ We will skip the details of the contract implementation and focus on the deploym
 
 Our example deploys a simple counter contract making it upgradable and then upgrades it twice: first to `CounterV2`, and then back to `CounterV1`.
 
-```rust title=examples/bin/upgrades_on_livenet.rs
+```rust title=examples/bin/upgrade_on_livenet.rs
 //! This example demonstrates how to deploy and upgrade a contract on the Livenet environment.
 
 use odra::casper_types::U256;
@@ -95,7 +95,7 @@ The contract implements the `upgrade` function, which allows executing the upgra
 Now, let's see the code in action!
 
 ```bash
-cargo run --bin our_token_livenet --features livenet
+cargo run --bin upgrade_on_livenet --features livenet
 ```
 
 A sample output of the program might look like this:

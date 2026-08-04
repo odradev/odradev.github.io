@@ -116,6 +116,34 @@ pub struct CounterSet {
 
 ## Setup
 
+### Prerequisites
+
+`cargo odra generate-client` has two requirements that a project created with a plain `cargo odra new`
+does not meet out of the box:
+
+1. **`wasm-pack` must be installed** (see [wasm-pack](https://github.com/drager/wasm-pack)); the command
+   fails with `wasm-pack is not installed` otherwise.
+2. **The project must be a Cargo workspace** with `odra` declared under `[workspace.dependencies]`, as in
+   the [Project Structure](#project-structure) layout above. Against a single-crate project the command
+   stops with `Project is not a workspace`, and then with `Odra is not a dependency of this project`.
+   Either start from `cargo odra new -t workspace`, or convert your project by moving the contract crate
+   into a member directory and hoisting the dependencies:
+
+   ```toml title="Cargo.toml (workspace root)"
+   [workspace]
+   members = ["counter"]
+
+   [workspace.dependencies]
+   odra = { version = "2.9.0", features = [], default-features = false }
+   ```
+
+   ```toml title="counter/Cargo.toml"
+   [dependencies]
+   odra = { workspace = true }
+   ```
+
+### Generating the client
+
 To generate the Wasm client for your Odra project, execute the following command in your terminal:
 
 ```sh
@@ -253,10 +281,10 @@ async function decrement() {
   }
 }
 
-async function set_value(value: number) {
+async function set(value: number) {
   try {
     setGas(DEFAULT_PAYMENT_AMOUNT());
-    await counter.set_value(value);
+    await counter.set(value);
   } catch (e: any) {
     // Handle specific contract errors
   }

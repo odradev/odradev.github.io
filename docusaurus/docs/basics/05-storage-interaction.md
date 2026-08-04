@@ -74,6 +74,13 @@ Keep in mind that using `get()` will result in an Option that you'll need to unw
 doesn't have to be initialized!
 :::
 
+:::caution
+`get_or_default()` is only available when the stored type implements `Default`. Some common types -
+`Address` among them - do not, so for those you need `get()` (and handle the `Option` yourself) or
+`get_or_revert_with(SomeError)`. The same applies to your own [custom types](#custom-types) unless
+they derive `Default`.
+:::
+
 To modify the data, use the `set()` function:
 
 ```rust title="examples/src/features/storage/variable.rs"
@@ -86,9 +93,9 @@ each time you `get` or `set` the whole data is read and written to the blockchai
 
 In the example above, if we want to see how many walks our dog had, we would use the function:
 ```rust title="examples/src/features/storage/variable.rs"
-pub fn walks_amount(&self) -> usize {
+pub fn walks_amount(&self) -> u32 {
     let walks = self.walks.get_or_default();
-    walks.len()
+    walks.len() as u32
 }
 ```
 But to do so, we need to extract the whole serialized vector from the storage, which would inefficient,
@@ -132,16 +139,69 @@ The amount of data written to and read from the storage is minimal. However, we 
 We could implement such behavior by using a numeric type key and saving the length of the set in a
 separate variable. Thankfully Odra comes with a prepared solution - the `List` type.
 
+Besides `get`/`get_or_default`/`set`, a `Mapping` holding a numeric value also offers `add()` and
+`subtract()`, which read, modify and write a single key in one step:
+
+```rust title="examples/src/features/storage/mapping.rs"
+pub fn visit(&mut self, friend_name: String) {
+    self.friends.add(&friend_name, 1);
+}
+```
+
+### Nested storage
+
+A `Mapping` value can be a module rather than a plain value. Use `module(&key)` to get a
+[sub-module](../advanced/02-advanced-storage.md) that has its own, isolated storage for that key -
+this is how you build nested mappings:
+
+```rust
+use odra::prelude::*;
+
+#[odra::module]
+pub struct FriendBook {
+    visits: Mapping<String, u32>,
+}
+
+#[odra::module]
+impl FriendBook {
+    pub fn visit(&mut self, friend_name: String) {
+        self.visits.add(&friend_name, 1);
+    }
+
+    pub fn visits(&self, friend_name: String) -> u32 {
+        self.visits.get_or_default(&friend_name)
+    }
+}
+
+#[odra::module]
+pub struct DogContract4 {
+    books: Mapping<Address, FriendBook>,
+}
+
+#[odra::module]
+impl DogContract4 {
+    pub fn visit(&mut self, owner: Address, friend_name: String) {
+        self.books.module(&owner).visit(friend_name);
+    }
+
+    pub fn visits(&self, owner: Address, friend_name: String) -> u32 {
+        self.books.module(&owner).visits(friend_name)
+    }
+}
+```
+
+Each key gets its own `FriendBook` with completely separate storage.
+
 :::note
 If you take a look into List implementation in Odra, you'll see that in fact it is just a Mapping with
-a Var working together:
+a Var working together (the real struct also carries the contract env and a storage index, omitted here):
 
 ```rust title="core/src/list.rs"
 use odra::prelude::*;
 
 pub struct List<T> {
     values: Mapping<u32, T>,
-    index: Var<u32>
+    current_index: Var<u32>
 }
 ```
 :::
@@ -193,6 +253,41 @@ Now, we can know how many walks our dog had without loading the whole vector fro
 We need to do this to sum the length of all the walks, but the Odra framework cannot (yet) handle all
 the cases for you.
 
+## Sequence
+When all you need is a counter - the next token id, the next proposal number - reach for `Sequence<T>`
+instead of hand-rolling it on top of a `Var`. It stores a single number and hands out the next one on
+demand:
+
+```rust
+use odra::prelude::*;
+
+#[odra::module]
+pub struct TokenIds {
+    ids: Sequence<u32>,
+}
+
+#[odra::module]
+impl TokenIds {
+    pub fn mint(&mut self) -> u32 {
+        self.ids.next_value()
+    }
+
+    pub fn last_id(&self) -> u32 {
+        self.ids.get_current_value()
+    }
+}
+```
+
+`get_current_value()` reads the stored number without changing it. `next_value()` advances the sequence
+and returns the new value.
+
+:::caution
+The first call to `next_value()` returns `0`, not `1` - the sequence starts at zero and only increments
+from the second call onwards (`0, 1, 2, ...`). Note also that `get_current_value()` returns `0` both for
+an untouched sequence and after the first `next_value()`, so it cannot be used on its own to tell whether
+the sequence has been used yet.
+:::
+
 :::info
 All of the above examples, alongside the tests, are available in the Odra repository in the `examples/src/features/` folder.
 :::
@@ -218,12 +313,22 @@ pub struct Dog {
 `CLType` of a custom type is `CLType::Any`, except for an unit-only enum, which is `CLType::U8`.
 
 ```rust title="unit_only_enum.rs"
-enum Enum {
+use odra::prelude::*;
+
+#[odra::odra_type]
+#[derive(Default)]
+pub enum Enum {
+    #[default]
     Foo = 3,
     Bar = 2,
     Baz = 1,
 }
 ```
+
+:::note
+The `Default` derive is not required by `#[odra::odra_type]` itself, but without it the enum cannot be
+read back with `Var::get_or_default()`.
+:::
 
 :::note
 Each custom typed field of your struct must be marked with the `#[odra::odra_type]` attribute .

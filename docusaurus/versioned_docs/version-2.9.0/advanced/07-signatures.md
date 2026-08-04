@@ -14,6 +14,12 @@ pub fn verify_signature(message: &Bytes, signature: &Bytes, public_key: &PublicK
 Here's the simplest example of this function used in a contract:
 
 ```rust title=examples/src/features/signature_verifier.rs
+use odra::casper_types::{bytesrepr::Bytes, PublicKey};
+use odra::prelude::*;
+
+#[odra::module]
+pub struct SignatureVerifier;
+
 #[odra::module]
 impl SignatureVerifier {
     pub fn verify_signature(
@@ -61,6 +67,11 @@ fn signature_verification_works() {
 ```
 
 If you want, you can also test signatures created outside Odra:
+
+:::note
+This test needs two things beyond the imports shown above: the `hex` crate (add `hex = "0.4"` to
+`[dev-dependencies]`), and `use odra::casper_types::bytesrepr::FromBytes;` for `PublicKey::from_bytes`.
+:::
 
 ```rust title=examples/src/features/signature_verifier.rs
 #[test]

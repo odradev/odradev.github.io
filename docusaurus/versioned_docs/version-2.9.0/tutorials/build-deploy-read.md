@@ -157,7 +157,7 @@ CustomItem:                 prefix: 0x0..._0000_0000_0000  0
   data: Data:               prefix: 0x0..._0000_0000_0011  3
     value: u32,                     0x0..._0000_0011_0001  (3 << 4) + 1
     inner: InnerData:       prefix: 0x0..._0000_0011_0010  (3 << 4) + 2
-      named_values: Mapping         0x0..._0011_0010_0001  ((3 << 4) + 2) << 4 + 1
+      named_values: Mapping         0x0..._0011_0010_0001  (((3 << 4) + 2) << 4) + 1
 ```
 
 The actual key is obtained as follows:

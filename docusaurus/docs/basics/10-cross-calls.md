@@ -73,7 +73,7 @@ by the `#[odra::module]` attribute.
 The reference implements all the public endpoints to the contract (those marked as `pub` in `#[odra::module]`
 impl), and the `{{ModuleName}}ContractRef::address()` function, which returns the address of the contract.
 
-# External Contracts
+## External Contracts
 Sometimes in our contract, we would like to interact with a someone else's contract, already deployed onto the blockchain. The only thing we know about the contract is the ABI.
 
 For that purpose, we use `#[odra:external_contract]` attribute. This attribute should be applied to a trait. The trait defines the part of the ABI we would like to take advantage of.
@@ -104,6 +104,11 @@ struct Contract {
 // in some function
 AdderContractRef::new(self.env(), address).add(3, 5)
 ```
+
+:::note
+`new()` comes from the `ContractRef` trait, so `use odra::ContractRef;` has to be in scope wherever you
+construct a `...ContractRef` by hand.
+:::
 
 ### Loading the contract
 Sometimes it is useful to load the deployed contract instead of deploying it by ourselves. This is especially useful when we want to test
@@ -151,13 +156,17 @@ Let's continue assuming there is a contract featuring the `add()` function that 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use odra::host::{Deployer, NoArgs};
+    use odra::host::{Deployer, HostEnv, NoArgs};
     use odra::prelude::*;
-    
+    use odra::ContractRef;
+
     #[test]
     fn test_ext() {
         let test_env = odra_test::env();
-        let adder = AdderContractRef::new(&test_env, get_adder_address(&test_env));
+        let adder = AdderContractRef::new(
+            Rc::new(test_env.contract_env()),
+            get_adder_address(&test_env)
+        );
         assert_eq!(adder.add(1, 2), 3);
     }
 

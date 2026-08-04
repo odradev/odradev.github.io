@@ -87,27 +87,27 @@ Odra gives us some additional functions that we can use to communicate with the 
 and to configure how the contracts are deployed and called. Let's revisit the example from the previous
 article about host communication and implement the tests that prove it works:
 
-```rust title="examples/src/features/testing.rs"
+```rust title="examples/src/features/host_functions.rs"
 #[cfg(test)]
 mod tests {
-    use crate::features::testing::{TestingContract, TestingContractInitArgs};
+    use super::{HostContract, HostContractInitArgs};
     use odra::{host::{Deployer, HostEnv}, prelude::*};
 
     #[test]
     fn env() {
         let test_env: HostEnv = odra_test::env();
         test_env.set_caller(test_env.get_account(0));
-        let init_args = TestingContractInitArgs {
+        let init_args = HostContractInitArgs {
             name: "MyContract".to_string()
         };
-        let testing_contract = TestingContract::deploy(&test_env, init_args);
-        let creator = testing_contract.created_by();
+        let host_contract = HostContract::deploy(&test_env, init_args);
+        let creator = host_contract.created_by();
         test_env.set_caller(test_env.get_account(1));
-        let init_args = TestingContractInitArgs {
+        let init_args = HostContractInitArgs {
             name: "MyContract2".to_string()
         };
-        let testing_contract2 = TestingContract::deploy(&test_env, init_args);
-        let creator2 = testing_contract2.created_by();
+        let host_contract2 = HostContract::deploy(&test_env, init_args);
+        let creator2 = host_contract2.created_by();
         assert_ne!(creator, creator2);
     }
 }

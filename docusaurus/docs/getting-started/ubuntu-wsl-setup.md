@@ -7,6 +7,7 @@ description: Step-by-step Odra setup on a clean Ubuntu or WSL machine, including
 
 The [Installation](installation.md) page lists *what* Odra needs. This page is the concrete
 command list for Ubuntu, including the two places where the obvious command is the wrong one.
+On a Mac, use [macOS setup](macos-setup.md) instead.
 
 Every command here was run on a **clean Ubuntu 26.04 LTS** with nothing preinstalled - no
 compiler, no `curl`, no Rust - and ends with a passing test on both backends. The process is

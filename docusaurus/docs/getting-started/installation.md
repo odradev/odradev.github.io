@@ -17,10 +17,10 @@ We do not provide exact commands for installing these tools, as they are differe
 Please refer to the documentation of the tools themselves.
 
 :::tip
-On **Ubuntu** - including Ubuntu under **WSL** on Windows - follow [Ubuntu / WSL setup](ubuntu-wsl-setup.md)
-instead. It is the same process with the exact commands filled in, and it covers the two traps a
-clean Ubuntu machine runs into: `binaryen` from apt is too old to work with `cargo-odra`, and
-`rustup target add` has to be run from inside the project directory.
+Each platform has a page with the exact commands, so you do not have to assemble the list yourself:
+
+- **[macOS setup](macos-setup.md)** - Apple silicon and Intel
+- **[Ubuntu / WSL setup](ubuntu-wsl-setup.md)** - native Ubuntu, and Ubuntu under WSL on Windows
 :::
 
 With Rust toolchain ready, you can add a new target:

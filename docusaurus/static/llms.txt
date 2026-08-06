@@ -10,6 +10,7 @@
 
 - [Flipper example](https://odra.dev/docs/getting-started/flipper)
 - [Installation](https://odra.dev/docs/getting-started/installation)
+- [macOS setup](https://odra.dev/docs/getting-started/macos-setup)
 - [Ubuntu / WSL setup](https://odra.dev/docs/getting-started/ubuntu-wsl-setup)
 
 ## Basics

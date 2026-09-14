@@ -253,6 +253,32 @@ Now, we can know how many walks our dog had without loading the whole vector fro
 We need to do this to sum the length of all the walks, but the Odra framework cannot (yet) handle all
 the cases for you.
 
+A `Mapping` value can also be a `List`, reached with `list(&key)` instead of `module(&key)`. Each key
+then owns a separate, growable collection:
+
+```rust
+use odra::prelude::*;
+
+#[odra::module]
+pub struct DogContract5 {
+    walks: Mapping<Address, List<u32>>,
+}
+
+#[odra::module]
+impl DogContract5 {
+    pub fn walk_the_dog(&mut self, owner: Address, length: u32) {
+        self.walks.list(&owner).push(length);
+    }
+
+    pub fn walks_amount(&self, owner: Address) -> u32 {
+        self.walks.list(&owner).len()
+    }
+}
+```
+
+See [advanced storage](../advanced/02-advanced-storage.md) for the details, including why a `List`
+can be a mapping value but never a mapping key.
+
 ## Sequence
 When all you need is a counter - the next token id, the next proposal number - reach for `Sequence<T>`
 instead of hand-rolling it on top of a `Var`. It stores a single number and hands out the next one on
@@ -332,6 +358,38 @@ read back with `Var::get_or_default()`.
 
 :::note
 Each custom typed field of your struct must be marked with the `#[odra::odra_type]` attribute .
+:::
+
+## Numeric constants
+
+`U256` comes from `casper_types`, and its conversions are ordinary trait implementations, which
+cannot run at compile time. That makes the obvious spelling illegal:
+
+```rust
+// error[E0015]: cannot call non-const associated function
+// `<U256 as From<u64>>::from` in constants
+const ONE_TOKEN: U256 = U256::from(1_000_000_000_000_000_000u64);
+```
+
+For this, the prelude provides `u256` - a `const fn` that builds a `U256` from a `u128`. Token
+amounts, supply caps and other fixed limits can then live in a `const` or `static` instead of being
+rebuilt on every call:
+
+```rust
+use odra::casper_types::U256;
+use odra::prelude::*;
+
+const ONE_TOKEN: U256 = u256(1_000_000_000_000_000_000);
+static MAX_SUPPLY: U256 = u256(21_000_000_000_000_000_000_000_000);
+```
+
+A `u128` reaches roughly `3.4 * 10^38`, comfortably beyond any realistic token supply - the argument
+fills the low half of the `U256` and the high half stays zero. Values above that range still need a
+runtime conversion.
+
+:::note
+There is no `u512` counterpart. CSPR amounts are `U512`, but they generally arrive from the host at
+runtime rather than being written as constants.
 :::
 
 ## What's next

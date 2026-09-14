@@ -87,6 +87,61 @@ Firstly, within a `Mapping`, you don't encapsulate the module with `Submodule`.
 Secondly, rather than utilizing the `Mapping::get()` function, call `Mapping::module()`, which returns `SubModule<T>` and sets the appropriate namespace for nested modules.
 :::
 
+### Mapping with a List value
+
+Besides plain values and modules, a `Mapping` value can be a `List`. This gives every key its own
+growable, iterable collection - the natural way to model "many items per owner", such as a schedule
+of tasks per address, or the token ids held by an account.
+
+Reach for `Mapping::list()`, which mirrors `Mapping::module()`: it folds the key into the storage
+namespace and instantiates a `List` against it.
+
+```rust title="examples/src/features/storage/list_in_mapping.rs"
+use odra::prelude::*;
+
+#[odra::module]
+pub struct ScheduleContract {
+    schedules: Mapping<Address, List<u32>>
+}
+
+#[odra::module]
+impl ScheduleContract {
+    /// Adds a task id to the owner's schedule.
+    pub fn add_task(&mut self, owner: &Address, id: u32) {
+        self.schedules.list(owner).push(id);
+    }
+
+    /// Returns the number of tasks scheduled for the given address.
+    pub fn task_count(&self, owner: &Address) -> u32 {
+        self.schedules.list(owner).len()
+    }
+
+    /// Returns the n-th task id scheduled for the given address.
+    pub fn task_at(&self, owner: &Address, index: u32) -> Option<u32> {
+        self.schedules.list(owner).get(index)
+    }
+}
+```
+
+The value returned by `list()` is a fully functional `List`, so the whole `List` API is available on
+it - `push`, `pop`, `get`, `replace`, `len`, `is_empty` and `iter`.
+
+Each key gets its own, independently stored `List`. Pushing to `alice`'s list leaves `bob`'s list
+untouched, and a key that has never been written to simply reads back as an empty list - `len()`
+returns `0` and `get()` returns `None`, with no initialisation step required.
+
+:::note
+Note the difference from `Mapping::module()`: `module()` returns `SubModule<T>`, whereas `list()`
+returns a bare `List<T>`. That is because a `List` is a storage component rather than a module, so
+there is nothing to wrap - you never declare `SubModule<List<T>>` either.
+:::
+
+:::caution
+A `List` can only be a mapping **value**, never a **key**. Every `Mapping` accessor requires the key
+type to implement `ToBytes`, and `List` deliberately implements no serialization, so
+`Mapping<List<u32>, u32>` fails to compile with `the trait bound List<u32>: ToBytes is not satisfied`.
+:::
+
 ## AdvancedStorage Contract
 
 The given code snippet showcases the `AdvancedStorage` contract that incorporates these storage concepts.
@@ -152,6 +207,6 @@ impl AdvancedStorage {
 
 Advanced storage features in Odra offer robust options for managing contract state. Two key takeaways from this document are:
 1. Odra offers a Sequence module, enabling contracts to store and increment a single value.
-2. Mappings support composite keys expressed as tuples and can store modules as values.
+2. Mappings support composite keys expressed as tuples, and can store modules (`module()`) or lists (`list()`) as values.
 
 Understanding these concepts can help developers design and implement more efficient and flexible smart contracts.

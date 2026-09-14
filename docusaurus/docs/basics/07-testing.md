@@ -127,6 +127,10 @@ the function we are calling inside the contract.
 - `fn get_account(&self, n: usize) -> Address` - returns an n-th address that was prepared for you by Odra in advance;
   by default, you start with the 0-th account
 - `fn emitted_event<T: ToBytes + EventInstance, R: Addressable>(&self, contract_address: &R, event: T) -> bool` - verifies if the event was emitted by the contract
+- `fn enable_addressable_entity(&self) -> bool` - switches the backend from legacy mode to
+  addressable-entity mode, migrating the chain state like a real network upgrade would; returns
+  `false` if the backend does not support the switch or already runs in that mode (see the
+  [v3.0.0 migration guide](../migrations/to-3.0.0.md))
 
 Full list of functions can be found in the [`HostEnv`] documentation.
 

@@ -105,3 +105,47 @@ encoded in hexadecimal format.
 Before being stored in the storage, each value is serialized into bytes using
 the `CLType` serialization method and subsequently encapsulated with Casper's
 `Bytes` types.
+
+## Reading the storage from the outside
+You do not have to compute the keys by hand. Every module gets a generated
+`odra::schema::SchemaStorageLayout` implementation that describes the layout
+shown above as data: the index of each field, what is stored under it and the
+types involved. `odra::schema::resolve_storage` walks that description for a
+dotted field path (e.g. `borrowers.balances`) and the mapping keys, and returns
+the storage location together with the type of the value:
+
+```rust
+use odra::casper_types::bytesrepr::ToBytes;
+use odra::schema::{resolve_storage, SchemaStorageLayout, StorageLocation};
+
+let layout = Loans::storage_kind();
+let key = account.to_bytes().unwrap();
+let query = resolve_storage(&layout, "borrowers.balances", &[key]).unwrap();
+
+if let StorageLocation::State { key } = &query.location {
+    // `key` is the `state` dictionary item key - read it with the node RPC,
+    // or directly through the host environment:
+    let bytes = env.get_storage_value(&contract_address, key.as_bytes());
+}
+```
+
+`HostEnv` exposes `get_storage_value`, `get_named_value` and
+`get_dictionary_value` for the three kinds of locations, and they work on
+every backend - OdraVM, CasperVM and livenet.
+
+The [Odra CLI](../tutorials/odra-cli#storage-command) wraps all of this in the
+`storage` command, which prints the layout of a contract and reads any field
+by its path.
+
+Modules that store data outside of the layout described in this article, for
+example under named keys, declare their layout explicitly with the `layout`
+argument of the module attribute:
+
+```rust
+#[odra::module(layout = odra::schema::StorageKind::named_key::<u8>("decimals"))]
+pub struct Decimals;
+```
+
+The named-key storage macros (`single_value_storage!`, `key_value_storage!`,
+`base64_encoded_key_value_storage!` and `compound_key_value_storage!`) do this
+for you.

@@ -700,6 +700,70 @@ Types are shown as the CLI value hints you would type on the command line, not a
 
 Running `inspect` without a contract name describes every registered contract. Combined with `--json`, this is a convenient way to feed the contract interface to other tooling.
 
+### Storage command
+
+The `storage` command reads the state of a deployed contract straight from the storage, without
+calling any entry point. It is handy when a value has no getter, or when you want to see exactly
+what is stored and where.
+
+Run it with a contract name only to print the storage layout - every field with its index in the
+module and the kind of storage behind it:
+
+```bash
+cargo run --bin odra_cli -- storage DogContract
+```
+
+```bash
+💁  INFO : Storage layout of DogContract (DogContract):
+💁  INFO :   barks [1]: true|false
+💁  INFO :   weight [2]: UINT
+💁  INFO :   name [3]: TEXT
+💁  INFO :   walks [4]: UINT (repeatable)
+```
+
+Submodules are printed as nested trees, so the path of any field is the dotted chain of names
+down the tree. Pass such a path to read the value:
+
+```bash
+cargo run --bin odra_cli -- storage DogContract name
+```
+
+```bash
+💁  INFO : Contract: DogContract
+💁  INFO : Path:     name
+💁  INFO : Type:     TEXT
+💁  INFO : Location: state[8a1f3c...]
+💁  INFO : Value:    "Mantus"
+```
+
+`Location` tells where the value lives: an item of the Odra `state` dictionary (with its key), a
+named key, or an item of a named dictionary. That is exactly what you would query with the node
+RPC or a block explorer.
+
+Whenever the path goes through a `Mapping`, a `List` item or a dictionary, provide the key with
+`--key` (or `-k`), using the same value syntax as for entry point arguments. Repeat it for nested
+containers, in path order. For an [OwnedToken](../examples/using-odra-modules) that composes
+`Ownable` and `Erc20`:
+
+```bash
+# A Var in a submodule.
+cargo run --bin odra_cli -- storage OwnedToken ownable.owner
+# A Mapping entry.
+cargo run --bin odra_cli -- storage OwnedToken erc20.balances --key account-hash-...
+# A Mapping with a tuple key.
+cargo run --bin odra_cli -- storage OwnedToken erc20.allowances --key account-hash-...:account-hash-...
+# The number of items in a List, and the item at index 2.
+cargo run --bin odra_cli -- storage OwnedToken holders.len
+cargo run --bin odra_cli -- storage OwnedToken holders --key 2
+```
+
+Modules that store data under Casper named keys or dictionaries (like the `Cep18` module) are
+described the same way, and the command reads them from the right place.
+
+Add `--raw` to print the stored bytes hex-encoded instead of decoding them, and `--json` to get a
+machine-readable report. `inspect` also includes the storage layout, so both are available to
+external tooling.
+
 ### Config command
 
 The `config` command prints the livenet configuration the CLI resolved, so you can confirm which network and account you are about to talk to before sending anything.

@@ -134,6 +134,30 @@ the function we are calling inside the contract.
 
 Full list of functions can be found in the [`HostEnv`] documentation.
 
+## Choosing the backend
+
+`odra_test::env()` returns the backend selected by the `ODRA_BACKEND` environment variable:
+`cargo odra test` runs your tests on OdraVM, `cargo odra test -b casper` sets the variable and runs
+them against the Casper execution engine, using the wasm files built from the contracts listed in
+`Odra.toml`.
+
+Sometimes a test should not follow that switch. A typical case is a module that is used only as a
+building block of other contracts and is not registered in `Odra.toml` - there is no wasm file for
+it, so under `-b casper` `deploy` would fail. Such a test can be pinned to OdraVM with
+`odra_test::odra_env()`:
+
+```rust title="examples/src/features/testing.rs"
+#[test]
+fn odra_vm_only() {
+    let test_env = odra_test::odra_env();
+    let owner = test_env.get_account(0);
+    let ownable = Ownable::deploy(&test_env, OwnableInitArgs { owner });
+    assert_eq!(ownable.get_owner(), owner);
+}
+```
+
+`odra_test::casper_env()` does the opposite and always uses the Casper backend.
+
 ## What's next
 We take a look at how Odra handles errors!
 

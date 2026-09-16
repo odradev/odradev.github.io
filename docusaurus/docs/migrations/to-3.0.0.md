@@ -9,7 +9,8 @@ Odra v3.0.0 moves to the Casper 2.x **addressable entity** stack: `casper-types`
 and `casper-execution-engine` 9. That is what makes it a major release.
 
 Most projects need no code changes — rebuild and carry on. Read on if you store a caller's raw `Key`,
-or have upgradable contracts already deployed.
+or have upgradable contracts already deployed. Two macro changes can also surface as compile errors,
+see [Compile-time changes](#compile-time-changes).
 
 ## What changes
 
@@ -105,3 +106,47 @@ Because `enable_addressable_entity()` returns `false` on backends without the sw
 safe to run anywhere but only *proves* something on the casper backend with
 `ODRA_CASPER_LEGACY_GENESIS=1`. Make sure your CI runs it that way, or it passes without executing.
 :::
+
+## Compile-time changes
+
+Both are things that used to compile and silently did the wrong thing. If your project builds, you
+are not affected.
+
+### `#[odra::module(...)]` arguments on an `impl` block are an error
+
+`events`, `errors`, `name`, `version` and `layout` belong to the module struct. Put on an `impl`
+block they were parsed and ignored - the events never made it into the contract schema. Now the
+compiler points at the misplaced argument:
+
+```rust
+#[odra::module(events = [Transfer])] // error: `events` is not allowed on an impl block
+impl Token { ... }
+```
+
+Move the argument to the struct:
+
+```rust
+#[odra::module(events = [Transfer])]
+pub struct Token { ... }
+
+#[odra::module]
+impl Token { ... }
+```
+
+Only `factory = on` is accepted on an `impl` block, and `#[odra::module]` on a trait takes no
+arguments.
+
+### `#[odra::external_contract]` keeps the trait
+
+The annotated trait is now emitted as written, and both `XxxContractRef` and `XxxHostRef`
+implement it. Previously the trait disappeared, so a common workaround was to declare it twice:
+
+```rust
+#[odra::external_contract]
+pub trait Adapter { fn owner_of(&self, token_id: TokenId) -> Option<Address>; }
+
+pub trait Adapter { fn owner_of(&self, token_id: TokenId) -> Option<Address>; } // remove this copy
+```
+
+That copy now fails with *the name `Adapter` is defined multiple times* - delete it. The trait can
+be used as a bound (`fn check<T: Adapter>(a: &T)`) or implemented by one of your modules.

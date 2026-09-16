@@ -123,6 +123,81 @@ In our example, we are calling `try_change_name` and expecting an error to be th
 For assertions, we are using a standard `assert_eq!` macro. As the contract call returns an `OdraError`, 
 we need to convert our custom error to `OdraError` using `Into::into()`.
 
+## Error codes
+
+When a transaction fails on Casper, the node reports only a number, for example:
+
+```json
+"error_message": "User error: 64653"
+```
+
+Odra maps every error, both yours and its own, to a single `u16` code that is passed to the host as a
+Casper `User` error. Two ranges are used:
+
+- **User errors** - the discriminants you define in enums annotated with `#[odra::odra_error]` are reported as-is.
+  Codes must be lower than `64535` (`MaxUserError`); a higher value is replaced with `UserErrorTooHigh` (`64536`).
+- **Internal Odra errors** - `ExecutionError` variants raised by the framework itself. Their on-chain code is
+  `64536 + <internal code>`, so any code above `64536` is an internal Odra error.
+
+To decode an internal error, subtract `64536` from the reported code. In the example above, `64653 - 64536 = 117`,
+which is `KeyNotFound`.
+
+:::note
+The livenet backend does this translation for you - `try_*` calls return the matching `ExecutionError`, and user
+errors are resolved to their names using the contract [`schema`]. The table below is for cases when you only have
+the raw code, for example from a block explorer or the node RPC.
+:::
+
+| Error | Internal code | On-chain code | Description |
+|---|---|---|---|
+| `UnwrapError` | 1 | 64537 | Unwrap error |
+| `UnexpectedError` | 2 | 64538 | Something unexpected happened |
+| `AdditionOverflow` | 100 | 64636 | Addition overflow |
+| `SubtractionOverflow` | 101 | 64637 | Subtraction overflow |
+| `NonPayable` | 102 | 64638 | Method does not accept deposit |
+| `TransferToContract` | 103 | 64639 | Can't transfer tokens to contract |
+| `ReentrantCall` | 104 | 64640 | Reentrant call detected |
+| `CannotOverrideKeys` | 105 | 64641 | Contract already installed |
+| `UnknownConstructor` | 106 | 64642 | Unknown constructor |
+| `NativeTransferError` | 107 | 64643 | Native transfer error |
+| `IndexOutOfBounds` | 108 | 64644 | Index out of bounds |
+| `ZeroAddress` | 109 | 64645 | Tried to construct a zero address |
+| `AddressCreationFailed` | 110 | 64646 | Address creation failed |
+| `EarlyEndOfStream` | 111 | 64647 | Early end of stream - deserialization error |
+| `Formatting` | 112 | 64648 | Formatting error - deserialization error |
+| `LeftOverBytes` | 113 | 64649 | Left over bytes - deserialization error |
+| `OutOfMemory` | 114 | 64650 | Out of memory |
+| `NotRepresentable` | 115 | 64651 | Not representable |
+| `ExceededRecursionDepth` | 116 | 64652 | Exceeded recursion depth |
+| `KeyNotFound` | 117 | 64653 | Key not found |
+| `CouldNotDeserializeSignature` | 118 | 64654 | Could not deserialize signature |
+| `TypeMismatch` | 119 | 64655 | Type mismatch |
+| `CouldNotSignMessage` | 120 | 64656 | Could not sign message |
+| `EmptyDictionaryName` | 121 | 64657 | Empty dictionary name |
+| `MissingArg` | 122 | 64658 | Calling a contract with missing entrypoint arguments |
+| `MissingAddress` | 123 | 64659 | Reading the address from the storage failed |
+| `OutOfGas` | 124 | 64660 | Out of gas error |
+| `MainPurseError` | 125 | 64661 | MainPurse error |
+| `ConversionError` | 126 | 64662 | Conversion error |
+| `ContractDeploymentError` | 127 | 64663 | Couldn't deploy the contract |
+| `CannotExtractCallerInfo` | 128 | 64664 | Couldn't extract caller info |
+| `ContractNotInstalled` | 129 | 64665 | Upgrading a contract that is not installed |
+| `UpgradingWithoutPreviousVersion` | 130 | 64666 | Upgrading a contract without previous version |
+| `UpgradingNotAContract` | 131 | 64667 | Upgrading not a contract |
+| `SchemaMismatch` | 132 | 64668 | Upgrading a contract with a schema that does not match the previous version |
+| `CannotDisablePreviousVersion` | 133 | 64669 | Cannot disable a previous version of a contract |
+| `CannotUpgradeWithoutUpgrade` | 134 | 64670 | Cannot upgrade a contract without an upgrade function |
+| `FactoryModuleCall` | 135 | 64671 | Factory module function should not be called directly |
+| `CannotGetAnImmediateCaller` | 136 | 64672 | Cannot get an immediate caller |
+| `PathIndexOutOfBounds` | 137 | 64673 | Path index out of bounds |
+
+Two more codes are reserved:
+
+| Error | On-chain code | Description |
+|---|---|---|
+| `MaxUserError` | 64535 | Upper bound of the user error space |
+| `UserErrorTooHigh` | 64536 | A user error with a code of `64536` or higher was thrown |
+
 ## What's next
 We will learn how to emit and test events using Odra.
 

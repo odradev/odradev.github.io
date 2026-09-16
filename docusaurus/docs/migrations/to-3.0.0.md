@@ -150,3 +150,23 @@ pub trait Adapter { fn owner_of(&self, token_id: TokenId) -> Option<Address>; } 
 
 That copy now fails with *the name `Adapter` is defined multiple times* - delete it. The trait can
 be used as a bound (`fn check<T: Adapter>(a: &T)`) or implemented by one of your modules.
+
+### `Erc20::mint` and `Erc20::burn` are no longer entry points
+
+In `odra-modules`, `Erc20::mint`, `Erc20::burn` and `Ownable::unchecked_transfer_ownership` moved out
+of the `#[odra::module]` impl blocks. A contract built directly from `Erc20` had an unprotected `mint`
+entry point; now these functions exist only in Rust, for a wrapping module to call behind its own
+check (as `OwnedToken` in the examples does):
+
+```rust
+#[odra::module]
+impl OwnedToken {
+    pub fn mint(&mut self, address: &Address, amount: &U256) {
+        self.ownable.assert_owner(&self.env().caller());
+        self.erc20.mint(address, amount);
+    }
+}
+```
+
+`Erc20HostRef::mint` / `try_mint` and `burn` / `try_burn` are gone; if a test relied on them, mint
+through your wrapping contract or use `initial_supply` in `init`.

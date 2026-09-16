@@ -87,7 +87,9 @@ pub trait Adder {
 }
 ```
 
-Odra automatically creates the `AdderContractRef` struct. Having an address, in the module context we can call:
+Odra automatically creates the `AdderContractRef` struct (and `AdderHostRef` for tests). The `Adder` trait
+itself is kept and both refs implement it, so it can be used as a bound (`fn sum<T: Adder>(adder: &T)`) or
+implemented by one of your modules. Having an address, in the module context we can call:
 
 ```rust
 struct Contract {

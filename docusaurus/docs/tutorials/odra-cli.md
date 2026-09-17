@@ -434,7 +434,9 @@ Commands:
   help         Print this message or the help of the given subcommand(s)
 ```
 
-And when a contract is selected, it will show us the available methods:
+And when a contract is selected, it will show us the available methods. Functions marked
+`#[odra(offchain)]` (see [Attributes](../advanced/03-attributes.md#offchain)) are listed too, marked
+as offchain: they run on the host and send no transaction, so they take no `--gas`.
 
 ```bash
 cargo run --bin odra_cli -- contract DogContract

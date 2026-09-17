@@ -90,7 +90,7 @@ fn main() {
     // we set the voting time to 10 minutes.
     // OH NO! It is the Livenet, so we need to wait real time...
     // Hopefully you are not in a hurry.
-    env.advance_block_time(11 * 60 * 1000);
+    env.advance_block_time(Duration::from_secs(11 * 60));
 
     // Tally the votes.
     token.tally();

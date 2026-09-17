@@ -275,7 +275,7 @@ fn it_works() {
     assert_eq!(token.balance_of(&env.get_account(0)), U256::zero());
 
     // Wait for the vote to end.
-    env.advance_block_time(60 * 11 * 1000);
+    env.advance_block_time(Duration::from_secs(60 * 11));
 
     // Finish the vote.
     token.tally();
@@ -296,7 +296,7 @@ fn it_works() {
     env.set_caller(env.get_account(0));
     token.vote(false, U256::from(1000));
 
-    env.advance_block_time(60 * 11 * 1000);
+    env.advance_block_time(Duration::from_secs(60 * 11));
 
     token.tally();
 
@@ -557,7 +557,7 @@ mod tests {
         assert_eq!(token.balance_of(&env.get_account(0)), U256::zero());
 
         // Wait for the vote to end.
-        env.advance_block_time(60 * 11 * 1000);
+        env.advance_block_time(Duration::from_secs(60 * 11));
 
         // Finish the vote.
         token.tally();
@@ -578,7 +578,7 @@ mod tests {
         env.set_caller(env.get_account(0));
         token.vote(false, U256::from(1000));
 
-        env.advance_block_time(60 * 11 * 1000);
+        env.advance_block_time(Duration::from_secs(60 * 11));
 
         token.tally();
 

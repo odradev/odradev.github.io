@@ -170,3 +170,21 @@ impl OwnedToken {
 
 `Erc20HostRef::mint` / `try_mint` and `burn` / `try_burn` are gone; if a test relied on them, mint
 through your wrapping contract or use `initial_supply` in `init`.
+
+### Block time is shifted with `Duration`
+
+`HostEnv::advance_block_time` and `advance_with_auctions` take a `core::time::Duration` instead of
+a number of milliseconds, and `auction_delay()` / `unbonding_delay()` return one. The old `u64`
+calls fail to compile with *expected `Duration`, found integer*; wrap the value:
+
+```rust
+use core::time::Duration;
+
+env.advance_block_time(60 * 60 * 1000);               // before
+env.advance_block_time(Duration::from_secs(60 * 60)); // after
+
+env.advance_with_auctions(env.auction_delay() * 2);   // unchanged: Duration * 2
+```
+
+Reading the block time is unchanged: `block_time()` / `block_time_millis()` / `block_time_secs()`
+still return `u64`, as does `ContractEnv::get_block_time()` inside a contract.

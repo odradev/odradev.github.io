@@ -117,9 +117,9 @@ It is possible to test the delegation and undelegation of tokens in the contract
 You can see, that we use the new methods from HostEnv, namely:
 
 ```rust
-    fn advance_with_auctions(&self, time_diff: u64);
-    fn auction_delay(&self) -> u64; 
-    fn unbonding_delay(&self) -> u64;
+    fn advance_with_auctions(&self, time_diff: Duration);
+    fn auction_delay(&self) -> Duration;
+    fn unbonding_delay(&self) -> Duration;
     fn delegated_amount(&self, delegator: Address, validator: PublicKey) -> U512;
 ```
 

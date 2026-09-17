@@ -123,7 +123,8 @@ the function we are calling inside the contract.
 - `fn balance_of<T: Addressable>(&self, addr: &T) -> U512` - returns the balance of the account associated with the given address
 - `fn block_time(&self) -> u64` - returns the current value of `block_time` in milliseconds, alias: `block_time_millis`
 - `fn block_time_secs(&self) -> u64` - retuns the current value of `block_time` in seconds
-- `fn advance_block_time(&self, time_diff: u64)` - increases the current value of `block_time` by `time_diff` in milliseconds
+- `fn advance_block_time(&self, time_diff: Duration)` - increases the current value of `block_time` by `time_diff`
+  (`core::time::Duration`; block time has millisecond resolution)
 - `fn get_account(&self, n: usize) -> Address` - returns an n-th address that was prepared for you by Odra in advance;
   by default, you start with the 0-th account
 - `fn emitted_event<T: ToBytes + EventInstance, R: Addressable>(&self, contract_address: &R, event: T) -> bool` - verifies if the event was emitted by the contract

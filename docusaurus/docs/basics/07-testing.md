@@ -130,6 +130,8 @@ the function we are calling inside the contract.
 - `fn emitted_event<T: ToBytes + EventInstance, R: Addressable>(&self, contract_address: &R, event: T) -> bool` - verifies if the event was emitted by the contract
 - `fn take_snapshot(&self)` / `fn restore_snapshot(&self)` - remember the state of the test VM and bring
   it back, see [Snapshots](#snapshots) below
+- `fn concurrently<T, R>(&self, items: Vec<T>, f: impl Fn(&HostEnv, T) -> R) -> Vec<R>` - runs `f` once
+  per item; one after another here, on worker threads on [livenet](../backends/04-livenet.md#doing-several-things-at-once)
 - `fn enable_addressable_entity(&self) -> bool` - switches the backend from legacy mode to
   addressable-entity mode, migrating the chain state like a real network upgrade would; returns
   `false` if the backend does not support the switch or already runs in that mode (see the

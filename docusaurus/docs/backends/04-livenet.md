@@ -342,6 +342,54 @@ Basically, if the entrypoint function is not mutable or does not make a call to 
 node is used for the state query only. However, the Livenet needs to know the connection between the contracts
 and the code, so make sure to deploy or load already deployed contracts
 
+## Doing several things at once
+
+Every transaction waits for its block and every read is a round trip to the node, so a script that
+deploys five contracts or reads fifty balances spends most of its time waiting. `HostEnv::concurrently`
+runs one closure per item, spread over a few worker threads, each with its own node connection and its
+own `HostEnv` (same caller and gas as yours), and returns the results in the order of the items:
+
+```rust title="examples/bin/odra_cli.rs"
+env.set_gas(cspr!(450));
+let addresses = env.concurrently((0..count).collect(), |env, i| {
+    let mut args = erc20_args();
+    args.name = format!("Plascoin {i}");
+    Erc20::deploy(env, args).address()
+});
+let tokens: Vec<Erc20HostRef> = addresses.iter().map(|a| Erc20::load(env, *a)).collect();
+
+let supplies = env.concurrently(addresses, |env, address| {
+    Erc20::load(env, address).total_supply()
+});
+```
+
+The closure gets the environment to use; it cannot capture yours (a `HostEnv` cannot be sent to
+another thread, the compiler says so). Deploy inside, return the address, and `load` it in your own
+environment. The same code runs on OdraVM and CasperVM, where the items simply run one after another,
+so a test written this way needs no livenet.
+
+`cargo run --bin odra_cli --features livenet -- scenario concurrent` runs this against your node and
+prints how long the reads take one after another and concurrently.
+
+## Async code
+
+The livenet `HostEnv` is synchronous, like every other backend. Underneath, `CasperClient` in
+`odra-casper-rpc-client` is async: every network call exists twice, `xxx` (blocking) and `xxx_async`.
+An async program (a web service, a `#[tokio::main]` tool) can use the client directly and run several
+calls at once:
+
+```rust
+let client = CasperClient::new(CasperClientConfiguration::from_env()?);
+let balances = futures::future::join_all(
+    accounts.iter().map(|account| client.get_balance_async(account))
+).await;
+```
+
+The blocking calls drive the async ones on a process-wide Tokio runtime. They also work inside a
+multi-thread Tokio runtime, which is what `#[tokio::main]` gives you; inside a current-thread runtime
+they refuse to run (blocking there would stall every other task), so use the async flavour or
+`tokio::task::spawn_blocking`.
+
 ## Multiple environments
 
 It is possible to have multiple environments for the Livenet backend. This is useful if we want to easily switch between multiple accounts,

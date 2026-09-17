@@ -54,6 +54,26 @@ In this example, we use two of them:
 * `get_block_time()` - returns the current block time as u64. 
 * `caller()` - returns an Odra `Address` of the caller (this can be an external caller or another contract).
 
+## Debug output
+
+`self.env().debug(message)` prints a message on the host that runs the contract - the quickest way to
+see what a contract does in a test:
+
+```rust
+self.env().debug(format!("transfer of {amount} from {from:?}"));
+```
+
+On OdraVM it always prints. For the Casper VM the contract has to be built with the `test-support`
+feature of `odra`, which compiles the call into Casper's `casper_print` host function:
+
+```toml title="Cargo.toml"
+odra = { version = "3.0.0", features = ["test-support"] }
+```
+
+Run the tests with `cargo odra test -b casper -- --nocapture` to see the output. Without the feature
+the call compiles to nothing (the message arguments are still evaluated), so never ship a contract
+built with `test-support`: the wasm would import a host function real networks do not provide.
+
 :::info
 You will learn more functions that Odra exposes from host and types it uses in further articles.
 :::

@@ -342,6 +342,13 @@ Basically, if the entrypoint function is not mutable or does not make a call to 
 node is used for the state query only. However, the Livenet needs to know the connection between the contracts
 and the code, so make sure to deploy or load already deployed contracts
 
+## Native events
+
+Native events emitted by the transactions this environment sends are readable the usual way
+(`native_events_count`, `get_native_event`, `last_call().emitted_native_events`). Casper keeps a
+message's payload only in the execution result of its transaction, so events emitted earlier, or by
+someone else, are not visible; see [Events](../basics/09-events.md#native-events-on-livenet).
+
 ## Doing several things at once
 
 Every transaction waits for its block and every read is a round trip to the node, so a script that

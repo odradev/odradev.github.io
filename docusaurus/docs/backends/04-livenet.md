@@ -122,9 +122,11 @@ ODRA_CASPER_LIVENET_EVENTS_URL=<events url>
 CSPR.cloud is a service that provides mainnet and testnet Casper nodes on demand.
 :::
 
-With the proper value in place, we can write our tests or deploy scenarios. In the examples, we can find
-a simple binary that deploys a contract and calls it. The test is located in the [erc20_on_livenet.rs] file.
-Let's go through the code:
+With the proper value in place, we can write our tests or deploy scenarios. The smallest possible
+program deploys a contract and calls it - the code below is that program. (In the Odra repository
+the same steps live in the examples' [Odra CLI](../tutorials/odra-cli.md) as the `erc20-transfer`
+scenario: `cargo run --bin odra_cli -- scenario erc20-transfer --amount 1000`.) Let's go through
+the code:
 
 ```rust
 //! Deploys an ERC20 contract and transfers some tokens to another address.
@@ -284,6 +286,11 @@ To run the above code, we simply need to run the binary with the `livenet` featu
 cargo run --bin erc20_on_livenet --features=livenet
 ```
 
+For anything beyond a one-off script, register the contracts with an [Odra CLI](../tutorials/odra-cli.md)
+instead: it keeps the deployed addresses in `resources/<chain>-contracts.toml`, exposes every entry point
+as a command and turns scripts like the one above into named scenarios. The examples in the Odra
+repository are organised that way.
+
 :::note
 Before executing the binary, make sure you built the wasm file - the Livenet backend deploys the
 artifact from `wasm/`, and fails with `Failed to find wasm file` if it is missing:
@@ -346,10 +353,10 @@ has to be used first. If your `integration.env` file has a value that IS present
 override the value from the `.env` file.
 
 ```bash
-ODRA_CASPER_LIVENET_ENV=integration cargo run --bin erc20_on_livenet --features=livenet
+ODRA_CASPER_LIVENET_ENV=integration cargo run --bin odra_cli --features=livenet -- deploy
 ```
 
 To sum up - this command will firstly load the `integration.env` file and then load the missing values from `.env` file.
 
 [.env.sample]: https://github.com/odradev/odra/blob/release/2.9.0/examples/.env.sample
-[erc20_on_livenet.rs]: https://github.com/odradev/odra/blob/release/2.9.0/examples/bin/erc20_on_livenet.rs
+[odra_cli.rs]: https://github.com/odradev/odra/blob/release/3.0.0/examples/bin/odra_cli.rs

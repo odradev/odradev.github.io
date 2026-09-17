@@ -116,13 +116,16 @@ construct a `...ContractRef` by hand.
 Sometimes it is useful to load the deployed contract instead of deploying it by ourselves. This is especially useful when we want to test
 our contracts in [Livenet](../backends/04-livenet.md) backend. We can load the contract using `load` method on the `Deployer`:
 
-```rust title="examples/bin/erc20_on_livenet.rs"
-fn _load_erc20(env: &HostEnv) -> Erc20HostRef {
+```rust
+fn load_erc20(env: &HostEnv) -> Erc20HostRef {
     let address = "hash-d26fcbd2106e37be975d2045c580334a6d7b9d0a241c2358a4db970dfd516945";
     let address = Address::from_str(address).unwrap();
     Erc20::load(env, address)
 }
 ```
+
+With the [Odra CLI](../tutorials/odra-cli.md) the address does not have to be pasted at all:
+`Erc20::load_from_default_file(&env)` reads it from the contracts file the `deploy` command wrote.
 
 ## Testing
 Let's see how we can test our cross calls using this knowledge:

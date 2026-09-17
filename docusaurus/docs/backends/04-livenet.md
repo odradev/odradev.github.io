@@ -113,6 +113,9 @@ ODRA_CASPER_LIVENET_EVENTS_URL=<events url>
 
 # Optionally, you can set the gas price tolerance for the transactions. Default is 1.
 # ODRA_CASPER_LIVENET_GAS_PRICE_TOLERANCE=
+
+# Optionally, pin every read to a past state root hash (hex). Transactions are refused while set.
+# ODRA_CASPER_LIVENET_STATE_ROOT_HASH=
 ```
 
 :::note
@@ -225,6 +228,16 @@ before it is sent to the node, which is the quickest way to see what was actuall
 ```bash
 ODRA_LOG_LEVEL=debug cargo run --bin erc20_on_livenet --features=livenet
 ```
+
+### Reading the past
+
+Set `ODRA_CASPER_LIVENET_STATE_ROOT_HASH` to a state root hash and every read - getters, balances,
+`HostEnv::get_named_value` and friends - is answered from the chain state as of that root instead
+of the latest one. Transactions are refused while the variable is set, because they would execute
+at the chain tip and never show up in the pinned view. State root hashes come from
+`chain_get_state_root_hash` (`casper-client get-state-root-hash --block-identifier <height>`), or
+from the `status` command of an [Odra CLI](../tutorials/odra-cli.md), which also exposes this as
+the `--state-root-hash` flag.
 
 ### Rate limits and read errors
 

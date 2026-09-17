@@ -273,8 +273,14 @@ Commands:
 Options:
   -c, --contracts-toml <PathBuf>  The path to the file with the deployed contracts. Relative to the project root.
       --json                      Emit machine-readable JSON instead of human-readable text (read commands only)
+      --state-root-hash <HEX>     Read the chain state as of this state root hash (hex) instead of the latest one. Commands that send transactions fail while it is set.
   -h, --help                      Print help
 ```
+
+`--state-root-hash` turns any read - a contract getter, `inspect`, `storage`, `whoami` - into a
+look at the chain as it was at that root, which is how you answer "what was the balance before
+that transaction?". It applies to the whole invocation (or REPL session); `deploy`, `transfer` and
+mutable contract calls fail while it is set.
 
 By default, contracts are written/read to/from the `contracts.toml` file, which is located in the `resources` directory, but you can specify a different path using the `-c` or `--contracts-toml` option. If `ODRA_CASPER_LIVENET_CHAIN_NAME` is set, the file is named after the chain instead - for example `resources/casper-test-contracts.toml` - so deployments on different networks never overwrite each other.
 

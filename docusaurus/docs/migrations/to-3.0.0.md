@@ -197,3 +197,9 @@ the package hash is stored under when the contract is installed through Odra (`I
 A contract with a `name` that was installed with 2.x keeps its old key; a fresh install with 3.0
 uses the new one, so scripts that look the package up by the named key have to follow. Modules
 without `name` are unaffected.
+
+Upgrades are not affected: the package is found by its address and authorized by the access URef
+the account holds, so an upgrade of a 2.x deployment simply stores the package hash under the new
+key as well. One thing to watch: the "already installed" guard (`allow_key_override = false`)
+checks the *new* key name, so it no longer stops a fresh install next to a 2.x deployment of the
+same contract - use `load_or_deploy` or check `contracts.toml` rather than relying on the revert.

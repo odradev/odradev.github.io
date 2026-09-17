@@ -226,6 +226,26 @@ before it is sent to the node, which is the quickest way to see what was actuall
 ODRA_LOG_LEVEL=debug cargo run --bin erc20_on_livenet --features=livenet
 ```
 
+### Rate limits and read errors
+
+Nodes and sidecars rate-limit JSON-RPC calls (NCTL and cspr.cloud both do). A burst of getter
+calls - a loop over `token.balance_of(..)` for many accounts, say - can be answered with HTTP 429
+or a "request was throttled by the node" error. The Livenet backend retries such reads with an
+exponential backoff (five attempts, from 200 ms up to about 3 s in total) before giving up, and
+logs each retry at `debug` level.
+
+Every read costs the backend RPC calls: getters run your contract code locally and each storage
+access is a query to the node. The backend caches the state root hash for up to five seconds (and
+drops it after every transaction it sends) and reuses query responses read at that state root, so
+repeated reads and the bookkeeping around each call are mostly free - but keep the number of
+distinct reads in mind when a script talks to a public node.
+
+When the node cannot be asked at all - it is unreachable, or still throttled after the retries -
+the backend stops with the real reason (`Livenet: reading <field> of <contract> failed: ...`)
+rather than reporting a missing value, because your contract code would otherwise mistake the
+failure for "not set". Run with `ODRA_LOG_LEVEL=warn` or above to see failed queries that were
+recovered from.
+
 ### Handling a missing configuration
 
 `odra_casper_livenet_env::env()` panics if any of the required variables is missing or if the

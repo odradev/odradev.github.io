@@ -71,8 +71,9 @@ odra = { version = "3.0.0", features = ["test-support"] }
 ```
 
 Run the tests with `cargo odra test -b casper -- --nocapture` to see the output. Without the feature
-the call compiles to nothing (the message arguments are still evaluated), so never ship a contract
-built with `test-support`: the wasm would import a host function real networks do not provide.
+the call compiles to nothing (the message arguments are still evaluated). Build production wasm
+without `test-support`: on a real network the messages would only end up in the node's log, at the
+cost of gas for every call.
 
 :::info
 You will learn more functions that Odra exposes from host and types it uses in further articles.

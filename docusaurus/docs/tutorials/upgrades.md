@@ -90,6 +90,16 @@ impl CounterV2 {
 
 The contract implements the `upgrade` function, which allows executing the upgrade logic for the contract. When upgrading to a new version, the `upgrade` function is called with the new initialization parameters. We call the `try_upgrade` function with `CounterV2UpgradeArgs` - a struct [automatically generated] by the Odra framework. It is a mirror feature of the contract's initialization parameters.
 
+Two things to keep in mind about what an upgrade does to the package:
+
+- **Entry points follow the new code.** After the upgrade the package exposes exactly the entry
+  points of `CounterV2`; anything `CounterV1` had and `CounterV2` does not is gone, and calling it
+  fails. In the example `CounterV1::reset` disappears and `CounterV2::set` appears.
+- **Storage is kept, layout is yours to migrate.** The named keys and dictionaries stay where they
+  are, so `CounterV2` still sees the `counter` value written by `CounterV1` (`get_old()` reads it).
+  `upgrade` is the place to move data into new fields - here it copies the old counter into
+  `new_counter` unless a new start value was given. `init` is *not* called again.
+
 ## Run the example
 
 Now, let's see the code in action!

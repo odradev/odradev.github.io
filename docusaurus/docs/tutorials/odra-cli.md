@@ -116,6 +116,22 @@ deploy the contract and adds it to a container.
 
 The address of the deployed contract is stored in a TOML file in the `resources` directory, which is created automatically by the Odra CLI library.
 
+Outside of a deploy script - in a plain livenet binary, say - the same file spares you copying package
+hashes around. [`ContractLoaderExt`] is implemented for every contract:
+
+```rust
+use odra_cli::ContractLoaderExt;
+
+// `resources/contracts.toml`, or `resources/<chain>-contracts.toml` when ODRA_CASPER_LIVENET_CHAIN_NAME is set
+let dog = DogContract::load_from_default_file(&env)?;
+// any file, relative to the project root
+let dog = DogContract::load_from_file(&env, "resources/casper-test-contracts.toml")?;
+// a contract registered under a custom package name
+let dog = DogContract::load_from_file_named(&env, "resources/contracts.toml", Some("dog-2".into()))?;
+```
+
+A missing or malformed file is an error, as is a contract that is not in it.
+
 :::tip
 Gas amounts are expressed in motes, which makes them long and easy to mistype. The `cspr!` macro
 converts CSPR to motes at compile time, so `cspr!(350)` is `350_000_000_000` and `cspr!(2.5)` is
@@ -794,4 +810,5 @@ lifetime of the REPL - choose the file when starting it, e.g.
 The Odra CLI library provides a powerful and convenient way to create command-line tools for your Odra contracts. It simplifies the process of deploying, interacting with, and testing your contracts, allowing you to focus on the business logic of your application. By following the examples in this tutorial, you can create your own CLI tools and streamline your development workflow.
 
 [`InstallConfig`]: https://docs.rs/odra/2.9.0/odra/host/struct.InstallConfig.html
+[`ContractLoaderExt`]: https://docs.rs/odra-cli/latest/odra_cli/trait.ContractLoaderExt.html
 [`DeployerExt`]: https://docs.rs/odra-cli/2.9.0/odra_cli/trait.DeployerExt.html

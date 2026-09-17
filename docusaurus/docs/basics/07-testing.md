@@ -128,12 +128,45 @@ the function we are calling inside the contract.
 - `fn get_account(&self, n: usize) -> Address` - returns an n-th address that was prepared for you by Odra in advance;
   by default, you start with the 0-th account
 - `fn emitted_event<T: ToBytes + EventInstance, R: Addressable>(&self, contract_address: &R, event: T) -> bool` - verifies if the event was emitted by the contract
+- `fn take_snapshot(&self)` / `fn restore_snapshot(&self)` - remember the state of the test VM and bring
+  it back, see [Snapshots](#snapshots) below
 - `fn enable_addressable_entity(&self) -> bool` - switches the backend from legacy mode to
   addressable-entity mode, migrating the chain state like a real network upgrade would; returns
   `false` if the backend does not support the switch or already runs in that mode (see the
   [v3.0.0 migration guide](../migrations/to-3.0.0.md))
 
 Full list of functions can be found in the [`HostEnv`] documentation.
+
+## Snapshots
+
+A test often needs one expensive setup (deploy a few contracts, mint, approve, wire them together)
+and then several scenarios branching off it. Instead of repeating the setup, take a snapshot of
+the VM and go back to it:
+
+```rust title="examples/src/features/testing.rs"
+let env = odra_test::env();
+let token = OwnedToken::deploy(&env, /* .. */);
+// ... configure the contracts ...
+
+env.take_snapshot();
+
+// Scenario A
+token.transfer(&alice, &U256::from(100));
+env.advance_block_time(Duration::from_secs(60 * 60));
+assert_eq!(token.balance_of(&alice), U256::from(100));
+
+// Back to the starting point: scenario A never happened.
+env.restore_snapshot();
+assert_eq!(token.balance_of(&alice), U256::zero());
+
+// Scenario B starts from the same point; the snapshot can be restored again and again.
+```
+
+A snapshot covers the contract storage, CSPR balances, events and the block time. Only the last
+snapshot is kept: taking a new one replaces it. The caller chosen with `set_caller` and the gas
+report are not part of it. Snapshots work on OdraVM and on CasperVM (where restoring is only a
+pointer back to an older state root); on livenet the state lives on a real chain, so
+`take_snapshot` panics there.
 
 ## Choosing the backend
 

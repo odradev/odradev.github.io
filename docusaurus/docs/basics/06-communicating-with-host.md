@@ -54,6 +54,37 @@ In this example, we use two of them:
 * `get_block_time()` - returns the current block time as u64. 
 * `caller()` - returns an Odra `Address` of the caller (this can be an external caller or another contract).
 
+## Call stack
+
+`caller()` is the address right behind the contract: an account, or another contract that called it.
+Sometimes that is not enough. A token with a dedicated burner contract wants to burn from the
+*account* that called the burner, not from the burner itself. `self.env().call_stack()` returns
+every address on the way, from the account that sent the transaction to the current contract, and
+`self.env().nth_caller(n)` walks it: `nth_caller(0)` is `caller()`, `nth_caller(1)` is the caller
+of the caller, and so on, `None` when the stack is not that deep.
+
+```rust title="examples/src/features/call_stack.rs"
+#[odra::module]
+impl CallStackProbe {
+    /// Returns the immediate caller, the caller of the caller (if any) and the call stack from
+    /// the initiating account to this contract.
+    pub fn inspect(&self) -> (Address, Option<Address>, Vec<Address>) {
+        let env = self.env();
+        (env.caller(), env.nth_caller(1), env.call_stack())
+    }
+}
+```
+
+Called by an account directly, `inspect` answers `(account, None, [account, probe])`. Called
+through another contract, it answers `(relay, Some(account), [account, relay, probe])`. The same on
+OdraVM, CasperVM and livenet.
+
+:::caution
+Trusting an address further up the stack has the usual `tx.origin` caveats: a user can be tricked
+into calling a malicious contract that then calls yours. Check the immediate caller first, as the
+burner example does, and only then look behind it.
+:::
+
 ## Debug output
 
 `self.env().debug(message)` prints a message on the host that runs the contract - the quickest way to

@@ -58,6 +58,7 @@ In your contract code, create a new file in the bin folder:
 //! Deploys a new OurToken contract on the Casper livenet and mints some tokens for the tutorial
 //! creator.
 use std::str::FromStr;
+use std::time::Duration;
 
 use odra::casper_types::U256;
 use odra::host::{Deployer, HostEnv, HostRefLoader};

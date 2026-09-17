@@ -533,6 +533,7 @@ impl OurToken {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use core::time::Duration;
     use odra::host::Deployer;
 
     #[test]

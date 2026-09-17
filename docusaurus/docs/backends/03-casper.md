@@ -106,6 +106,8 @@ When deploying a new contract you can pass some arguments to it.
 Every contract written in Odra expects those arguments to be set:
 
 - `odra_cfg_package_hash_key_name` - `String` type. The key under which the package hash of the contract will be stored.
+  Odra's own deployers use `<name>_package_hash`, where `name` is the `name` argument of
+  `#[odra::module(name = "..")]` or, without one, the name of the module struct.
 - `odra_cfg_allow_key_override` - `Bool` type. If `true` and the key specified in `odra_cfg_package_hash_key_name` already exists, it will be overwritten.
 - `odra_cfg_is_upgradable` - `Bool` type. If `true`, the contract will be deployed as upgradable.
 - `odra_cfg_is_upgrade` - `Bool` type. If `true`, the contract will be upgraded. If we want to install a contract to should be set to `false`.

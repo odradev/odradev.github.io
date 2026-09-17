@@ -188,3 +188,12 @@ env.advance_with_auctions(env.auction_delay() * 2);   // unchanged: Duration * 2
 
 Reading the block time is unchanged: `block_time()` / `block_time_millis()` / `block_time_secs()`
 still return `u64`, as does `ContractEnv::get_block_time()` inside a contract.
+
+### `#[odra::module(name = "..")]` names the package
+
+Until now `name` only changed the contract's name in the schema. It now also decides the named key
+the package hash is stored under when the contract is installed through Odra (`InstallConfig`,
+`UpgradeConfig`, `load_or_deploy`): `<name>_package_hash` instead of `<StructName>_package_hash`.
+A contract with a `name` that was installed with 2.x keeps its old key; a fresh install with 3.0
+uses the new one, so scripts that look the package up by the named key have to follow. Modules
+without `name` are unaffected.

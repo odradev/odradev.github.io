@@ -64,6 +64,41 @@ mod tests {
 }
 ```
 
+## Sending CSPR from a contract to a contract
+
+The same `with_tokens` exists on the `ContractRef` a contract uses to call another one. The amount is
+taken from the calling contract's balance - either what was attached to its own call, or what it
+already holds:
+
+```rust title="examples/src/features/native_token.rs"
+use odra::ContractRef;
+
+#[odra::module]
+pub struct WalletProxy;
+
+#[odra::module]
+impl WalletProxy {
+    /// Deposits the CSPR attached to this call into `wallet`.
+    #[odra(payable)]
+    pub fn forward(&mut self, wallet: &Address) {
+        let amount = self.env().attached_value();
+        PublicWalletContractRef::new(self.env(), *wallet)
+            .with_tokens(amount)
+            .deposit();
+    }
+
+    /// Deposits everything this contract holds into `wallet`.
+    pub fn forward_balance(&mut self, wallet: &Address) {
+        let amount = self.env().self_balance();
+        PublicWalletContractRef::new(self.env(), *wallet)
+            .with_tokens(amount)
+            .deposit();
+    }
+}
+```
+
+The called entry point must be `#[odra(payable)]`, exactly as when the tokens come from an account.
+
 ## HostEnv
 In a broader context of the host environment (test, livenet), you can also transfer `CSPR` tokens between accounts:
 

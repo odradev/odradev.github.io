@@ -9,7 +9,8 @@ Odra v3.0.0 moves to the Casper 2.x **addressable entity** stack: `casper-types`
 and `casper-execution-engine` 9. That is what makes it a major release.
 
 Most projects need no code changes — rebuild and carry on. Read on if you store a caller's raw `Key`,
-or have upgradable contracts already deployed.
+or have upgradable contracts already deployed. Two macro changes can also surface as compile errors,
+see [Compile-time changes](#compile-time-changes).
 
 ## What changes
 
@@ -105,3 +106,100 @@ Because `enable_addressable_entity()` returns `false` on backends without the sw
 safe to run anywhere but only *proves* something on the casper backend with
 `ODRA_CASPER_LEGACY_GENESIS=1`. Make sure your CI runs it that way, or it passes without executing.
 :::
+
+## Compile-time changes
+
+Both are things that used to compile and silently did the wrong thing. If your project builds, you
+are not affected.
+
+### `#[odra::module(...)]` arguments on an `impl` block are an error
+
+`events`, `errors`, `name`, `version` and `layout` belong to the module struct. Put on an `impl`
+block they were parsed and ignored - the events never made it into the contract schema. Now the
+compiler points at the misplaced argument:
+
+```rust
+#[odra::module(events = [Transfer])] // error: `events` is not allowed on an impl block
+impl Token { ... }
+```
+
+Move the argument to the struct:
+
+```rust
+#[odra::module(events = [Transfer])]
+pub struct Token { ... }
+
+#[odra::module]
+impl Token { ... }
+```
+
+Only `factory = on` is accepted on an `impl` block, and `#[odra::module]` on a trait takes no
+arguments.
+
+### `#[odra::external_contract]` keeps the trait
+
+The annotated trait is now emitted as written, and both `XxxContractRef` and `XxxHostRef`
+implement it. Previously the trait disappeared, so a common workaround was to declare it twice:
+
+```rust
+#[odra::external_contract]
+pub trait Adapter { fn owner_of(&self, token_id: TokenId) -> Option<Address>; }
+
+pub trait Adapter { fn owner_of(&self, token_id: TokenId) -> Option<Address>; } // remove this copy
+```
+
+That copy now fails with *the name `Adapter` is defined multiple times* - delete it. The trait can
+be used as a bound (`fn check<T: Adapter>(a: &T)`) or implemented by one of your modules.
+
+### `Erc20::mint` and `Erc20::burn` are no longer entry points
+
+In `odra-modules`, `Erc20::mint`, `Erc20::burn` and `Ownable::unchecked_transfer_ownership` moved out
+of the `#[odra::module]` impl blocks. A contract built directly from `Erc20` had an unprotected `mint`
+entry point; now these functions exist only in Rust, for a wrapping module to call behind its own
+check (as `OwnedToken` in the examples does):
+
+```rust
+#[odra::module]
+impl OwnedToken {
+    pub fn mint(&mut self, address: &Address, amount: &U256) {
+        self.ownable.assert_owner(&self.env().caller());
+        self.erc20.mint(address, amount);
+    }
+}
+```
+
+`Erc20HostRef::mint` / `try_mint` and `burn` / `try_burn` are gone; if a test relied on them, mint
+through your wrapping contract or use `initial_supply` in `init`.
+
+### Block time is shifted with `Duration`
+
+`HostEnv::advance_block_time` and `advance_with_auctions` take a `core::time::Duration` instead of
+a number of milliseconds, and `auction_delay()` / `unbonding_delay()` return one. The old `u64`
+calls fail to compile with *expected `Duration`, found integer*; wrap the value:
+
+```rust
+use core::time::Duration;
+
+env.advance_block_time(60 * 60 * 1000);               // before
+env.advance_block_time(Duration::from_secs(60 * 60)); // after
+
+env.advance_with_auctions(env.auction_delay() * 2);   // unchanged: Duration * 2
+```
+
+Reading the block time is unchanged: `block_time()` / `block_time_millis()` / `block_time_secs()`
+still return `u64`, as does `ContractEnv::get_block_time()` inside a contract.
+
+### `#[odra::module(name = "..")]` names the package
+
+Until now `name` only changed the contract's name in the schema. It now also decides the named key
+the package hash is stored under when the contract is installed through Odra (`InstallConfig`,
+`UpgradeConfig`, `load_or_deploy`): `<name>_package_hash` instead of `<StructName>_package_hash`.
+A contract with a `name` that was installed with 2.x keeps its old key; a fresh install with 3.0
+uses the new one, so scripts that look the package up by the named key have to follow. Modules
+without `name` are unaffected.
+
+Upgrades are not affected: the package is found by its address and authorized by the access URef
+the account holds, so an upgrade of a 2.x deployment simply stores the package hash under the new
+key as well. One thing to watch: the "already installed" guard (`allow_key_override = false`)
+checks the *new* key name, so it no longer stops a fresh install next to a 2.x deployment of the
+same contract - use `load_or_deploy` or check `contracts.toml` rather than relying on the revert.

@@ -143,11 +143,12 @@ name = "tlw_on_livenet"
 path = "bin/tlw_on_livenet.rs"
 required-features = ["livenet"]
 test = false
+# (in the Odra repository this is the `tlw` scenario of the examples' `odra_cli` binary)
 
 ... # other sections
 ```
 
-```rust title=examples/bin/tlw_on_livenet.rs showLineNumbers
+```rust title=bin/tlw_on_livenet.rs showLineNumbers
 //! Deploys an [odra_examples::contracts::tlw::TimeLockWallet] contract, then deposits and withdraw some CSPRs.
 use odra::casper_types::{AsymmetricType, PublicKey, U512};
 use odra::host::{Deployer, HostRef};

@@ -122,6 +122,18 @@ fn test_party() {
 
 To explore more event testing functions, check the [`HostEnv`] documentation.
 
+### Native events on livenet
+
+The same functions work on the [livenet backend](../backends/04-livenet.md), with one difference
+that comes from Casper itself. A CES event is stored in the contract's state, so any client can read
+event number N at any time. A native event is a Casper message: its payload travels only in the
+execution result of the transaction that emitted it, and the chain keeps no readable list of past
+messages. The livenet environment therefore records the native events of the transactions it sends,
+and `native_events_count`, `get_native_event`, `emitted_native_event` and
+`last_call().emitted_native_events` answer from that record. Events emitted before the environment was
+created, or by someone else's transactions, are not visible to it. If a script needs to find every
+event a contract ever emitted, use CES events, or an event store such as the Casper sidecar.
+
 ## What's next
 Read the next article to learn how to call other contracts from the contract context.
 

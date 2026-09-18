@@ -96,6 +96,48 @@ mod test {
 }
 ```
 
+## Offchain
+
+Some functions are useful to have on a contract but should never be entry points: iterating a whole
+list, aggregating many balances, building a report. On chain they would cost too much gas or not fit
+in a transaction at all. `#[odra(offchain)]` keeps such a function in the module, but out of the
+deployed contract: it is not a wasm entry point and not in the schema. It runs on the host instead,
+reading the contract's state, so it costs nothing and has no size limit.
+
+### Example
+
+```rust title="examples/src/features/offchain.rs"
+#[odra::module]
+impl BalanceBook {
+    pub fn deposit(&mut self, amount: U256) { /* .. */ }
+
+    pub fn balance_of(&self, owner: &Address) -> U256 {
+        self.balances.get_or_default(owner)
+    }
+
+    /// Every holder with its balance: a loop over the whole list, fine on the host.
+    #[odra(offchain)]
+    pub fn all_balances(&self) -> Vec<(Address, U256)> {
+        self.holders
+            .iter()
+            .map(|holder| (holder, self.balance_of(&holder)))
+            .collect()
+    }
+}
+```
+
+The function is on the `HostRef` like any getter (`book.all_balances()`, `book.try_all_balances()`),
+so tests, deploy scripts and scenarios call it the usual way. OdraVM runs it directly, CasperVM runs
+it on the host against the VM's storage, and livenet executes it offline against the chain state,
+exactly as it does with every non-mutating entry point. odra-cli lists it under `contract <Name>`
+marked as offchain.
+
+The rules: it takes `&self` (it cannot change the state, emit events or transfer tokens), it lives in
+a plain `impl` block of the module (not in a trait impl, since the trait is also implemented by the
+`ContractRef`), and it cannot be `payable` or `non_reentrant`. It can call the contract's own
+functions and non-mutating entry points of other contracts. Other contracts cannot call it: it does
+not exist on chain, so it is not on the `ContractRef`.
+
 ## Mixing attributes
 
 A function can accept more than one attribute, with one exception: a constructor cannot be payable.

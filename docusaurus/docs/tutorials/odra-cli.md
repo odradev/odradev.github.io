@@ -116,6 +116,22 @@ deploy the contract and adds it to a container.
 
 The address of the deployed contract is stored in a TOML file in the `resources` directory, which is created automatically by the Odra CLI library.
 
+Outside of a deploy script - in a plain livenet binary, say - the same file spares you copying package
+hashes around. [`ContractLoaderExt`] is implemented for every contract:
+
+```rust
+use odra_cli::ContractLoaderExt;
+
+// `resources/contracts.toml`, or `resources/<chain>-contracts.toml` when ODRA_CASPER_LIVENET_CHAIN_NAME is set
+let dog = DogContract::load_from_default_file(&env)?;
+// any file, relative to the project root
+let dog = DogContract::load_from_file(&env, "resources/casper-test-contracts.toml")?;
+// a contract registered under a custom package name
+let dog = DogContract::load_from_file_named(&env, "resources/contracts.toml", Some("dog-2".into()))?;
+```
+
+A missing or malformed file is an error, as is a contract that is not in it.
+
 :::tip
 Gas amounts are expressed in motes, which makes them long and easy to mistype. The `cspr!` macro
 converts CSPR to motes at compile time, so `cspr!(350)` is `350_000_000_000` and `cspr!(2.5)` is
@@ -257,8 +273,14 @@ Commands:
 Options:
   -c, --contracts-toml <PathBuf>  The path to the file with the deployed contracts. Relative to the project root.
       --json                      Emit machine-readable JSON instead of human-readable text (read commands only)
+      --state-root-hash <HEX>     Read the chain state as of this state root hash (hex) instead of the latest one. Commands that send transactions fail while it is set.
   -h, --help                      Print help
 ```
+
+`--state-root-hash` turns any read - a contract getter, `inspect`, `storage`, `whoami` - into a
+look at the chain as it was at that root, which is how you answer "what was the balance before
+that transaction?". It applies to the whole invocation (or REPL session); `deploy`, `transfer` and
+mutable contract calls fail while it is set.
 
 By default, contracts are written/read to/from the `contracts.toml` file, which is located in the `resources` directory, but you can specify a different path using the `-c` or `--contracts-toml` option. If `ODRA_CASPER_LIVENET_CHAIN_NAME` is set, the file is named after the chain instead - for example `resources/casper-test-contracts.toml` - so deployments on different networks never overwrite each other.
 
@@ -412,7 +434,9 @@ Commands:
   help         Print this message or the help of the given subcommand(s)
 ```
 
-And when a contract is selected, it will show us the available methods:
+And when a contract is selected, it will show us the available methods. Functions marked
+`#[odra(offchain)]` (see [Attributes](../advanced/03-attributes.md#offchain)) are listed too, marked
+as offchain: they run on the host and send no transaction, so they take no `--gas`.
 
 ```bash
 cargo run --bin odra_cli -- contract DogContract
@@ -794,4 +818,5 @@ lifetime of the REPL - choose the file when starting it, e.g.
 The Odra CLI library provides a powerful and convenient way to create command-line tools for your Odra contracts. It simplifies the process of deploying, interacting with, and testing your contracts, allowing you to focus on the business logic of your application. By following the examples in this tutorial, you can create your own CLI tools and streamline your development workflow.
 
 [`InstallConfig`]: https://docs.rs/odra/2.9.0/odra/host/struct.InstallConfig.html
+[`ContractLoaderExt`]: https://docs.rs/odra-cli/latest/odra_cli/trait.ContractLoaderExt.html
 [`DeployerExt`]: https://docs.rs/odra-cli/2.9.0/odra_cli/trait.DeployerExt.html

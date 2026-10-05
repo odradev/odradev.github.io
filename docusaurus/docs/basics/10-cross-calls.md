@@ -112,6 +112,30 @@ AdderContractRef::new(self.env(), address).add(3, 5)
 construct a `...ContractRef` by hand.
 :::
 
+### Helpers on the refs
+A convenience function built from entry point calls is often needed both in a contract (on the
+`ContractRef`) and in tests (on the `HostRef`). Instead of writing it twice, put it in an inherent impl
+block named after the module or the external contract trait and mark it with `#[odra::ref_helpers]`:
+
+```rust
+#[odra::external_contract]
+pub trait NameToken {
+    fn metadata(&self, id: Maybe<u64>, hash: Maybe<String>) -> String;
+}
+
+#[odra::ref_helpers]
+impl NameToken {
+    pub fn metadata_by_hash(&self, hash: String) -> String {
+        self.metadata(Maybe::None, Maybe::Some(hash))
+    }
+}
+```
+
+The block is copied into `impl NameTokenContractRef` and `impl NameTokenHostRef` (the latter only
+outside wasm), so `token.metadata_by_hash(hash)` works in a contract and in a test alike. The helpers
+may call only what both refs have - the entry points. A helper calling an entry point that takes
+`&mut self` has to take `&mut self` too.
+
 ### Loading the contract
 Sometimes it is useful to load the deployed contract instead of deploying it by ourselves. This is especially useful when we want to test
 our contracts in [Livenet](../backends/04-livenet.md) backend. We can load the contract using `load` method on the `Deployer`:

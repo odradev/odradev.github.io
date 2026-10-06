@@ -414,4 +414,4 @@ ODRA_CASPER_LIVENET_ENV=integration cargo run --bin odra_cli --features=livenet 
 To sum up - this command will firstly load the `integration.env` file and then load the missing values from `.env` file.
 
 [.env.sample]: https://github.com/odradev/odra/blob/release/2.9.0/examples/.env.sample
-[odra_cli.rs]: https://github.com/odradev/odra/blob/release/3.0.0/examples/bin/odra_cli.rs
+[odra_cli.rs]: https://github.com/odradev/odra/blob/release/2.10.0/examples/bin/odra_cli.rs

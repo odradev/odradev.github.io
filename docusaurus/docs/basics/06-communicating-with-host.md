@@ -98,7 +98,7 @@ On OdraVM it always prints. For the Casper VM the contract has to be built with 
 feature of `odra`, which compiles the call into Casper's `casper_print` host function:
 
 ```toml title="Cargo.toml"
-odra = { version = "3.0.0", features = ["test-support"] }
+odra = { version = "2.10.0", features = ["test-support"] }
 ```
 
 Run the tests with `cargo odra test -b casper -- --nocapture` to see the output. Without the feature

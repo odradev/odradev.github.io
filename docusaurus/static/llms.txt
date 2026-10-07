@@ -69,6 +69,7 @@
 - [Access Control](https://odra.dev/docs/tutorials/access-control)
 - [Build, Deploy and Read the State of a Contract](https://odra.dev/docs/tutorials/build-deploy-read)
 - [CEP-18](https://odra.dev/docs/tutorials/cep18)
+- [Dapp Registry](https://odra.dev/docs/tutorials/dapp-registry)
 - [Deploying a Token on Casper Livenet](https://odra.dev/docs/tutorials/deploying-on-casper)
 - [ERC-20](https://odra.dev/docs/tutorials/erc20)
 - [Ticketing System](https://odra.dev/docs/tutorials/nft)

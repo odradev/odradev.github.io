@@ -26,7 +26,28 @@
 
 body {
     background-color: var(--black);
+    /* ambient phosphor glow behind the logo */
+    background-image: radial-gradient(ellipse 70% 35% at 50% 0%, rgba(0, 201, 67, 0.14), transparent 70%);
+    background-repeat: no-repeat;
     overflow-x: hidden;
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(10pt); }
+  to {
+    opacity: 1;
+    transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation: none !important;
+  }
+  .item-logo-off {
+    opacity: 0;
+  }
 }
 
 @keyframes logo-flicker-inv {
@@ -170,6 +191,8 @@ body {
     padding-bottom: 3pt;
     margin: 1pt;
     font-weight: bold;
+    /* CRT glow */
+    box-shadow: 0 0 14pt rgba(0, 201, 67, 0.35);
 }
 
 .section-content {
@@ -179,8 +202,29 @@ body {
     color: var(--section-content-text);
 }
 
+.section-content .project:first-child h3 {
+    margin-top: 0;
+}
+
 .section-content h3 {
     color: var(--section-content-h3);
+    /* CRT glow */
+    text-shadow: 0 0 6pt rgba(31, 255, 105, 0.35);
+    display: inline-block;
+    transition: color 0.15s ease-out, text-shadow 0.15s ease-out;
+}
+
+.project a:hover h3 {
+    color: var(--neon-green);
+    text-shadow: 0 0 10pt var(--neon-green);
+}
+
+.icon svg {
+    transition: transform 0.15s ease-out;
+}
+
+.project a:hover .icon svg {
+    transform: translate(2px, -2px);
 }
 
 .info-line {
@@ -191,6 +235,18 @@ body {
 .info-line a {
     color: var(--info-line-link);
 }
+
+/* Boot-up sequence: sections appear one after another */
+.item-content > * {
+    animation: fade-up 0.5s ease-out both;
+}
+
+.item-content > *:nth-child(1) { animation-delay: 0.10s; }
+.item-content > *:nth-child(2) { animation-delay: 0.25s; }
+.item-content > *:nth-child(3) { animation-delay: 0.40s; }
+.item-content > *:nth-child(4) { animation-delay: 0.55s; }
+.item-content > *:nth-child(5) { animation-delay: 0.70s; }
+.item-content > *:nth-child(6) { animation-delay: 0.85s; }
         </style>
     </head>
 
@@ -268,7 +324,7 @@ body {
                 <div class="info-line">
                     We bring cutting-edge development tools to professionals with deadlines.
                 </div>
-                </br>
+                <br />
                 <div class="info-line">
                     Our code is free and open source.
                 </div>

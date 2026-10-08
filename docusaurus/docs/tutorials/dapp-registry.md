@@ -223,7 +223,8 @@ The whole example, with the `DappCounter` contract and a test, is in
 [`examples/src/factory/dapp.rs`](https://github.com/odradev/odra/blob/release/2.10.0/examples/src/factory/dapp.rs).
 
 :::note
-Factories work on the Casper VM only, so run such tests with `cargo odra test -b casper`.
+Factories work on OdraVM and on the Casper VM, so such tests run with both `cargo odra test` and
+`cargo odra test -b casper`.
 :::
 
 ## Events and errors

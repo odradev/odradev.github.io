@@ -138,6 +138,10 @@ a plain `impl` block of the module (not in a trait impl, since the trait is also
 functions and non-mutating entry points of other contracts. Other contracts cannot call it: it does
 not exist on chain, so it is not on the `ContractRef`.
 
+Inside it, `caller()` is the account that called it, and a getter it calls sees the offchain
+function's contract as its caller, with the whole call stack, as on chain. A revert comes back as
+the error, so `try_all_balances()` returns `Err` instead of panicking.
+
 ## Mixing attributes
 
 A function can accept more than one attribute, with one exception: a constructor cannot be payable.

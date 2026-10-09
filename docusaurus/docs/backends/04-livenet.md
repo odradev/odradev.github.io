@@ -371,6 +371,31 @@ the schema of the contract being deployed, and running out of gas returns `OutOf
 `ContractDeploymentError` is left for a deployment that did not get to run the contract: the wasm
 file was not found, the gas was not set or the node could not be reached.
 
+## Gas used
+
+`env.gas_report()` and `env.last_call_gas_cost()` work on Livenet like in the test VMs. The gas
+comes from the node's execution result of each transaction the environment sends:
+
+```rust
+let mut token = Erc20::deploy(&env, init_args);
+token.transfer(&recipient, &U256::from(10));
+println!("{}", env.gas_report());
+// Wasm deploy: Erc20.wasm - 259.888293669 CSPR
+// Contract call: transfer - 0.50742048 CSPR
+println!("{}", env.last_call_gas_cost()); // 507420480
+```
+
+- The figure is the gas the transaction consumed, not the payment you set with `env.set_gas` -
+  Casper charges the whole payment limit, so the two differ.
+- Failed transactions are reported as well. A CSPR transfer updates `last_call_gas_cost` but is not
+  listed in the report.
+- Getters run on your machine and send no transaction, so they don't change either value.
+- Each worker environment of [`HostEnv::concurrently`](#doing-several-things-at-once) has its own
+  report.
+
+A getter that reads a validator's bid with `self.env().get_validator_info(..)` works on Livenet too:
+the bid is read from the node, and a validator without a bid gives `None`.
+
 ## Native events
 
 Native events emitted by the transactions this environment sends are readable the usual way

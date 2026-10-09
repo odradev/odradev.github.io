@@ -123,6 +123,12 @@ In our example, we are calling `try_change_name` and expecting an error to be th
 For assertions, we are using a standard `assert_eq!` macro. As the contract call returns an `OdraError`, 
 we need to convert our custom error to `OdraError` using `Into::into()`.
 
+:::note
+On livenet the node reports only the error code; Odra names it using the
+[contract schemas](./casper-contract-schema), so keep them up to date with `cargo odra schema`. See
+[Livenet errors](../backends/04-livenet.md#errors).
+:::
+
 ## What's next
 We will learn how to emit and test events using Odra.
 

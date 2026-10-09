@@ -340,7 +340,61 @@ node is the current state. This is why the `balance_of` call was almost instant 
 Basically, if the entrypoint function is not mutable or does not make a call to an unknown external contract
 (see [Cross Calls](../basics/10-cross-calls.md)), it is executed offline and
 node is used for the state query only. However, the Livenet needs to know the connection between the contracts
-and the code, so make sure to deploy or load already deployed contracts
+and the code, so make sure to deploy or load already deployed contracts.
+
+A function executed this way behaves as it does in tests:
+
+- `caller()` is the calling account (the `HostEnv` caller), and `call_stack()` starts with it. A
+  getter called from another one sees the calling contract as its caller, like on chain.
+- If it reverts, its `try_*` call returns the error (`token.try_balance_of(..)` gives `Err`), and the
+  plain call panics with it. A revert in a nested getter returns the error of the inner contract, and
+  any other panic becomes `VmError::Panic`.
+
+The same applies to [`#[odra(offchain)]`](../advanced/03-attributes.md#offchain) functions, which
+always run this way.
+
+## Errors
+
+The node reports a failed transaction only as a number (`User error: 2`). The Livenet backend turns
+it back into an `OdraError`: Odra's own errors are recognised by their code, and the errors your
+contracts define are looked up by name in the contract schemas, in
+`resources/casper_contract_schemas/` of the current directory and of its parents up to the project
+root. The schema of the contract that was called is searched first - contracts usually number their
+errors 1, 2, 3, so the same code can mean something else in another contract - and the others only
+if it has no such error (a contract it called reverted).
+
+Keep the schemas present and up to date with `cargo odra schema`. A code that no schema knows (or an
+Odra error code from a newer Odra version) comes back as `VmError::Other` with the node's message.
+
+A deploy or an upgrade whose `init` or `upgrade` reverts returns the contract's error too, named after
+the schema of the contract being deployed, and running out of gas returns `OutOfGas`. The
+`ContractDeploymentError` is left for a deployment that did not get to run the contract: the wasm
+file was not found, the gas was not set or the node could not be reached.
+
+## Gas used
+
+`env.gas_report()` and `env.last_call_gas_cost()` work on Livenet like in the test VMs. The gas
+comes from the node's execution result of each transaction the environment sends:
+
+```rust
+let mut token = Erc20::deploy(&env, init_args);
+token.transfer(&recipient, &U256::from(10));
+println!("{}", env.gas_report());
+// Wasm deploy: Erc20.wasm - 259.888293669 CSPR
+// Contract call: transfer - 0.50742048 CSPR
+println!("{}", env.last_call_gas_cost()); // 507420480
+```
+
+- The figure is the gas the transaction consumed, not the payment you set with `env.set_gas` -
+  Casper charges the whole payment limit, so the two differ.
+- Failed transactions are reported as well. A CSPR transfer updates `last_call_gas_cost` but is not
+  listed in the report.
+- Getters run on your machine and send no transaction, so they don't change either value.
+- Each worker environment of [`HostEnv::concurrently`](#doing-several-things-at-once) has its own
+  report.
+
+A getter that reads a validator's bid with `self.env().get_validator_info(..)` works on Livenet too:
+the bid is read from the node, and a validator without a bid gives `None`.
 
 ## Native events
 

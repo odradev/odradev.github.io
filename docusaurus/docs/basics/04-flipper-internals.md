@@ -66,6 +66,13 @@ The function named `init` is the constructor of the contract. This function will
 to a single call, all further calls to it will result in an error. The `init` function is optional,
 if your contract does not need any initialization, you can skip it.
 
+:::note
+A few names are taken by the code Odra generates. A function in a `#[odra::module]` impl block cannot
+be named `new`, `env`, `address`, `new_contract`, `upgrade_child_contract` or
+`batch_upgrade_child_contract`, and an argument cannot be named `gas` or `attached_value`. Any other
+name works, also ones like `contract`, `env` or `result`.
+:::
+
 ```rust title="flipper.rs"
     ...
     /// Replaces the current value with the passed argument.

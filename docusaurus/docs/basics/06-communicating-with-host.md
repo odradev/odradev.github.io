@@ -77,7 +77,8 @@ impl CallStackProbe {
 
 Called by an account directly, `inspect` answers `(account, None, [account, probe])`. Called
 through another contract, it answers `(relay, Some(account), [account, relay, probe])`. The same on
-OdraVM, CasperVM and livenet.
+OdraVM, CasperVM and livenet, including getters and `#[odra(offchain)]` functions, which livenet runs
+locally: the account at the bottom of the stack is the `HostEnv` caller.
 
 :::caution
 Trusting an address further up the stack has the usual `tx.origin` caveats: a user can be tricked

@@ -22,7 +22,7 @@ A few changes can still need attention:
 - [`#[odra::module(name = "..")]`](#module-name) also names the package-hash key.
 - [Livenet client and error codes](#livenet-client-and-error-codes), for code that uses
   `CasperClient` directly or matches on error codes, including the error of a failed livenet deploy.
-- [Custom backends](#custom-backends).
+- [Custom backends](#custom-backends) and hand-written `EntryPointsCaller`s.
 
 :::tip
 `HostEnv::advance_block_time` and `advance_with_auctions` now also accept a `core::time::Duration`,
@@ -170,3 +170,28 @@ backend keeps compiling; override them to support the new features.
 
 `odra::entry_point_callback::EntryPoint` has a new `is_offchain` field. If you build entry points
 with a struct literal, switch to `EntryPoint::new`, `new_payable` or `new_offchain`.
+
+`HostContext` also gained `take_child_contracts`, with a default implementation returning no
+contracts. A backend that runs factory modules returns the children it deployed since the last call,
+so that `HostEnv` tracks their events.
+
+### `EntryPointsCaller` no longer holds the `HostEnv`
+
+An `EntryPointsCaller` used to keep the `HostEnv` it was built with. Backends store the callers of
+the deployed contracts, so the environment and the backend kept each other alive and were never
+freed. The caller now keeps only the entry points and the function, and the backend passes the
+`ContractEnv` on every call:
+
+| 2.9 | 2.10 |
+|---|---|
+| `EntryPointsCaller::new(env, entry_points, f)` | `EntryPointsCaller::new(entry_points, f)` |
+| `caller.call(call_def)` | `caller.call(contract_env, call_def)` |
+| `caller.host_env()` | removed |
+| `HostRef::entry_points_caller(&env)` | `HostRef::entry_points_caller()` |
+| `EntryPointsCallerFn = fn(&HostEnv) -> EntryPointsCaller` | `fn() -> EntryPointsCaller` |
+| `ContractRegister::call(address, call_def)`, `ContractContainer::call(call_def)` | take a `ContractEnv` before the `CallDef` |
+| `OdraVm::default()` | `OdraVm::new()` |
+
+Contracts and tests that use `#[odra::module]`, `Deployer`, `HostRef` and `HostRefLoader::load` are
+not affected: the macros generate the new form. Only hand-written callers, code that calls
+`entry_points_caller` itself, and custom backends need the changes above.

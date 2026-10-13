@@ -432,6 +432,20 @@ so a test written this way needs no livenet.
 `cargo run --bin odra_cli --features livenet -- scenario concurrent` runs this against your node and
 prints how long the reads take one after another and concurrently.
 
+At most 8 worker threads run at once. A public node may limit how many connections one client keeps
+open, a local one may take more; set `ODRA_MAX_THREADS` to change the limit for every `concurrently`
+call, or pass it to a single call with `concurrently_with`:
+
+```rust
+// A single worker thread: one request at a time, for a node that allows one connection.
+let supplies = env.concurrently_with(1, addresses, |env, address| {
+    Erc20::load(env, address).total_supply()
+});
+```
+
+`0` counts as `1`, and an `ODRA_MAX_THREADS` that is not a number panics rather than falling back
+to the default. On OdraVM and CasperVM the limit changes nothing.
+
 ## Async code
 
 The livenet `HostEnv` is synchronous, like every other backend. Underneath, `CasperClient` in

@@ -14,8 +14,8 @@ odra = "2.10.0"
 
 A few changes can still need attention:
 
-- [Compile-time changes](#compile-time-changes): arguments of `#[odra::module]` on an `impl` block
-  and a duplicated `#[odra::external_contract]` trait.
+- [Compile-time changes](#compile-time-changes): arguments of `#[odra::module]` on an `impl` block,
+  a duplicated `#[odra::external_contract]` trait, and unknown or repeated `#[odra(..)]` arguments.
 - [Events with struct fields](#events-with-struct-fields) are refused at deploy and schema generation.
 - [OdraVM rolls back reverted calls completely](#odravm-rollback), which can change what a test sees.
 - [`Erc20::mint` and `Erc20::burn`](#erc20-mint-burn) are no longer entry points (a security fix).
@@ -82,6 +82,20 @@ the hidden env field of a module: `__env` is now `__odra_env`. Only code that to
 directly is affected - use `self.env()`. `#[odra::event]` no longer derives `odra::Event` but
 generates the same impls itself; storage and serialized bytes are unchanged.
 :::
+
+### Unknown or repeated `#[odra(..)]` arguments are an error
+
+An unknown argument (`#[odra(paybale)]`, `#[odra(view)]`) or a repeated one
+(`#[odra(payable, payable)]`) used to compile and was silently ignored - the function was not
+payable, for example. It is now a compile error pointing at the argument:
+
+```
+error: unknown odra attribute `paybale`, expected one of: payable, non_reentrant, offchain
+```
+
+Such an attribute never had an effect, so fix the spelling or remove it. In return, private helper
+functions of a module are no longer checked like entry points and may use names such as `new` or
+an argument named `gas`.
 
 ## Events with struct fields
 

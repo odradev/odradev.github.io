@@ -209,6 +209,30 @@ If we want to get multiple values for an argument, we must define the argument a
 The example above performs a simple check on the return value of one of the methods.
 Of course, there is no limit to how complex a scenario can be.
 
+#### Events in a scenario
+
+A scenario does not capture events by default: after every call the environment would read the new
+events of every contract in the container, which on livenet is a few node requests per contract per
+call, so `last_call()` of a call made in a scenario has no events. A scenario that checks them opts in
+by overriding `captures_events`:
+
+```rust
+impl Scenario for RenameScenario {
+    fn captures_events(&self) -> bool {
+        true
+    }
+
+    fn run(&self, env: &HostEnv, container: &DeployedContractsContainer, args: Args) -> Result<(), Error> {
+        let mut dog = container.contract_ref::<DogContract>(env)?;
+        dog.try_rename(args.get_single::<String>("name")?)?;
+        if !dog.last_call().emitted("NameChanged") {
+            return Err(Error::OdraError { message: "no NameChanged event".to_string() });
+        }
+        Ok(())
+    }
+}
+```
+
 :::tip
 Prefer returning a `scenario::Error` over panicking with `assert!`. A returned error is reported by
 the CLI as a failed command, while a panic tears the

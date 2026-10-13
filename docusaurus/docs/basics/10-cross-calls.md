@@ -138,7 +138,8 @@ may call only what both refs have - the entry points and `contract_address()`. A
 
 `self.contract_address()` returns the address of the contract the ref points at, as an `Address`, on
 both sides: `HostRef` has always had it, and the `ContractAddress` trait from `odra::prelude` gives it to
-every `ContractRef`. With the prelude imported a helper needs nothing else:
+every `ContractRef`. The helper needs no imports for it - the generated impls bring the right trait into
+scope themselves:
 
 ```rust title="examples/src/contracts/balance_checker.rs"
 #[odra::ref_helpers]

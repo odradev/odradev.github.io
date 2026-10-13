@@ -45,3 +45,17 @@ graph TD;
     id2[Contract Container]-->id3((Contract Registry))
     id3((Contract Registry))-->id4[(OdraVM Execution)]
 ```
+
+## Reverts
+
+A call that reverts is rolled back as a whole, as on Casper: the storage and balances it changed,
+contracts it deployed (also factory children), the new code of a failed `upgrade` - the old version
+keeps running - and the events and native events it emitted, including those of nested calls. Event
+counts, `get_event` indices and `last_call()` never see them.
+
+Two things are still simpler than on Casper: a plain Rust panic in a contract (an `unwrap()` on
+`None`, not a revert) rolls nothing back, and a reverted deploy still uses up an address.
+
+The output of a revert is compact - the error and the call stack that led to it. Any other panic, an
+assertion failure in a test or an `unwrap()` in contract code, prints the standard Rust message
+(with `RUST_BACKTRACE` support), and a panic hook you install yourself keeps working.

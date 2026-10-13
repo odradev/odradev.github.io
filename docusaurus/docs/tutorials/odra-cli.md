@@ -209,6 +209,30 @@ If we want to get multiple values for an argument, we must define the argument a
 The example above performs a simple check on the return value of one of the methods.
 Of course, there is no limit to how complex a scenario can be.
 
+#### Events in a scenario
+
+A scenario does not capture events by default: after every call the environment would read the new
+events of every contract in the container, which on livenet is a few node requests per contract per
+call, so `last_call()` of a call made in a scenario has no events. A scenario that checks them opts in
+by overriding `captures_events`:
+
+```rust
+impl Scenario for RenameScenario {
+    fn captures_events(&self) -> bool {
+        true
+    }
+
+    fn run(&self, env: &HostEnv, container: &DeployedContractsContainer, args: Args) -> Result<(), Error> {
+        let mut dog = container.contract_ref::<DogContract>(env)?;
+        dog.try_rename(args.get_single::<String>("name")?)?;
+        if !dog.last_call().emitted("NameChanged") {
+            return Err(Error::OdraError { message: "no NameChanged event".to_string() });
+        }
+        Ok(())
+    }
+}
+```
+
 :::tip
 Prefer returning a `scenario::Error` over panicking with `assert!`. A returned error is reported by
 the CLI as a failed command, while a panic tears the
@@ -290,10 +314,14 @@ no registration needed.
 
 ### Missing configuration
 
-The CLI needs a working [livenet](../backends/04-livenet.md) environment. If any of the
-`ODRA_CASPER_LIVENET_*` variables is missing - or the secret key cannot be loaded - the CLI no
-longer aborts immediately. Instead it asks for the missing value, sets it for the current process
-and retries:
+Commands that talk to the network - `deploy`, `contract`, `scenario`, `print-events`, `whoami`,
+`status`, `inspect`, `storage`, `transfer` and `repl` - need a working
+[livenet](../backends/04-livenet.md) environment. `--help` (also of any subcommand), `--version`,
+`completions` and `config` work without it, so you can explore the CLI before configuring anything.
+
+If one of the `ODRA_CASPER_LIVENET_*` variables is missing - or the secret key cannot be loaded -
+when a network command runs, the CLI does not abort immediately. Instead it asks for the missing
+value, sets it for the current process and retries:
 
 ```bash
 cargo run --bin odra_cli -- whoami
@@ -743,6 +771,18 @@ cargo run --bin odra_cli -- config
 ```
 
 Variables that are unset or empty are reported as `<not set>` together with the name of the environment variable that would provide them.
+
+`config` never prompts and works with an incomplete configuration, which makes it the place to check what is missing. If the caller cannot be resolved (a variable is missing or the secret key cannot be loaded), the caller is shown as `<unavailable>` and the problem is printed below it:
+
+```bash
+⚠️  WARN :   Node address: <not set> ($ODRA_CASPER_LIVENET_NODE_ADDRESS)
+...
+⚠️  WARN : Caller address:  <unavailable>
+💁  INFO : Contracts file:  resources/contracts.toml
+⚠️  WARN : Livenet env misconfigured! ODRA_CASPER_LIVENET_NODE_ADDRESS env var is missing.
+```
+
+With `--json`, `caller_address` is `null` in that case and a `problem` field carries the message; the field is left out when the configuration is complete.
 
 :::note
 Only the *path* to the secret key is printed, never its content.

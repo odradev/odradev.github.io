@@ -70,15 +70,20 @@ The generated factory contract exposes a standardized set of management entry po
 
 ## Testing the Factory
 
-:::caution
-Factory deployments are not supported by OdraVM. Any test that calls `new_contract` must be run against
-the Casper backend:
+Factories work on both test backends, so the tests below run with `cargo odra test` (OdraVM) as well
+as `cargo odra test -b casper`. OdraVM mimics Casper: a child's `init` and `upgrade` see the caller of
+the factory as their caller, only the account that deployed the factory can upgrade its children, the
+events of the children are tracked, and a child whose `init` or `upgrade` reverts leaves nothing
+behind.
 
-```bash
-cargo odra test -b casper
-```
+:::note
+A few details are still simplified on OdraVM:
 
-Tests that only use the child contract as a standalone module still run fine on OdraVM.
+- The access `URef` returned by `new_contract` is a stand-in derived from the child's address.
+- The upgrade permission check compares the direct caller with the deployer of the factory, where
+  Casper checks group access.
+- A factory opened with `HostRefLoader::load` has no recorded deployer, so its children cannot be
+  upgraded there.
 :::
 
 Remember to register both the child contract and the generated factory module in `Odra.toml`, otherwise

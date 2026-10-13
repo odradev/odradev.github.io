@@ -132,10 +132,6 @@ the function we are calling inside the contract.
   it back, see [Snapshots](#snapshots) below
 - `fn concurrently<T, R>(&self, items: Vec<T>, f: impl Fn(&HostEnv, T) -> R) -> Vec<R>` - runs `f` once
   per item; one after another here, on worker threads on [livenet](../backends/04-livenet.md#doing-several-things-at-once)
-- `fn enable_addressable_entity(&self) -> bool` - switches the backend from legacy mode to
-  addressable-entity mode, migrating the chain state like a real network upgrade would; returns
-  `false` if the backend does not support the switch or already runs in that mode (see the
-  [v3.0.0 migration guide](../migrations/to-3.0.0.md))
 
 Full list of functions can be found in the [`HostEnv`] documentation.
 
@@ -164,11 +160,12 @@ assert_eq!(token.balance_of(&alice), U256::zero());
 // Scenario B starts from the same point; the snapshot can be restored again and again.
 ```
 
-A snapshot covers the contract storage, CSPR balances, events and the block time. Only the last
-snapshot is kept: taking a new one replaces it. The caller chosen with `set_caller` and the gas
-report are not part of it. Snapshots work on OdraVM and on CasperVM (where restoring is only a
-pointer back to an older state root); on livenet the state lives on a real chain, so
-`take_snapshot` panics there.
+A snapshot covers the contract storage, CSPR balances, events and the block time, as well as the
+contracts themselves: a contract deployed or upgraded after the snapshot is gone (or back to its old
+code) once it is restored, and the event counts follow. Only the last snapshot is kept: taking a new
+one replaces it. The caller chosen with `set_caller` and the gas report are not part of it.
+Snapshots work on OdraVM and on CasperVM (where restoring is only a pointer back to an older state
+root); on livenet the state lives on a real chain, so `take_snapshot` panics there.
 
 ## Choosing the backend
 

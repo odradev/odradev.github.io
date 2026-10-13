@@ -84,6 +84,39 @@ Odra needs to determine all the events at compilation time to register them once
 
 The event collection process is recursive; if your module consists of other modules, and they have already registered their events, you don't need to add them to the parent module.
 
+## Field types
+
+The fields of an event must have a concrete `CLType`: numbers, `bool`, `String`, `Address`, `U256`
+and the like, a unit enum (an `#[odra::odra_type]` enum without data, serialized as `u8`), and
+`Option`, `Vec`, maps, `Result` and tuples of those. An `#[odra::odra_type]` struct or an enum with
+data has the `CLType` `Any`, which the Casper Event Standard rejects, also inside an `Option`, a `Vec`
+or a tuple. Such an event compiles, but emitting it (as a CES or a native event) would always revert
+with `ExecutionError::Formatting`, so Odra refuses the contract earlier: deploying or upgrading it
+from a test, a script or the CLI (on any backend) and generating its schema (`cargo odra schema`)
+panic with a message that names the event and the field:
+
+```text
+Contract `Exchange`: event `Traded`: field `price` has no concrete CLType (it is or contains an
+#[odra::odra_type] struct or data-carrying enum, whose CLType is `Any`), so emitting it fails with
+`Formatting`; casper-event-standard events need plain types: flatten the fields into the event or
+use a unit enum
+```
+
+Flatten the fields of the struct into the event instead:
+
+```rust
+#[odra::odra_type]
+pub enum Side { Buy, Sell } // a unit enum is fine
+
+#[odra::event]
+pub struct Traded {
+    pub side: Side,
+    // not `pub price: Price` with `#[odra::odra_type] struct Price { amount, currency }`
+    pub price_amount: U256,
+    pub price_currency: String
+}
+```
+
 ## Testing events
 
 Odra's `HostEnv` comes with a few functions which lets you easily test the events that a given contract has emitted:

@@ -133,8 +133,22 @@ impl NameToken {
 
 The block is copied into `impl NameTokenContractRef` and `impl NameTokenHostRef` (the latter only
 outside wasm), so `token.metadata_by_hash(hash)` works in a contract and in a test alike. The helpers
-may call only what both refs have - the entry points. A helper calling an entry point that takes
+may call only what both refs have - the entry points and `contract_address()`. A helper calling an entry point that takes
 `&mut self` has to take `&mut self` too.
+
+`self.contract_address()` returns the address of the contract the ref points at, as an `Address`, on
+both sides: `HostRef` has always had it, and the `ContractAddress` trait from `odra::prelude` gives it to
+every `ContractRef`. With the prelude imported a helper needs nothing else:
+
+```rust title="examples/src/contracts/balance_checker.rs"
+#[odra::ref_helpers]
+impl Token {
+    /// Returns the tokens the token contract holds itself.
+    pub fn own_balance(&self) -> U256 {
+        self.balance_of(&self.contract_address())
+    }
+}
+```
 
 ### Loading the contract
 Sometimes it is useful to load the deployed contract instead of deploying it by ourselves. This is especially useful when we want to test

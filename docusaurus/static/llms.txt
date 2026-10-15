@@ -78,6 +78,7 @@
 - [Ownable](https://odra.dev/docs/tutorials/ownable)
 - [OwnedToken](https://odra.dev/docs/tutorials/owned-token)
 - [Pausable](https://odra.dev/docs/tutorials/pauseable)
+- [Reading Contract Storage](https://odra.dev/docs/tutorials/reading-storage)
 - [Upgrading Contracts](https://odra.dev/docs/tutorials/upgrades)
 - [Using Proxy Caller](https://odra.dev/docs/tutorials/using-proxy-caller)
 

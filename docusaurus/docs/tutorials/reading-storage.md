@@ -10,11 +10,12 @@ works from any JavaScript program. The catch is the key: Odra hashes the field i
 mapping keys into dictionary item keys, as the [Storage Layout] article explains, and the stored
 bytes have to be decoded with the right type.
 
-Since Odra 2.10.0 both parts are automated. A **storage layout file** describes where each field
-of a contract lives and how its values are typed, and the **storage reader**, a small wasm
-library, turns a field path into the dictionary key or named key to fetch and decodes what the
-node returns. The reader never talks to the node itself: you fetch with `casper-js-sdk`, or with
-any other RPC client, and hand it the result.
+Both parts are automated by Odra. The contract's **schema file** - the same file `cargo odra
+schema` writes for its entry points and events - also carries its **storage layout**: where each
+field lives and how its values are typed. The **storage reader**, a small wasm library, turns a
+field path into the dictionary key or named key to fetch and decodes what the node returns, using
+the schema file's `storage` and `types`. The reader never talks to the node itself: you fetch with
+`casper-js-sdk`, or with any other RPC client, and hand it the result.
 
 In this tutorial we read the storage of [Casper Delta], a perpetual swap deployed on Casper
 mainnet, from a Node script. If you want to see how the keys are computed by hand first, the
@@ -70,44 +71,55 @@ The contracts are deployed on mainnet under these package hashes:
 | `CD_LONG` | `hash-30f66fc8f60ee99e7a8a05c3a308ee623c229247c0cc7ac8dc76621157397a93` |
 | `CD_SHORT` | `hash-d65a7e04b687bd873af5819de67d563ff347560dfef16ad2c1065cac3e115b96` |
 
-## The storage layout file
+## The contract schema
 
-The layout file is generated from the contract code. In the project of the contract, run:
+The storage layout lives in the contract's own schema file, generated from the contract code. In
+the project of the contract, run:
 
 ```sh
 cargo odra schema
 ```
 
-Next to the contract schemas it writes one layout file per contract in `Odra.toml`, as
-`resources/storage/<Contract>.json`. The file is JSON with four top-level fields:
+Next to the wasm it writes one schema file per module declared in `Odra.toml`, as
+`resources/casper_contract_schemas/<module>_schema.json` (`cargo odra build` writes the same
+file). It is one file per *module*, not per deployment: `CD_LONG` and `CD_SHORT` are two
+deployments of the same `PositionToken` module, so they share a single schema file,
+`position_token_schema.json`.
 
-- `version` - the format version, `1`. The reader rejects a file with a version it does not know.
-- `contract` - the name the contract is registered under, and `ident` - the name of the module.
-- `layout` - the tree of fields. Every field has a `name`, its `index` in the module (the same
+The full file also describes the contract's entry points, events and errors; reading storage only
+needs four of its fields:
+
+- `casper_contract_schema_version` - the format version, `1`. The reader rejects a file with a
+  version it does not know.
+- `contract_name` - the name of the module, e.g. `PositionToken` - not the name a particular
+  deployment is registered under.
+- `storage` - the tree of fields. Every field has a `name`, its `index` in the module (the same
   index [Storage Layout] hashes into the key) and a `kind`:
   - `value` - a `Var`, with the type of the value in `ty`;
   - `mapping` - a `Mapping`, with the type of the `key` and the `value` stored under it;
   - `list` and `sequence` - a `List` and a `Sequence`;
-  - `named_key` - a value stored under a Casper named key, with its `key_name`;
-  - `dictionary` - a Casper dictionary, with its `dictionary_name`, the `key` type, the `value`
-    type and the `key_encoding` that turns a key into the dictionary item key.
+  - `named_key` - a value stored under a Casper named key, with its `named_key` field naming the
+    key;
+  - `dictionary` - a Casper dictionary, with its `dictionary` field naming it, the `key` type, the
+    `value` type and the `key_encoding` that turns a key into the dictionary item key.
   - `module` - a `SubModule`, with its own `fields`;
 - `types` - the custom structs and enums the contract declares, so that a value like
   `MarketState` can be decoded to its fields.
 
-This is the layout of the `Market`. The `AccessControl` roles are a `Mapping` keyed by a tuple of
-the role (32 bytes) and the address, `state` is a `Var<MarketState>`, and `MarketState` itself
-is described in `types` together with the events of the contract.
+This is the `storage` and `types` of the `Market`'s schema file; the rest of the file -
+`entry_points`, `events` and the other standard schema fields - is trimmed below. The
+`AccessControl` roles are a `Mapping` keyed by a tuple of the role (32 bytes) and the address,
+`state` is a `Var<MarketState>`, and `MarketState` itself is described in `types` together with
+the events of the contract.
 
 <details>
-<summary><code>resources/storage/Market.json</code></summary>
+<summary><code>resources/casper_contract_schemas/market_schema.json</code></summary>
 
 ```json
 {
-  "version": 1,
-  "contract": "Market",
-  "ident": "Market",
-  "layout": {
+  "casper_contract_schema_version": 1,
+  "contract_name": "Market",
+  "storage": {
     "kind": "module",
     "fields": [
       {
@@ -697,21 +709,22 @@ is described in `types` together with the events of the contract.
 
 </details>
 
-The `PositionToken` layout is the same for both tokens, only `contract` differs. Its `token`
-submodule is where the CEP-18 named keys and dictionaries show up: `decimals`, `symbol`, `name`
-and `total_supply` are named keys, `balances` is a dictionary keyed by `Key` with base64 encoded
-item keys, and `allowances` a dictionary keyed by an `(owner, spender)` tuple with hashed item
-keys.
+`CD_LONG` and `CD_SHORT` are two deployments of the same `PositionToken` module, so they share
+this one schema file; nothing in it says which deployment is which, only the package hash does.
+Its `token` submodule is where the CEP-18 named keys and dictionaries show up: `decimals`,
+`symbol`, `name` and `total_supply` are named keys (the `named_key` field in the schema names the
+key), `balances` is a dictionary keyed by `Key` with base64 encoded item keys, and `allowances` a
+dictionary keyed by an `(owner, spender)` tuple with hashed item keys (the `dictionary` field
+names it).
 
 <details>
-<summary><code>resources/storage/CD_LONG.json</code></summary>
+<summary><code>resources/casper_contract_schemas/position_token_schema.json</code></summary>
 
 ```json
 {
-  "version": 1,
-  "contract": "CD_LONG",
-  "ident": "PositionToken",
-  "layout": {
+  "casper_contract_schema_version": 1,
+  "contract_name": "PositionToken",
+  "storage": {
     "kind": "module",
     "fields": [
       {
@@ -729,35 +742,35 @@ keys.
             "name": "decimals",
             "index": 1,
             "kind": "named_key",
-            "key_name": "decimals",
+            "named_key": "decimals",
             "ty": "U8"
           },
           {
             "name": "symbol",
             "index": 2,
             "kind": "named_key",
-            "key_name": "symbol",
+            "named_key": "symbol",
             "ty": "String"
           },
           {
             "name": "name",
             "index": 3,
             "kind": "named_key",
-            "key_name": "name",
+            "named_key": "name",
             "ty": "String"
           },
           {
             "name": "total_supply",
             "index": 4,
             "kind": "named_key",
-            "key_name": "total_supply",
+            "named_key": "total_supply",
             "ty": "U256"
           },
           {
             "name": "balances",
             "index": 5,
             "kind": "dictionary",
-            "dictionary_name": "balances",
+            "dictionary": "balances",
             "key": "Key",
             "key_encoding": "base64",
             "value": "U256"
@@ -766,7 +779,7 @@ keys.
             "name": "allowances",
             "index": 6,
             "kind": "dictionary",
-            "dictionary_name": "allowances",
+            "dictionary": "allowances",
             "key": {
               "Tuple2": [
                 "Key",
@@ -1154,8 +1167,8 @@ The `StorageReader` class has a handful of methods:
 
 | Method | What it does |
 |---|---|
-| `new StorageReader(layout)` | Creates a reader from the layout file, given as a JSON string or a parsed object. |
-| `contract` | The name of the contract, from the layout file. |
+| `new StorageReader(schema)` | Creates a reader from the contract's schema file, given as a JSON string or a parsed object. |
+| `contract` | The name of the module, from the schema file's `contract_name`. |
 | `currentContractHash(storedValue)` | Picks the current contract version (`hash-...`) out of the package record the node returns for the package hash. |
 | `locate(path, keys)` | Resolves a dotted field path, and the keys of the mappings and dictionaries on it, to the location of the value: a dictionary item or a named key. |
 | `decode(clValue, location)` | Decodes the `CLValue` the node returned for a location into a readable string, formatted like `odra-cli` prints it. |
@@ -1175,10 +1188,11 @@ npm init -y
 npm pkg set type=module
 npm install casper-js-sdk@5.1.1
 npm install --save-dev tsx typescript @types/node
-mkdir reader storage
+mkdir reader schemas
 ```
 
-Copy the three reader files into `reader/`, and the layout files into `storage/`:
+Copy the three reader files into `reader/`, and the two schema files into `schemas/` - one for
+`Market`, one for `PositionToken`, shared by `CD_LONG` and `CD_SHORT`:
 
 ```
 casper-delta-storage/
@@ -1186,16 +1200,15 @@ casper-delta-storage/
 │   ├── odra_storage_reader.wasm
 │   ├── odra_storage_reader.js
 │   └── odra_storage_reader.d.ts
-├── storage/
-│   ├── Market.json
-│   ├── CD_LONG.json
-│   └── CD_SHORT.json
+├── schemas/
+│   ├── market_schema.json
+│   └── position_token_schema.json
 └── read.ts
 ```
 
 ## The script
 
-`read.ts` takes a layout file, a package hash, a field path and, when the field needs them, the
+`read.ts` takes a schema file, a package hash, a field path and, when the field needs them, the
 keys of the mappings on the path. A read is five steps, numbered in the code.
 
 ```ts title="read.ts" showLineNumbers
@@ -1214,17 +1227,17 @@ const QUERY_FAILED = -32003;
 // casper-js-sdk throws an `HttpError` with the RPC error as `sourceErr`.
 const isNotSet = (e: any) => (e?.sourceErr?.code ?? e?.code) === QUERY_FAILED;
 
-const [layoutPath, packageHash, path, ...keys] = process.argv.slice(2);
-if (!layoutPath || !packageHash || !path) {
-  console.error("usage: npx tsx read.ts <layout.json> <package-hash> <path> [key...]");
+const [schemaPath, packageHash, path, ...keys] = process.argv.slice(2);
+if (!schemaPath || !packageHash || !path) {
+  console.error("usage: npx tsx read.ts <schema.json> <package-hash> <path> [key...]");
   process.exit(1);
 }
 
-// 1. Load the wasm module and create the reader from the layout file.
+// 1. Load the wasm module and create the reader from the schema file.
 await init({
   module_or_path: readFileSync(new URL("./reader/odra_storage_reader.wasm", import.meta.url))
 });
-const reader = new StorageReader(readFileSync(layoutPath, "utf8"));
+const reader = new StorageReader(readFileSync(schemaPath, "utf8"));
 const rpc = new RpcClient(new HttpHandler(NODE_URL));
 
 // 2. The package hash resolves to its current contract, the one that holds the storage.
@@ -1252,7 +1265,7 @@ try {
         )
       : await rpc.queryLatestGlobalState(contractHash, [location.name]);
 
-  // 5. Decode the stored value with the types of the layout file.
+  // 5. Decode the stored value with the types of the schema file.
   const clValue = result.rawJSON.stored_value.CLValue;
   console.log(`${reader.contract}.${path} = ${reader.decode(clValue, location)}`);
 } catch (e) {
@@ -1289,7 +1302,7 @@ struct; the reader decodes it to JSON with the members from the layout's `types`
 
 ```sh
 export MARKET=hash-4b15cdbc606589ebfdcdb3f8f81e2a2a0d44298e3d1faf0743d2be2d90d8cb6b
-npx tsx read.ts storage/Market.json $MARKET state
+npx tsx read.ts schemas/market_schema.json $MARKET state
 ```
 
 ```
@@ -1305,7 +1318,7 @@ Market.state = {
 Numbers come back as decimal strings, so a `U256` is never truncated:
 
 ```sh
-npx tsx read.ts storage/Market.json $MARKET fee
+npx tsx read.ts schemas/market_schema.json $MARKET fee
 ```
 
 ```
@@ -1317,8 +1330,8 @@ an account. The `long_token` field is how we learned the package hash of `CD_LON
 above:
 
 ```sh
-npx tsx read.ts storage/Market.json $MARKET long_token
-npx tsx read.ts storage/Market.json $MARKET fee_collector
+npx tsx read.ts schemas/market_schema.json $MARKET long_token
+npx tsx read.ts schemas/market_schema.json $MARKET fee_collector
 ```
 
 ```
@@ -1330,7 +1343,7 @@ Fields of a submodule are reached with a dotted path. The `Pauseable` flag of th
 never been written, so the node has no value for it:
 
 ```sh
-npx tsx read.ts storage/Market.json $MARKET pauseable.is_paused
+npx tsx read.ts schemas/market_schema.json $MARKET pauseable.is_paused
 ```
 
 ```
@@ -1357,7 +1370,7 @@ Casper Delta's `PriceManager` role is `[6u8; 32]`, which in the text format is `
 byte is repeated to fill the 32 bytes. To check whether an account holds that role:
 
 ```sh
-npx tsx read.ts storage/Market.json $MARKET access_control.roles 0x06:account-hash-<the account>
+npx tsx read.ts schemas/market_schema.json $MARKET access_control.roles 0x06:account-hash-<the account>
 ```
 
 The reader hashes the field indices and the serialized key into the `state` dictionary item key,
@@ -1380,17 +1393,19 @@ fails with `expected tuple with 2 elements, found 1`.
 ## Reading a position token
 
 The `Cep18` module stores its data the way the CEP-18 standard requires, under named keys and in
-dictionaries named `balances` and `allowances`, and the layout file says so. The reader returns
+dictionaries named `balances` and `allowances`, and the schema file says so. The reader returns
 a `named_key` location for the metadata and the total supply, so the script fetches them with
-`query_global_state`:
+`query_global_state`. Note that `reader.contract` comes from the schema file's `contract_name`,
+so it prints `PositionToken` for both `CD_LONG` and `CD_SHORT` - the deployment is the package
+hash, never the name in the log line:
 
 ```sh
 export CD_LONG=hash-30f66fc8f60ee99e7a8a05c3a308ee623c229247c0cc7ac8dc76621157397a93
-npx tsx read.ts storage/CD_LONG.json $CD_LONG token.total_supply
+npx tsx read.ts schemas/position_token_schema.json $CD_LONG token.total_supply
 ```
 
 ```
-CD_LONG.token.total_supply = 329652995320483
+PositionToken.token.total_supply = 329652995320483
 ```
 
 The location for it is:
@@ -1403,24 +1418,24 @@ The remaining `Var`s of the token read like those of the Market. `token_type` is
 the `LongOrShort` enum, and it decodes to the variant name:
 
 ```sh
-npx tsx read.ts storage/CD_LONG.json $CD_LONG token_type
-npx tsx read.ts storage/CD_LONG.json $CD_LONG token.symbol
-npx tsx read.ts storage/CD_LONG.json $CD_LONG market
+npx tsx read.ts schemas/position_token_schema.json $CD_LONG token_type
+npx tsx read.ts schemas/position_token_schema.json $CD_LONG token.symbol
+npx tsx read.ts schemas/position_token_schema.json $CD_LONG market
 ```
 
 ```
-CD_LONG.token_type = Long
-CD_LONG.token.symbol = CD_LONG
-CD_LONG.market = Key::Hash(4b15cdbc606589ebfdcdb3f8f81e2a2a0d44298e3d1faf0743d2be2d90d8cb6b)
+PositionToken.token_type = Long
+PositionToken.token.symbol = CD_LONG
+PositionToken.market = Key::Hash(4b15cdbc606589ebfdcdb3f8f81e2a2a0d44298e3d1faf0743d2be2d90d8cb6b)
 ```
 
 ### Balances and allowances
 
-A balance is an item of the `balances` dictionary, keyed by the account. The layout file records
+A balance is an item of the `balances` dictionary, keyed by the account. The schema file records
 that CEP-18 encodes the item key as base64 of the serialized `Key`, and the reader applies it:
 
 ```sh
-npx tsx read.ts storage/CD_LONG.json $CD_LONG token.balances account-hash-<the account>
+npx tsx read.ts schemas/position_token_schema.json $CD_LONG token.balances account-hash-<the account>
 ```
 
 ```json
@@ -1436,7 +1451,7 @@ An allowance is keyed by the `(owner, spender)` tuple, so it takes one `owner:sp
 CEP-18 hashes it into the item key:
 
 ```sh
-npx tsx read.ts storage/CD_LONG.json $CD_LONG token.allowances account-hash-<the owner>:account-hash-<the spender>
+npx tsx read.ts schemas/position_token_schema.json $CD_LONG token.allowances account-hash-<the owner>:account-hash-<the spender>
 ```
 
 Either prints the amount as a decimal string, or `<not set>` for an account that never held the
@@ -1444,11 +1459,11 @@ token or never approved the spender.
 
 ## What can be read
 
-You do not have to read the layout file to know which paths exist and which keys they need.
+You do not have to read the schema file to know which paths exist and which keys they need.
 `readableFields()` lists every value, and a frontend can build its forms from it:
 
 ```ts
-const reader = new StorageReader(readFileSync("storage/CD_LONG.json", "utf8"));
+const reader = new StorageReader(readFileSync("schemas/position_token_schema.json", "utf8"));
 console.log(reader.readableFields());
 ```
 
@@ -1469,22 +1484,25 @@ values under it.
 
 ## Raw bytes
 
-`decode` needs the type of the value, and a custom type is only in the layout file when it
-appears in an entry point or an event of the contract. A struct that is only stored cannot be
-decoded; `decodeRaw` returns its bytes as hex instead, and the error message of `decode` carries
-them too:
+The schema's `types` cover every custom type reachable from storage, not only the ones an entry
+point takes or returns or an event carries, so `decode` can decode any value the current version
+of the contract can store. The gap is a contract that has been upgraded: a field whose type
+changed, or that was removed from the Rust struct, still has its old bytes in storage, under a
+type no longer in the schema. `decodeRaw` returns those bytes as hex instead of decoding them,
+and the error message of `decode` carries them too:
 
 ```
-Cannot decode the stored value: type `Config` is not defined in the layout file (raw: 0x0102)
+Cannot decode the stored value: type `MarketStateV1` is not defined in the schema file (raw: 0x0102)
 ```
 
 ## Summary
 
-Reading the storage of an Odra contract from JavaScript takes a layout file generated with
-`cargo odra schema`, the reader's wasm and bindings copied from the Odra repository, and an RPC
-client. The reader resolves a field path to a dictionary item or a named key, the client fetches
-it, and the reader decodes it with the contract's own types. The same five steps work for any
-Odra contract, on any network, from a script or a browser.
+Reading the storage of an Odra contract from JavaScript takes the contract's schema file
+(generated with `cargo odra schema` or `cargo odra build`), the reader's wasm and bindings
+copied from the Odra repository, and an RPC client. The reader resolves a field path to a
+dictionary item or a named key, the client fetches it, and the reader decodes it with the
+contract's own types. The same five steps work for any Odra contract, on any network, from a
+script or a browser.
 
 [Storage Layout]: ../advanced/04-storage-layout.md
 [Build, Deploy and Read the State of a Contract]: ./build-deploy-read.md

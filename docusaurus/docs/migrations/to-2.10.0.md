@@ -20,6 +20,7 @@ A few changes can still need attention:
 - [OdraVM rolls back reverted calls completely](#odravm-rollback), which can change what a test sees.
 - [`Erc20::mint` and `Erc20::burn`](#erc20-mint-burn) are no longer entry points (a security fix).
 - [`#[odra::module(name = "..")]`](#module-name) also names the package-hash key.
+- [`cargo odra schema`](#legacy-schema) no longer writes `resources/legacy`.
 - [Livenet client and error codes](#livenet-client-and-error-codes), for code that uses
   `CasperClient` directly or matches on error codes, including the error of a failed livenet deploy.
 - [Custom backends](#custom-backends) and hand-written `EntryPointsCaller`s.
@@ -149,6 +150,25 @@ the account holds, so an upgrade of a 2.9 deployment simply stores the package h
 key as well. One thing to watch: the "already installed" guard (`allow_key_override = false`)
 checks the *new* key name, so it no longer stops a fresh install next to a 2.9 deployment of the
 same contract - use `load_or_deploy` or check `contracts.toml` rather than relying on the revert.
+
+## `cargo odra schema` no longer writes `resources/legacy` {#legacy-schema}
+
+Only the contract schema is generated now, in `resources/casper_contract_schemas`. The old
+`resources/legacy` directory is not updated anymore - delete it.
+
+Your `bin/build_schema.rs` keeps working as it is, but you can drop the legacy schema from it:
+
+```rust
+#[cfg(all(not(odra_module = ""), not(target_arch = "wasm32")))]
+extern "Rust" {
+    fn casper_contract_schema() -> odra::schema::casper_contract_schema::ContractSchema;
+}
+
+#[cfg(all(not(odra_module = ""), not(target_arch = "wasm32")))]
+fn main() {
+    odra_build::contract_schema(unsafe { crate::casper_contract_schema() });
+}
+```
 
 ## Livenet client and error codes
 

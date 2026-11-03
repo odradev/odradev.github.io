@@ -158,12 +158,10 @@ cargo odra schema
 ```
 
 This generates JSON schema files for all your contracts and places them in the `resources` folder.
-If the `resources` folder does not exist, it creates the folder for you. Each contract gets two files,
-in two subfolders:
+If the `resources` folder does not exist, it creates the folder for you. Each contract gets one file:
 
 ```
 resources/casper_contract_schemas/flipper_schema.json
-resources/legacy/flipper_schema.json
 ```
 
 Like with the `build` command, you can use the `-c` option to generate a schema for a specific contract.

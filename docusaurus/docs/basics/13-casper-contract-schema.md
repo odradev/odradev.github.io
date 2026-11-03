@@ -101,11 +101,10 @@ cargo odra schema # or pass -c flag to generate the schema for a specific contra
 
 ## Schema Output
 
-`cargo odra schema` writes two files per contract:
+`cargo odra schema` writes one file per contract:
 
 ```
-resources/casper_contract_schemas/my_contract_schema.json   # the CCS format, shown below
-resources/legacy/my_contract_schema.json                    # the older CES-based format, kept for compatibility
+resources/casper_contract_schemas/my_contract_schema.json
 ```
 
 The schema is a JSON file that contains all the information about the contract. Here is an example of the generated schema:

@@ -290,6 +290,7 @@ Commands:
   inspect       Prints the entry points, arguments and types of a contract
   config        Prints the resolved livenet configuration
   transfer      Transfers native CSPR from the caller to an account or contract
+  upgrade       Upgrades a deployed contract with its wasm from the wasm directory
   completions   Generates a shell completion script (bash, zsh, fish, ...)
   repl          Starts an interactive REPL session, keeping the host environment warm across commands.
   help          Print this message or the help of the given subcommand(s)
@@ -599,6 +600,41 @@ cargo run --bin odra_cli -- --json contract DogContract rename --new_name "Doggy
   ]
 }
 ```
+
+### Upgrade command
+
+The `upgrade` command upgrades a contract from the contracts file with the code of its wasm file
+(`wasm/<Contract>.wasm`, built with `cargo odra build`). It calls the contract's `upgrade` entry
+point, so its arguments are passed like the arguments of any other entry point. No custom scenario
+is needed.
+
+```bash
+cargo run --bin odra_cli -- upgrade DogContract --help
+
+Upgrades the DogContract contract
+
+Usage: odra_cli upgrade DogContract [OPTIONS] --gas <AMOUNT (motes, or 'X.Y cspr')>
+
+Options:
+      --gas <AMOUNT (motes, or 'X.Y cspr')>
+          The amount of gas to attach to the call
+      --force-create-upgrade-group
+          Create the upgrade group of the contract. Needed for contracts deployed with Odra 2.2 or earlier, or not with Odra at all
+      --allow-key-override [<BOOL>]
+          Overwrite the named key the package hash is stored under. Set it to false to fail if the key already exists [default: true] [possible values: true, false]
+      --package-named-key <NAME>
+          The package hash is stored under the `<NAME>_package_hash` named key [default: DogContract]
+  -h, --help
+          Print help
+
+cargo run --bin odra_cli -- upgrade DogContract --gas 400cspr
+
+💁  INFO : Contract DogContract upgraded, package hash: hash-fe1c...41d8
+```
+
+The options map to the fields of `UpgradeConfig`. `--package-named-key` defaults to the contract's
+name, or to the name given to `named_contract`. The package hash does not change, so the contracts
+file stays as it is.
 
 ### Print-events command
 

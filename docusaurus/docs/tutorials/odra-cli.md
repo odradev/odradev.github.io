@@ -291,6 +291,7 @@ Commands:
   config        Prints the resolved livenet configuration
   transfer      Transfers native CSPR from the caller to an account or contract
   upgrade       Upgrades a deployed contract with its wasm from the wasm directory
+  upgrade-children  Upgrades all child contracts of a factory with the factory's current code
   completions   Generates a shell completion script (bash, zsh, fish, ...)
   repl          Starts an interactive REPL session, keeping the host environment warm across commands.
   help          Print this message or the help of the given subcommand(s)
@@ -635,6 +636,23 @@ cargo run --bin odra_cli -- upgrade DogContract --gas 400cspr
 The options map to the fields of `UpgradeConfig`. `--package-named-key` defaults to the contract's
 name, or to the name given to `named_contract`. The package hash does not change, so the contracts
 file stays as it is.
+
+#### Upgrading the children of a factory
+
+The children of a [factory](../advanced/09-factory.md) run the factory's code, so they are upgraded through
+the factory. Once the factory is upgraded, `upgrade-children` upgrades all of its children in one
+transaction. It is listed for the factories registered in the CLI:
+
+```bash
+cargo run --bin odra_cli -- upgrade BetterCounterFactory --gas 500cspr
+cargo run --bin odra_cli -- upgrade-children BetterCounterFactory --new_value 42 --gas 900cspr
+
+💁  INFO : Upgraded 2 child contracts of BetterCounterFactory: FromTen, FromTwo
+```
+
+The arguments are the upgrade arguments of a child, the same for every child. The children are
+the contracts the factory announced with its `ContractDeployed` events, so the command reads the
+factory's events first.
 
 ### Print-events command
 

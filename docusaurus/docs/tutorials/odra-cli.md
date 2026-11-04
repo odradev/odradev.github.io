@@ -654,6 +654,26 @@ The arguments are the upgrade arguments of a child, the same for every child. Th
 the contracts the factory announced with its `ContractDeployed` events, so the command reads the
 factory's events first.
 
+All children are upgraded in one transaction. For a factory with many children, `--batch-size N`
+sends one transaction per `N` children, each with the `--gas` amount. If a transaction fails, the
+command lists the children that were upgraded and the ones that were not:
+
+```bash
+cargo run --bin odra_cli -- upgrade-children BetterCounterFactory --new_value 9 --batch-size 2 --gas 600cspr
+
+💁  INFO : Batch 1/2 upgraded: A, B
+💁  INFO : Batch 2/2 upgraded: C
+💁  INFO : Upgraded 3 child contracts of BetterCounterFactory in 2 transactions: A, B, C
+```
+
+A single child is created or upgraded with the factory's entry points, through the `contract`
+command:
+
+```bash
+cargo run --bin odra_cli -- contract BetterCounterFactory new_contract --contract_name A --value 1 --gas 270cspr
+cargo run --bin odra_cli -- contract BetterCounterFactory upgrade_child_contract --contract_name A --new_value 5 --gas 300cspr
+```
+
 ### Print-events command
 
 The `print-events` command allows you to print the most recent events emitted by a contract. It is useful for debugging and understanding what is happening in the contract.

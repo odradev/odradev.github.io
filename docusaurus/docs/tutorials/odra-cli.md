@@ -638,6 +638,14 @@ The options map to the fields of `UpgradeConfig`. `--package-named-key` defaults
 name, or to the name given to `named_contract`. The package hash does not change, so the contracts
 file stays as it is.
 
+:::caution
+Only a contract that was *installed* upgradable can be upgraded. `load_or_deploy` and `try_deploy`
+install a locked package, and the command fails with `A locked contract cannot be upgraded`; such a
+contract can only be redeployed under a new address. Use `load_or_deploy_with_cfg` with
+[`InstallConfig`]`::upgradable` in the deploy script (see [the deploy script](#deploy-script) above),
+and run `upgrade` as the account that installed the contract.
+:::
+
 #### Upgrading the children of a factory
 
 The children of a [factory](../advanced/09-factory.md) run the factory's code, so they are upgraded through

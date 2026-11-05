@@ -170,5 +170,5 @@ event a contract ever emitted, use CES events, or an event store such as the Cas
 ## What's next
 Read the next article to learn how to call other contracts from the contract context.
 
-[`HostEnv`]: https://docs.rs/odra/2.9.0/odra/host/struct.HostEnv.html
+[`HostEnv`]: https://docs.rs/odra/2.10.0/odra/host/struct.HostEnv.html
 [`schema`]: ./casper-contract-schema

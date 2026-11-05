@@ -134,7 +134,7 @@ does not meet out of the box:
    members = ["counter"]
 
    [workspace.dependencies]
-   odra = { version = "2.9.0", features = [], default-features = false }
+   odra = { version = "2.10.0", features = [], default-features = false }
    ```
 
    ```toml title="counter/Cargo.toml"

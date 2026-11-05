@@ -288,6 +288,7 @@ Commands:
   whoami        Prints the address of the current caller.
   status        Lists deployed contracts and their registration status
   inspect       Prints the entry points, arguments and types of a contract
+  storage       Reads the storage of a contract without calling it
   config        Prints the resolved livenet configuration
   transfer      Transfers native CSPR from the caller to an account or contract
   upgrade       Upgrades a deployed contract with its wasm from the wasm directory
@@ -931,6 +932,6 @@ lifetime of the REPL - choose the file when starting it, e.g.
 
 The Odra CLI library provides a powerful and convenient way to create command-line tools for your Odra contracts. It simplifies the process of deploying, interacting with, and testing your contracts, allowing you to focus on the business logic of your application. By following the examples in this tutorial, you can create your own CLI tools and streamline your development workflow.
 
-[`InstallConfig`]: https://docs.rs/odra/2.9.0/odra/host/struct.InstallConfig.html
+[`InstallConfig`]: https://docs.rs/odra/2.10.0/odra/host/struct.InstallConfig.html
 [`ContractLoaderExt`]: https://docs.rs/odra-cli/latest/odra_cli/trait.ContractLoaderExt.html
-[`DeployerExt`]: https://docs.rs/odra-cli/2.9.0/odra_cli/trait.DeployerExt.html
+[`DeployerExt`]: https://docs.rs/odra-cli/2.10.0/odra_cli/trait.DeployerExt.html

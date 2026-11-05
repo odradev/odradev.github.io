@@ -12,6 +12,14 @@ version:
 odra = "2.10.0"
 ```
 
+Install the matching build tool as well. `cargo-odra` 0.2.0 goes with Odra 2.10:
+
+```bash
+cargo install cargo-odra --locked
+```
+
+See [cargo-odra 0.2.0](#cargo-odra) below for what changed there.
+
 A few changes can still need attention:
 
 - [Compile-time changes](#compile-time-changes): arguments of `#[odra::module]` on an `impl` block,
@@ -24,6 +32,7 @@ A few changes can still need attention:
 - [Livenet client and error codes](#livenet-client-and-error-codes), for code that uses
   `CasperClient` directly or matches on error codes, including the error of a failed livenet deploy.
 - [Custom backends](#custom-backends) and hand-written `EntryPointsCaller`s.
+- [cargo-odra 0.2.0](#cargo-odra): one `wasm` directory per workspace, contracts from dependency crates.
 
 :::tip
 `HostEnv::advance_block_time` and `advance_with_auctions` now also accept a `core::time::Duration`,
@@ -169,6 +178,29 @@ fn main() {
     odra_build::contract_schema(unsafe { crate::casper_contract_schema() });
 }
 ```
+
+## cargo-odra 0.2.0 {#cargo-odra}
+
+`cargo-odra` 0.1.8 still builds and tests a single-crate Odra 2.10 project, but 0.2.0 is the release
+made for 2.10:
+
+- **A workspace has one `wasm` directory, at its root.** 0.1.x also copied every wasm into the crate
+  defining the contract, leaving a duplicate that went stale and that the Casper test VM could pick up
+  instead of the fresh build. Odra 2.10 looks for `wasm/<Contract>.wasm` in the working directory and
+  in every directory above it, so the root copy serves every member. This is also why a **workspace
+  project built with cargo-odra 0.2.0 needs Odra 2.10**: Odra 2.9 looks in the working directory only.
+  `cargo odra build` and `cargo odra clean` delete the copies an older cargo-odra left in the members.
+- **Contracts from dependency crates.** The first segment of an `fqn` in `Odra.toml` may be the name of
+  a crate the project depends on (`fqn = "odra_modules::erc20::Erc20"`); the wasm and schema are built
+  into the project like a local contract's. The building crate must reference the dependency
+  (`use odra_modules;` in `bin/build_contract.rs` and `bin/build_schema.rs`), see
+  [Odra.toml](../basics/03-odra-toml.md#contracts-from-other-crates).
+- `ODRA_MODULE` is passed crate-qualified (`odra_modules::Erc20`) to Odra 2.10 and newer, so two
+  crates defining a module of the same name no longer compile their entry points into one wasm.
+  Older Odra releases keep getting the bare struct name.
+- `cargo odra new` resolves the latest Odra release from the `releases/latest` redirect on
+  github.com instead of the rate-limited GitHub API, and no longer joins a generated project to an
+  enclosing Cargo workspace. Pass `-s 2.10.0` to pin the version explicitly.
 
 ## Livenet client and error codes
 

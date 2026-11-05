@@ -194,7 +194,7 @@ fn odra_vm_only() {
 ## What's next
 We take a look at how Odra handles errors!
 
-[`HostRef`]: https://docs.rs/odra/2.9.0/odra/host/trait.HostRef.html
-[`InitArgs`]: https://docs.rs/odra/2.9.0/odra/host/trait.InitArgs.html
-[`HostEnv`]: https://docs.rs/odra/2.9.0/odra/host/struct.HostEnv.html
-[`Deployer`]: https://docs.rs/odra/2.9.0/odra/host/trait.Deployer.html
+[`HostRef`]: https://docs.rs/odra/2.10.0/odra/host/trait.HostRef.html
+[`InitArgs`]: https://docs.rs/odra/2.10.0/odra/host/trait.InitArgs.html
+[`HostEnv`]: https://docs.rs/odra/2.10.0/odra/host/struct.HostEnv.html
+[`Deployer`]: https://docs.rs/odra/2.10.0/odra/host/trait.Deployer.html

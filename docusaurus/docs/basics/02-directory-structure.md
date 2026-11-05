@@ -44,17 +44,17 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-odra = { version = "2.9.0", features = [], default-features = false }
+odra = { version = "2.10.0", features = [], default-features = false }
 
 [dev-dependencies]
-odra-test = { version = "2.9.0", features = [], default-features = false }
+odra-test = { version = "2.10.0", features = [], default-features = false }
 
 [build-dependencies]
-odra-build = { version = "2.9.0", features = [], default-features = false }
+odra-build = { version = "2.10.0", features = [], default-features = false }
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
-odra-build = { version = "2.9.0", features = [], default-features = false }
-odra-cli = { version = "2.9.0", features = [], default-features = false }
+odra-build = { version = "2.10.0", features = [], default-features = false }
+odra-cli = { version = "2.10.0", features = [], default-features = false }
 
 [[bin]]
 name = "sample_build_contract"

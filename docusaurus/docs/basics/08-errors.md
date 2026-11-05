@@ -132,6 +132,6 @@ On livenet the node reports only the error code; Odra names it using the
 ## What's next
 We will learn how to emit and test events using Odra.
 
-[`OdraResult`]: https://docs.rs/odra/2.9.0/odra/type.OdraResult.html
-[`OdraError`]: https://docs.rs/odra/2.9.0/odra/enum.OdraError.html
+[`OdraResult`]: https://docs.rs/odra/2.10.0/odra/type.OdraResult.html
+[`OdraError`]: https://docs.rs/odra/2.10.0/odra/enum.OdraError.html
 [`schema`]: ./casper-contract-schema

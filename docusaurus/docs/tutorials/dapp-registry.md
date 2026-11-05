@@ -35,11 +35,12 @@ in a dapp it does not belong to, and a member cannot claim a registry that has n
 Every contract you add must therefore expose a `get_dapp_registry` entry point. Adding an account
 address reverts with `NotAContract`; adding a contract without that entry point fails with a VM error.
 
-### Factories
+### Registrars
 
-A contract added with `is_factory = true` may register the contracts it deploys. `OwnedDappRegistry`
-lets the owner add any contract, and a registered factory add contracts that are not factories
-themselves. Removing a contract also removes its factory permission.
+A contract added with `is_registrar = true` may add other contracts to the dapp - typically a
+contract that creates contracts through a [factory](../advanced/09-factory.md). `OwnedDappRegistry`
+lets the owner add any contract, and a registrar add contracts that are not registrars themselves.
+Removing a contract also removes its registrar permission.
 
 ### Authorization
 
@@ -69,8 +70,8 @@ registry.set_dapp_metadata(DappMetadata {
 It exposes:
 
 - `set_dapp_metadata`, `remove_dapp_contract`: owner only.
-- `add_dapp_contract`: the owner, or a registered factory adding a contract that is not a factory.
-- `get_dapp_metadata`, `get_dapp_contracts`, `is_dapp_contract`, `is_dapp_factory`, `get_dapp_registry`.
+- `add_dapp_contract(&contract, is_registrar)`: the owner, or a registrar adding a contract that is not a registrar.
+- `get_dapp_metadata`, `get_dapp_contracts`, `is_dapp_contract`, `is_dapp_registrar`, `get_dapp_registry`.
 - `get_owner`, `transfer_ownership`, `renounce_ownership` from `Ownable`.
 
 ## Writing a member contract
@@ -144,12 +145,14 @@ impl CuratedDappRegistry {
         let admin = self.env().caller();
         self.access_control.unchecked_grant_role(&DEFAULT_ADMIN_ROLE, &admin);
         self.access_control.unchecked_grant_role(&CURATOR_ROLE, &admin);
+        // Creates the `__dapp` dictionary the registry keeps its data in.
+        self.dapp.init();
         self.dapp.set_dapp_metadata(metadata);
     }
 
-    pub fn add_dapp_contract(&mut self, dapp_contract: &Address, is_factory: bool) {
+    pub fn add_dapp_contract(&mut self, dapp_contract: &Address, is_registrar: bool) {
         self.access_control.check_role(&CURATOR_ROLE, &self.env().caller());
-        self.dapp.add_dapp_contract(dapp_contract, is_factory);
+        self.dapp.add_dapp_contract(dapp_contract, is_registrar);
     }
 
     pub fn remove_dapp_contract(&mut self, dapp_contract: &Address) {
@@ -162,7 +165,7 @@ impl CuratedDappRegistry {
             fn get_dapp_metadata(&self) -> DappMetadata;
             fn get_dapp_contracts(&self) -> Vec<Address>;
             fn is_dapp_contract(&self, dapp_contract: &Address) -> bool;
-            fn is_dapp_factory(&self, dapp_contract: &Address) -> bool;
+            fn is_dapp_registrar(&self, dapp_contract: &Address) -> bool;
             fn get_dapp_registry(&self) -> Address;
         }
         to self.access_control {
@@ -174,24 +177,25 @@ impl CuratedDappRegistry {
 }
 ```
 
-To let factories register contracts in such a registry, call `self.dapp.assert_dapp_factory(&caller)`
+To let registrars add contracts to such a registry, call `self.dapp.assert_dapp_registrar(&caller)`
 for callers without the role, as `OwnedDappRegistry` does.
 
 ## Registering contracts deployed by a factory
 
 A contract that deploys other contracts can register them right away, once the registry lists it as a
-factory. The flow, using [Odra factories](../advanced/09-factory.md):
+registrar. The flow, using [Odra factories](../advanced/09-factory.md):
 
 1. The admin adds the spawning contract with `add_dapp_contract(&spawner, true)`.
-2. The spawner calls `new_contract` on a factory and passes the registry address to the new contract's `init`.
-3. The spawner calls `add_dapp_contract(&new_contract, false)` on the registry through
-   `DappRegistryContractRef`.
-4. The registry checks that the caller is a registered factory, calls `get_dapp_registry` on the new
-   contract and adds it.
+2. The spawner calls `new_contract` on a factory and passes the registry address
+   (`DappContractBase::register_address()`) to the new contract's `init`.
+3. The spawner adds the new contract with `DappContractBase::register(address)`, which calls
+   `add_dapp_contract(&address, false)` on the registry.
+4. The registry checks that the caller is a registrar, calls `get_dapp_registry` on the new contract
+   and adds it.
 
 ```rust
 use odra::{prelude::*, ContractRef};
-use odra_modules::dapp::{DappContractBase, DappRegistryContractRef};
+use odra_modules::dapp::DappContractBase;
 
 #[odra::module]
 pub struct DappCounterSpawner {
@@ -204,19 +208,36 @@ pub struct DappCounterSpawner {
 impl DappCounterSpawner {
     // `init` and `get_dapp_registry` omitted.
 
+    /// The spawner must be registered in the dapp as a registrar.
     pub fn spawn(&mut self) -> Address {
-        let registry = self.dapp.get_dapp_registry();
         let factory = self.factory.get().unwrap_or_revert(self);
         let n = self.spawned.get_or_default();
         // The name keys the child in the factory, so each child gets its own.
         let mut factory = DappCounterFactoryContractRef::new(self.env(), factory);
-        let (address, _) = factory.new_contract(format!("DappCounter{}", n), registry);
+        let (address, _) =
+            factory.new_contract(format!("DappCounter{}", n), self.dapp.register_address());
         self.spawned.set(n + 1);
-
-        DappRegistryContractRef::new(self.env(), registry).add_dapp_contract(&address, false);
+        self.dapp.register(address);
         address
     }
 }
+```
+
+A spawner that is not a registrar is rejected with `CallerNotDappRegistrar`:
+
+```rust
+let mut registry = OwnedDappRegistry::deploy(&env, NoArgs);
+let factory = DappCounterFactory::deploy(&env, NoArgs);
+let mut spawner = DappCounterSpawner::deploy(&env, DappCounterSpawnerInitArgs {
+    registry: registry.address(),
+    factory: factory.address()
+});
+
+assert_eq!(spawner.try_spawn(), Err(Error::CallerNotDappRegistrar.into()));
+registry.add_dapp_contract(&spawner.address(), true);
+let first = spawner.spawn();
+assert_eq!(registry.get_dapp_contracts(), vec![registry.address(), spawner.address(), first]);
+assert!(!registry.is_dapp_registrar(&first));
 ```
 
 The whole example, with the `DappCounter` contract and a test, is in
@@ -234,7 +255,7 @@ Events:
 | Event | Emitted by | Fields |
 |---|---|---|
 | `DappMetadataChanged` | registry | `name`, `description`, `website_url`, `icon_url` |
-| `DappContractAdded` | registry | `contract`, `is_factory`, `registrar` (the caller) |
+| `DappContractAdded` | registry | `contract`, `is_registrar`, `registrar` (the caller) |
 | `DappContractRemoved` | registry | `contract`, `registrar` |
 | `DappRegistryChanged` | member | `previous_registry`, `new_registry` |
 
@@ -246,7 +267,7 @@ Errors (`odra_modules::dapp::errors::Error`):
 | `DappContractAlreadyRegistered` | 22001 | The contract, or the registry itself, is already in the dapp. |
 | `DappContractNotRegistered` | 22002 | Removing a contract that is not in the dapp. |
 | `DappRegistryMismatch` | 22003 | The contract's `get_dapp_registry` returns a different address. |
-| `CallerNotDappFactory` | 22004 | A contract that is not a registered factory tries to add a contract. |
+| `CallerNotDappRegistrar` | 22004 | A contract that is not a registrar tries to add a contract. |
 | `DappRegistryNotSet` | 22005 | `get_dapp_registry` is called on a member before its registry is set. |
 | `CannotRemoveDappRegistry` | 22006 | Removing the registry itself. |
 

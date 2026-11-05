@@ -273,7 +273,7 @@ Errors (`odra_modules::dapp::errors::Error`):
 
 ## Things to know
 
-- Removing a contract moves the last contract into its place, so the order of `get_dapp_contracts`
-  changes.
+- `get_dapp_contracts` lists the registry first, then the members in the order they were added.
+  Removing a contract keeps the order of the others.
 - `get_dapp_contracts` reads every member from storage. For a dapp with many contracts, prefer
   `is_dapp_contract` in contract code.

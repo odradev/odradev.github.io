@@ -145,7 +145,8 @@ impl CuratedDappRegistry {
         let admin = self.env().caller();
         self.access_control.unchecked_grant_role(&DEFAULT_ADMIN_ROLE, &admin);
         self.access_control.unchecked_grant_role(&CURATOR_ROLE, &admin);
-        // Creates the `__dapp` dictionary the registry keeps its data in.
+        // Creates the `__dapp` dictionary the registry keeps its data in, with empty
+        // `contracts` and `registrars` lists.
         self.dapp.init();
         self.dapp.set_dapp_metadata(metadata);
     }

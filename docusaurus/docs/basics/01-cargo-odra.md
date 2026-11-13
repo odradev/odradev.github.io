@@ -103,20 +103,21 @@ Keep in mind that this is a lot slower than `OdraVM` and you cannot use the debu
 This is why `OdraVM` was created and should be your first choice when developing contracts.
 Of course, testing all of your code against a blockchain VM is a must in the end.
 
-If you want to run only some of the tests, give the word their names contain:
+Cargo Odra runs `cargo test` in the background. Whatever follows `--` goes to the test binary, just
+like after `cargo test --`. If you want to run only the tests whose names contain the word `two`,
+you can execute:
 
 ```bash
-cargo odra test two
+cargo odra test -- two
 ```
 
 Of course, you can do the same when using the backend:
 
 ```bash
-cargo odra test -b casper two
+cargo odra test -b casper -- two
 ```
 
-Cargo Odra runs `cargo test` in the background. Whatever follows `--` goes to the test binary, just
-like after `cargo test --`. For example, to see what the tests print:
+To see what the tests print:
 
 ```bash
 cargo odra test -- --nocapture
@@ -130,8 +131,10 @@ cargo odra test -- --features my-feature --
 ```
 
 :::note
-This is how `cargo-odra` 0.2.1 and newer work. Older versions appended everything after `--` to the
-arguments of `cargo test`, so `cargo odra test -- --nocapture` failed there.
+This is how `cargo-odra` 0.2.1 and newer work. In older versions only the name filter
+(`cargo odra test -- two`) worked: other arguments were appended to those of `cargo test`, so
+`cargo odra test -- --nocapture` failed. There, run `cargo test -- --nocapture` directly
+(`ODRA_BACKEND=casper cargo test -- --nocapture` for the Casper backend, after `cargo odra build`).
 :::
 
 ## Building code

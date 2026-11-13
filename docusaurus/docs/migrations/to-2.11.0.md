@@ -34,7 +34,7 @@ cargo odra test -- --nocapture
 ```
 
 Before, they were appended to the arguments of `cargo test`, so this command failed with
-`unexpected argument '--nocapture'`.
+`unexpected argument '--nocapture'`. A name filter keeps working as it did: `cargo odra test -- two`.
 
 Arguments for `cargo test` itself now go before a second `--`. If you passed such arguments, add the
 second `--`:
@@ -50,7 +50,7 @@ cargo odra test -- --release -- --nocapture
 
 Without it, the test binary rejects the option (`Unrecognized option: 'release'`).
 
-A test name filter is best given before the `--`: `cargo odra test two`.
+The name filter may now also be given before the `--`: `cargo odra test two -- --nocapture`.
 
 ## Contracts from dependency crates {#link-contract-crates}
 

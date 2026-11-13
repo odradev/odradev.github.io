@@ -1,0 +1,174 @@
+---
+sidebar_position: 9
+description: Creating and emitting Events
+---
+
+# Events
+
+In the EVM world events are stored as logs within the blockchain's transaction receipts.
+These logs can be accessed by external applications or other smart contracts to monitor and react to specific events.
+Casper did not support events in versions prior to Casper 2.0 natively, so Odra mimiced this feature,
+by implementing a custom event system called CES - [Casper Event Standard](https://github.com/make-software/casper-event-standard).
+
+In Casper 2.0, events are supported natively. For backward compatibility,
+Odra still supports the CES events, but you can use the native events as well.
+
+:::note
+Take note, that there is no difference between the CES and native events in terms of the definition.
+They could be used interchangeably. We will use two different events to show how to use both CES and native events.
+:::
+
+```rust title="examples/src/features/events.rs"
+use odra::prelude::*;
+
+#[odra::module(events = [PartyStarted, NativePartyStarted])]
+pub struct PartyContract;
+
+#[odra::event]
+pub struct PartyStarted {
+    pub caller: Address,
+    pub block_time: u64
+}
+
+#[odra::event]
+pub struct NativePartyStarted {
+    pub caller: Address,
+    pub block_time: u64
+}
+
+#[odra::module]
+impl PartyContract {
+    pub fn init(&self) {
+        self.env().emit_event(PartyStarted {
+            caller: self.env().caller(),
+            block_time: self.env().get_block_time()
+        });
+        self.env().emit_native_event(NativePartyStarted {
+            caller: self.env().caller(),
+            block_time: self.env().get_block_time()
+        });
+    }
+}
+```
+
+We defined a new contract, which emits events called `PartyStarted` and `NativePartyStarted` when the contract is deployed.
+To define a struct to be an event, add the `#[odra::event]` attribute like this:
+
+```rust title="examples/src/features/events.rs"
+#[odra::event]
+pub struct PartyStarted {
+    pub caller: Address,
+    pub block_time: u64,
+}
+```
+
+To emit a CES event, we use the `emit_event` function from the `ContractEnv`, passing the event as an argument:
+
+```rust title="examples/src/features/events.rs"
+self.env().emit_event(PartyStarted {
+    caller: self.env().caller(),
+    block_time: self.env().get_block_time()
+});
+```
+
+To emit a native event, we use the `emit_native_event` function from the `ContractEnv`, passing the event as an argument:
+
+```rust title="examples/src/features/events.rs"
+self.env().emit_native_event(NativePartyStarted {
+    caller: self.env().caller(),
+    block_time: self.env().get_block_time()
+});
+```
+
+Odra needs to determine all the events at compilation time to register them once the contract is deployed. To register events, add an `events` inner attribute to the struct's `#[odra::module]` attribute. The registered events will also be present in the contract [`schema`].
+
+The event collection process is recursive; if your module consists of other modules, and they have already registered their events, you don't need to add them to the parent module.
+
+## Field types
+
+The fields of an event must have a concrete `CLType`: numbers, `bool`, `String`, `Address`, `U256`
+and the like, a unit enum (an `#[odra::odra_type]` enum without data, serialized as `u8`), and
+`Option`, `Vec`, maps, `Result` and tuples of those. An `#[odra::odra_type]` struct or an enum with
+data has the `CLType` `Any`, which the Casper Event Standard rejects, also inside an `Option`, a `Vec`
+or a tuple. Such an event compiles, but emitting it (as a CES or a native event) would always revert
+with `ExecutionError::Formatting`, so Odra refuses the contract earlier: deploying or upgrading it
+from a test, a script or the CLI (on any backend) and generating its schema (`cargo odra schema`)
+panic with a message that names the event and the field:
+
+```text
+Contract `Exchange`: event `Traded`: field `price` has no concrete CLType (it is or contains an
+#[odra::odra_type] struct or data-carrying enum, whose CLType is `Any`), so emitting it fails with
+`Formatting`; casper-event-standard events need plain types: flatten the fields into the event or
+use a unit enum
+```
+
+Flatten the fields of the struct into the event instead:
+
+```rust
+#[odra::odra_type]
+pub enum Side { Buy, Sell } // a unit enum is fine
+
+#[odra::event]
+pub struct Traded {
+    pub side: Side,
+    // not `pub price: Price` with `#[odra::odra_type] struct Price { amount, currency }`
+    pub price_amount: U256,
+    pub price_currency: String
+}
+```
+
+## Testing events
+
+Odra's `HostEnv` comes with a few functions which lets you easily test the events that a given contract has emitted:
+
+```rust title="examples/src/features/events.rs"
+use super::{NativePartyStarted, PartyContract, PartyStarted};
+use odra::host::{Deployer, HostEnv, NoArgs};
+
+#[test]
+fn test_party() {
+    let test_env: HostEnv = odra_test::env();
+    let party_contract = PartyContract::deploy(&test_env, NoArgs);
+    assert!(test_env.emitted_event(
+        &party_contract,
+        PartyStarted {
+            caller: test_env.get_account(0),
+            block_time: 0
+        }
+    ));
+    assert!(test_env.emitted_native_event(
+        &party_contract,
+        NativePartyStarted {
+            caller: test_env.get_account(0),
+            block_time: 0
+        }
+    ));
+    // If you do not want to check the exact event, you can use `emitted` function
+    assert!(test_env.emitted(&party_contract, "PartyStarted"));
+    // Or `emitted_native` for the native events
+    assert!(test_env.emitted_native(&party_contract, "NativePartyStarted"));
+    // You can also check how many events were emitted:
+    assert_eq!(test_env.events_count(&party_contract), 1);
+    assert_eq!(test_env.native_events_count(&party_contract), 1);
+}
+```
+
+To explore more event testing functions, check the [`HostEnv`] documentation.
+
+### Native events on livenet
+
+The same functions work on the [livenet backend](../backends/04-livenet.md), with one difference
+that comes from Casper itself. A CES event is stored in the contract's state, so any client can read
+event number N at any time. A native event is a Casper message: its payload travels only in the
+execution result of the transaction that emitted it, and the chain keeps no readable list of past
+messages. The livenet environment therefore records the native events of the transactions it sends,
+and `native_events_count`, `get_native_event`, `emitted_native_event` and
+`last_call().emitted_native_events` answer from that record. Events emitted before the environment was
+created, or by someone else's transactions, are not visible to it. If a script needs to find every
+event a contract ever emitted, use CES events, or an event store such as the Casper sidecar.
+
+## What's next
+Read the next article to learn how to call other contracts from the contract context.
+
+[`HostEnv`]: https://docs.rs/odra/2.10.0/odra/host/struct.HostEnv.html
+[`schema`]: ./casper-contract-schema

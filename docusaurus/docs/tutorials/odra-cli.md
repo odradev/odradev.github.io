@@ -116,6 +116,22 @@ deploy the contract and adds it to a container.
 
 The address of the deployed contract is stored in a TOML file in the `resources` directory, which is created automatically by the Odra CLI library.
 
+Outside of a deploy script - in a plain livenet binary, say - the same file spares you copying package
+hashes around. [`ContractLoaderExt`] is implemented for every contract:
+
+```rust
+use odra_cli::ContractLoaderExt;
+
+// `resources/contracts.toml`, or `resources/<chain>-contracts.toml` when ODRA_CASPER_LIVENET_CHAIN_NAME is set
+let dog = DogContract::load_from_default_file(&env)?;
+// any file, relative to the project root
+let dog = DogContract::load_from_file(&env, "resources/casper-test-contracts.toml")?;
+// a contract registered under a custom package name
+let dog = DogContract::load_from_file_named(&env, "resources/contracts.toml", Some("dog-2".into()))?;
+```
+
+A missing or malformed file is an error, as is a contract that is not in it.
+
 :::tip
 Gas amounts are expressed in motes, which makes them long and easy to mistype. The `cspr!` macro
 converts CSPR to motes at compile time, so `cspr!(350)` is `350_000_000_000` and `cspr!(2.5)` is
@@ -193,6 +209,30 @@ If we want to get multiple values for an argument, we must define the argument a
 The example above performs a simple check on the return value of one of the methods.
 Of course, there is no limit to how complex a scenario can be.
 
+#### Events in a scenario
+
+A scenario does not capture events by default: after every call the environment would read the new
+events of every contract in the container, which on livenet is a few node requests per contract per
+call, so `last_call()` of a call made in a scenario has no events. A scenario that checks them opts in
+by overriding `captures_events`:
+
+```rust
+impl Scenario for RenameScenario {
+    fn captures_events(&self) -> bool {
+        true
+    }
+
+    fn run(&self, env: &HostEnv, container: &DeployedContractsContainer, args: Args) -> Result<(), Error> {
+        let mut dog = container.contract_ref::<DogContract>(env)?;
+        dog.try_rename(args.get_single::<String>("name")?)?;
+        if !dog.last_call().emitted("NameChanged") {
+            return Err(Error::OdraError { message: "no NameChanged event".to_string() });
+        }
+        Ok(())
+    }
+}
+```
+
 :::tip
 Prefer returning a `scenario::Error` over panicking with `assert!`. A returned error is reported by
 the CLI as a failed command, while a panic tears the
@@ -248,8 +288,11 @@ Commands:
   whoami        Prints the address of the current caller.
   status        Lists deployed contracts and their registration status
   inspect       Prints the entry points, arguments and types of a contract
+  storage       Reads the storage of a contract without calling it
   config        Prints the resolved livenet configuration
   transfer      Transfers native CSPR from the caller to an account or contract
+  upgrade       Upgrades a deployed contract with its wasm from the wasm directory
+  upgrade-children  Upgrades all child contracts of a factory with the factory's current code
   completions   Generates a shell completion script (bash, zsh, fish, ...)
   repl          Starts an interactive REPL session, keeping the host environment warm across commands.
   help          Print this message or the help of the given subcommand(s)
@@ -257,8 +300,14 @@ Commands:
 Options:
   -c, --contracts-toml <PathBuf>  The path to the file with the deployed contracts. Relative to the project root.
       --json                      Emit machine-readable JSON instead of human-readable text (read commands only)
+      --state-root-hash <HEX>     Read the chain state as of this state root hash (hex) instead of the latest one. Commands that send transactions fail while it is set.
   -h, --help                      Print help
 ```
+
+`--state-root-hash` turns any read - a contract getter, `inspect`, `storage`, `whoami` - into a
+look at the chain as it was at that root, which is how you answer "what was the balance before
+that transaction?". It applies to the whole invocation (or REPL session); `deploy`, `transfer` and
+mutable contract calls fail while it is set.
 
 By default, contracts are written/read to/from the `contracts.toml` file, which is located in the `resources` directory, but you can specify a different path using the `-c` or `--contracts-toml` option. If `ODRA_CASPER_LIVENET_CHAIN_NAME` is set, the file is named after the chain instead - for example `resources/casper-test-contracts.toml` - so deployments on different networks never overwrite each other.
 
@@ -268,10 +317,14 @@ no registration needed.
 
 ### Missing configuration
 
-The CLI needs a working [livenet](../backends/04-livenet.md) environment. If any of the
-`ODRA_CASPER_LIVENET_*` variables is missing - or the secret key cannot be loaded - the CLI no
-longer aborts immediately. Instead it asks for the missing value, sets it for the current process
-and retries:
+Commands that talk to the network - `deploy`, `contract`, `scenario`, `print-events`, `whoami`,
+`status`, `inspect`, `storage`, `transfer` and `repl` - need a working
+[livenet](../backends/04-livenet.md) environment. `--help` (also of any subcommand), `--version`,
+`completions` and `config` work without it, so you can explore the CLI before configuring anything.
+
+If one of the `ODRA_CASPER_LIVENET_*` variables is missing - or the secret key cannot be loaded -
+when a network command runs, the CLI does not abort immediately. Instead it asks for the missing
+value, sets it for the current process and retries:
 
 ```bash
 cargo run --bin odra_cli -- whoami
@@ -412,7 +465,9 @@ Commands:
   help         Print this message or the help of the given subcommand(s)
 ```
 
-And when a contract is selected, it will show us the available methods:
+And when a contract is selected, it will show us the available methods. Functions marked
+`#[odra(offchain)]` (see [Attributes](../advanced/03-attributes.md#offchain)) are listed too, marked
+as offchain: they run on the host and send no transaction, so they take no `--gas`.
 
 ```bash
 cargo run --bin odra_cli -- contract DogContract
@@ -546,6 +601,86 @@ cargo run --bin odra_cli -- --json contract DogContract rename --new_name "Doggy
     }
   ]
 }
+```
+
+### Upgrade command
+
+The `upgrade` command upgrades a contract from the contracts file with the code of its wasm file
+(`wasm/<Contract>.wasm`, built with `cargo odra build`). It calls the contract's `upgrade` entry
+point, so its arguments are passed like the arguments of any other entry point. No custom scenario
+is needed.
+
+```bash
+cargo run --bin odra_cli -- upgrade DogContract --help
+
+Upgrades the DogContract contract
+
+Usage: odra_cli upgrade DogContract [OPTIONS] --gas <AMOUNT (motes, or 'X.Y cspr')>
+
+Options:
+      --gas <AMOUNT (motes, or 'X.Y cspr')>
+          The amount of gas to attach to the call
+      --force-create-upgrade-group
+          Create the upgrade group of the contract. Needed for contracts deployed with Odra 2.2 or earlier, or not with Odra at all
+      --allow-key-override [<BOOL>]
+          Overwrite the named key the package hash is stored under. Set it to false to fail if the key already exists [default: true] [possible values: true, false]
+      --package-named-key <NAME>
+          The package hash is stored under the `<NAME>_package_hash` named key [default: DogContract]
+  -h, --help
+          Print help
+
+cargo run --bin odra_cli -- upgrade DogContract --gas 400cspr
+
+💁  INFO : Contract DogContract upgraded, package hash: hash-fe1c...41d8
+```
+
+The options map to the fields of `UpgradeConfig`. `--package-named-key` defaults to the contract's
+name, or to the name given to `named_contract`. The package hash does not change, so the contracts
+file stays as it is.
+
+:::caution
+Only a contract that was *installed* upgradable can be upgraded. `load_or_deploy` and `try_deploy`
+install a locked package, and the command fails with `A locked contract cannot be upgraded`; such a
+contract can only be redeployed under a new address. Use `load_or_deploy_with_cfg` with
+[`InstallConfig`]`::upgradable` in the deploy script (see [the deploy script](#deploy-script) above),
+and run `upgrade` as the account that installed the contract.
+:::
+
+#### Upgrading the children of a factory
+
+The children of a [factory](../advanced/09-factory.md) run the factory's code, so they are upgraded through
+the factory. Once the factory is upgraded, `upgrade-children` upgrades all of its children in one
+transaction. It is listed for the factories registered in the CLI:
+
+```bash
+cargo run --bin odra_cli -- upgrade BetterCounterFactory --gas 500cspr
+cargo run --bin odra_cli -- upgrade-children BetterCounterFactory --new_value 42 --gas 900cspr
+
+💁  INFO : Upgraded 2 child contracts of BetterCounterFactory: FromTen, FromTwo
+```
+
+The arguments are the upgrade arguments of a child, the same for every child. The children are
+the contracts the factory announced with its `ContractDeployed` events, so the command reads the
+factory's events first.
+
+All children are upgraded in one transaction. For a factory with many children, `--batch-size N`
+sends one transaction per `N` children, each with the `--gas` amount. If a transaction fails, the
+command lists the children that were upgraded and the ones that were not:
+
+```bash
+cargo run --bin odra_cli -- upgrade-children BetterCounterFactory --new_value 9 --batch-size 2 --gas 600cspr
+
+💁  INFO : Batch 1/2 upgraded: A, B
+💁  INFO : Batch 2/2 upgraded: C
+💁  INFO : Upgraded 3 child contracts of BetterCounterFactory in 2 transactions: A, B, C
+```
+
+A single child is created or upgraded with the factory's entry points, through the `contract`
+command:
+
+```bash
+cargo run --bin odra_cli -- contract BetterCounterFactory new_contract --contract_name A --value 1 --gas 270cspr
+cargo run --bin odra_cli -- contract BetterCounterFactory upgrade_child_contract --contract_name A --new_value 5 --gas 300cspr
 ```
 
 ### Print-events command
@@ -720,6 +855,18 @@ cargo run --bin odra_cli -- config
 
 Variables that are unset or empty are reported as `<not set>` together with the name of the environment variable that would provide them.
 
+`config` never prompts and works with an incomplete configuration, which makes it the place to check what is missing. If the caller cannot be resolved (a variable is missing or the secret key cannot be loaded), the caller is shown as `<unavailable>` and the problem is printed below it:
+
+```bash
+⚠️  WARN :   Node address: <not set> ($ODRA_CASPER_LIVENET_NODE_ADDRESS)
+...
+⚠️  WARN : Caller address:  <unavailable>
+💁  INFO : Contracts file:  resources/contracts.toml
+⚠️  WARN : Livenet env misconfigured! ODRA_CASPER_LIVENET_NODE_ADDRESS env var is missing.
+```
+
+With `--json`, `caller_address` is `null` in that case and a `problem` field carries the message; the field is left out when the configuration is complete.
+
 :::note
 Only the *path* to the secret key is printed, never its content.
 :::
@@ -793,5 +940,6 @@ lifetime of the REPL - choose the file when starting it, e.g.
 
 The Odra CLI library provides a powerful and convenient way to create command-line tools for your Odra contracts. It simplifies the process of deploying, interacting with, and testing your contracts, allowing you to focus on the business logic of your application. By following the examples in this tutorial, you can create your own CLI tools and streamline your development workflow.
 
-[`InstallConfig`]: https://docs.rs/odra/2.9.0/odra/host/struct.InstallConfig.html
-[`DeployerExt`]: https://docs.rs/odra-cli/2.9.0/odra_cli/trait.DeployerExt.html
+[`InstallConfig`]: https://docs.rs/odra/2.10.0/odra/host/struct.InstallConfig.html
+[`ContractLoaderExt`]: https://docs.rs/odra-cli/latest/odra_cli/trait.ContractLoaderExt.html
+[`DeployerExt`]: https://docs.rs/odra-cli/2.10.0/odra_cli/trait.DeployerExt.html

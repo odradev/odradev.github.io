@@ -122,13 +122,13 @@ To interact with the contract, we use the `livenet` backend. It allows to write 
 ```toml title=Cargo.toml
 [package]
 name = "odra-examples"
-version = "2.9.0"
+version = "2.10.0"
 edition = "2021"
 
 [dependencies]
 odra = { path = "../odra", default-features = false }
 ... # other dependencies
-odra-casper-livenet-env = { version = "2.9.0", optional = true }
+odra-casper-livenet-env = { version = "2.10.0", optional = true }
 
 ... # other sections
 
@@ -143,11 +143,12 @@ name = "tlw_on_livenet"
 path = "bin/tlw_on_livenet.rs"
 required-features = ["livenet"]
 test = false
+# (in the Odra repository this is the `tlw` scenario of the examples' `odra_cli` binary)
 
 ... # other sections
 ```
 
-```rust title=examples/bin/tlw_on_livenet.rs showLineNumbers
+```rust title=bin/tlw_on_livenet.rs showLineNumbers
 //! Deploys an [odra_examples::contracts::tlw::TimeLockWallet] contract, then deposits and withdraw some CSPRs.
 use odra::casper_types::{AsymmetricType, PublicKey, U512};
 use odra::host::{Deployer, HostRef};
@@ -339,4 +340,4 @@ f40e3ca983034435d829462dd53d801df4e98013009cbf4a6654b3ee467063a1 # the deploy ha
 In this tutorial, we learned how to use the `proxy_caller` wasm to make a payable function call. We deployed the `TimeLockWallet` contract, deposited tokens using the `proxy_caller` with attached CSPRs, and withdrew them. You got to try it out in both `Rust` and `TypeScript`, so you can choose whichever you prefer. `Rust` code seemed simpler, thanks to the Odra `livenet` backend making chain interactions easier to handle.
 
 [`casper-nctl-docker`]: https://github.com/make-software/casper-nctl-docker
-[our Github repo]: https://github.com/odradev/odra/blob/release/2.9.0/examples/src/contracts/tlw.rs
+[our Github repo]: https://github.com/odradev/odra/blob/release/2.10.0/examples/src/contracts/tlw.rs

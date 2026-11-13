@@ -1,5 +1,5 @@
 ---
-sidebar_position: 7
+sidebar_position: 9
 description: Migration guide to v3.0.0
 ---
 

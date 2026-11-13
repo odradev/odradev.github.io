@@ -37,7 +37,7 @@ add it as an **optional** dependency and put it behind a `livenet` feature:
 
 ```toml title="Cargo.toml"
 [dependencies]
-odra-casper-livenet-env = { version = "2.9.0", optional = true }
+odra-casper-livenet-env = { version = "2.10.0", optional = true }
 
 [features]
 default = []
@@ -113,15 +113,20 @@ ODRA_CASPER_LIVENET_EVENTS_URL=<events url>
 
 # Optionally, you can set the gas price tolerance for the transactions. Default is 1.
 # ODRA_CASPER_LIVENET_GAS_PRICE_TOLERANCE=
+
+# Optionally, pin every read to a past state root hash (hex). Transactions are refused while set.
+# ODRA_CASPER_LIVENET_STATE_ROOT_HASH=
 ```
 
 :::note
 CSPR.cloud is a service that provides mainnet and testnet Casper nodes on demand.
 :::
 
-With the proper value in place, we can write our tests or deploy scenarios. In the examples, we can find
-a simple binary that deploys a contract and calls it. The test is located in the [erc20_on_livenet.rs] file.
-Let's go through the code:
+With the proper value in place, we can write our tests or deploy scenarios. The smallest possible
+program deploys a contract and calls it - the code below is that program. (In the Odra repository
+the same steps live in the examples' [Odra CLI](../tutorials/odra-cli.md) as the `erc20-transfer`
+scenario: `cargo run --bin odra_cli -- scenario erc20-transfer --amount 1000`.) Let's go through
+the code:
 
 ```rust
 //! Deploys an ERC20 contract and transfers some tokens to another address.
@@ -226,6 +231,36 @@ before it is sent to the node, which is the quickest way to see what was actuall
 ODRA_LOG_LEVEL=debug cargo run --bin erc20_on_livenet --features=livenet
 ```
 
+### Reading the past
+
+Set `ODRA_CASPER_LIVENET_STATE_ROOT_HASH` to a state root hash and every read - getters, balances,
+`HostEnv::get_named_value` and friends - is answered from the chain state as of that root instead
+of the latest one. Transactions are refused while the variable is set, because they would execute
+at the chain tip and never show up in the pinned view. State root hashes come from
+`chain_get_state_root_hash` (`casper-client get-state-root-hash --block-identifier <height>`), or
+from the `status` command of an [Odra CLI](../tutorials/odra-cli.md), which also exposes this as
+the `--state-root-hash` flag.
+
+### Rate limits and read errors
+
+Nodes and sidecars rate-limit JSON-RPC calls (NCTL and cspr.cloud both do). A burst of getter
+calls - a loop over `token.balance_of(..)` for many accounts, say - can be answered with HTTP 429
+or a "request was throttled by the node" error. The Livenet backend retries such reads with an
+exponential backoff (five attempts, from 200 ms up to about 3 s in total) before giving up, and
+logs each retry at `debug` level.
+
+Every read costs the backend RPC calls: getters run your contract code locally and each storage
+access is a query to the node. The backend caches the state root hash for up to five seconds (and
+drops it after every transaction it sends) and reuses query responses read at that state root, so
+repeated reads and the bookkeeping around each call are mostly free - but keep the number of
+distinct reads in mind when a script talks to a public node.
+
+When the node cannot be asked at all - it is unreachable, or still throttled after the retries -
+the backend stops with the real reason (`Livenet: reading <field> of <contract> failed: ...`)
+rather than reporting a missing value, because your contract code would otherwise mistake the
+failure for "not set". Run with `ODRA_LOG_LEVEL=warn` or above to see failed queries that were
+recovered from.
+
 ### Handling a missing configuration
 
 `odra_casper_livenet_env::env()` panics if any of the required variables is missing or if the
@@ -250,6 +285,11 @@ To run the above code, we simply need to run the binary with the `livenet` featu
 ```bash
 cargo run --bin erc20_on_livenet --features=livenet
 ```
+
+For anything beyond a one-off script, register the contracts with an [Odra CLI](../tutorials/odra-cli.md)
+instead: it keeps the deployed addresses in `resources/<chain>-contracts.toml`, exposes every entry point
+as a command and turns scripts like the one above into named scenarios. The examples in the Odra
+repository are organised that way.
 
 :::note
 Before executing the binary, make sure you built the wasm file - the Livenet backend deploys the
@@ -300,7 +340,130 @@ node is the current state. This is why the `balance_of` call was almost instant 
 Basically, if the entrypoint function is not mutable or does not make a call to an unknown external contract
 (see [Cross Calls](../basics/10-cross-calls.md)), it is executed offline and
 node is used for the state query only. However, the Livenet needs to know the connection between the contracts
-and the code, so make sure to deploy or load already deployed contracts
+and the code, so make sure to deploy or load already deployed contracts.
+
+A function executed this way behaves as it does in tests:
+
+- `caller()` is the calling account (the `HostEnv` caller), and `call_stack()` starts with it. A
+  getter called from another one sees the calling contract as its caller, like on chain.
+- If it reverts, its `try_*` call returns the error (`token.try_balance_of(..)` gives `Err`), and the
+  plain call panics with it. A revert in a nested getter returns the error of the inner contract, and
+  any other panic becomes `VmError::Panic`.
+
+The same applies to [`#[odra(offchain)]`](../advanced/03-attributes.md#offchain) functions, which
+always run this way.
+
+## Errors
+
+The node reports a failed transaction only as a number (`User error: 2`). The Livenet backend turns
+it back into an `OdraError`: Odra's own errors are recognised by their code, and the errors your
+contracts define are looked up by name in the contract schemas, in
+`resources/casper_contract_schemas/` of the current directory and of its parents up to the project
+root. The schema of the contract that was called is searched first - contracts usually number their
+errors 1, 2, 3, so the same code can mean something else in another contract - and the others only
+if it has no such error (a contract it called reverted).
+
+Keep the schemas present and up to date with `cargo odra schema`. A code that no schema knows (or an
+Odra error code from a newer Odra version) comes back as `VmError::Other` with the node's message.
+
+A deploy or an upgrade whose `init` or `upgrade` reverts returns the contract's error too, named after
+the schema of the contract being deployed, and running out of gas returns `OutOfGas`. The
+`ContractDeploymentError` is left for a deployment that did not get to run the contract: the wasm
+file was not found, the gas was not set or the node could not be reached.
+
+## Gas used
+
+`env.gas_report()` and `env.last_call_gas_cost()` work on Livenet like in the test VMs. The gas
+comes from the node's execution result of each transaction the environment sends:
+
+```rust
+let mut token = Erc20::deploy(&env, init_args);
+token.transfer(&recipient, &U256::from(10));
+println!("{}", env.gas_report());
+// Wasm deploy: Erc20.wasm - 259.888293669 CSPR
+// Contract call: transfer - 0.50742048 CSPR
+println!("{}", env.last_call_gas_cost()); // 507420480
+```
+
+- The figure is the gas the transaction consumed, not the payment you set with `env.set_gas` -
+  Casper charges the whole payment limit, so the two differ.
+- Failed transactions are reported as well. A CSPR transfer updates `last_call_gas_cost` but is not
+  listed in the report.
+- Getters run on your machine and send no transaction, so they don't change either value.
+- Each worker environment of [`HostEnv::concurrently`](#doing-several-things-at-once) has its own
+  report.
+
+A getter that reads a validator's bid with `self.env().get_validator_info(..)` works on Livenet too:
+the bid is read from the node, and a validator without a bid gives `None`.
+
+## Native events
+
+Native events emitted by the transactions this environment sends are readable the usual way
+(`native_events_count`, `get_native_event`, `last_call().emitted_native_events`). Casper keeps a
+message's payload only in the execution result of its transaction, so events emitted earlier, or by
+someone else, are not visible; see [Events](../basics/09-events.md#native-events-on-livenet).
+
+## Doing several things at once
+
+Every transaction waits for its block and every read is a round trip to the node, so a script that
+deploys five contracts or reads fifty balances spends most of its time waiting. `HostEnv::concurrently`
+runs one closure per item, spread over a few worker threads, each with its own node connection and its
+own `HostEnv` (same caller and gas as yours), and returns the results in the order of the items:
+
+```rust title="examples/bin/odra_cli.rs"
+env.set_gas(cspr!(450));
+let addresses = env.concurrently((0..count).collect(), |env, i| {
+    let mut args = erc20_args();
+    args.name = format!("Plascoin {i}");
+    Erc20::deploy(env, args).address()
+});
+let tokens: Vec<Erc20HostRef> = addresses.iter().map(|a| Erc20::load(env, *a)).collect();
+
+let supplies = env.concurrently(addresses, |env, address| {
+    Erc20::load(env, address).total_supply()
+});
+```
+
+The closure gets the environment to use; it cannot capture yours (a `HostEnv` cannot be sent to
+another thread, the compiler says so). Deploy inside, return the address, and `load` it in your own
+environment. The same code runs on OdraVM and CasperVM, where the items simply run one after another,
+so a test written this way needs no livenet.
+
+`cargo run --bin odra_cli --features livenet -- scenario concurrent` runs this against your node and
+prints how long the reads take one after another and concurrently.
+
+At most 8 worker threads run at once. A public node may limit how many connections one client keeps
+open, a local one may take more; set `ODRA_MAX_THREADS` to change the limit for every `concurrently`
+call, or pass it to a single call with `concurrently_with`:
+
+```rust
+// A single worker thread: one request at a time, for a node that allows one connection.
+let supplies = env.concurrently_with(1, addresses, |env, address| {
+    Erc20::load(env, address).total_supply()
+});
+```
+
+`0` counts as `1`, and an `ODRA_MAX_THREADS` that is not a number panics rather than falling back
+to the default. On OdraVM and CasperVM the limit changes nothing.
+
+## Async code
+
+The livenet `HostEnv` is synchronous, like every other backend. Underneath, `CasperClient` in
+`odra-casper-rpc-client` is async: every network call exists twice, `xxx` (blocking) and `xxx_async`.
+An async program (a web service, a `#[tokio::main]` tool) can use the client directly and run several
+calls at once:
+
+```rust
+let client = CasperClient::new(CasperClientConfiguration::from_env()?);
+let balances = futures::future::join_all(
+    accounts.iter().map(|account| client.get_balance_async(account))
+).await;
+```
+
+The blocking calls drive the async ones on a process-wide Tokio runtime. They also work inside a
+multi-thread Tokio runtime, which is what `#[tokio::main]` gives you; inside a current-thread runtime
+they refuse to run (blocking there would stall every other task), so use the async flavour or
+`tokio::task::spawn_blocking`.
 
 ## Multiple environments
 
@@ -313,10 +476,10 @@ has to be used first. If your `integration.env` file has a value that IS present
 override the value from the `.env` file.
 
 ```bash
-ODRA_CASPER_LIVENET_ENV=integration cargo run --bin erc20_on_livenet --features=livenet
+ODRA_CASPER_LIVENET_ENV=integration cargo run --bin odra_cli --features=livenet -- deploy
 ```
 
 To sum up - this command will firstly load the `integration.env` file and then load the missing values from `.env` file.
 
-[.env.sample]: https://github.com/odradev/odra/blob/release/2.9.0/examples/.env.sample
-[erc20_on_livenet.rs]: https://github.com/odradev/odra/blob/release/2.9.0/examples/bin/erc20_on_livenet.rs
+[.env.sample]: https://github.com/odradev/odra/blob/release/2.10.0/examples/.env.sample
+[odra_cli.rs]: https://github.com/odradev/odra/blob/release/2.10.0/examples/bin/odra_cli.rs

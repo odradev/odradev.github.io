@@ -106,6 +106,8 @@ When deploying a new contract you can pass some arguments to it.
 Every contract written in Odra expects those arguments to be set:
 
 - `odra_cfg_package_hash_key_name` - `String` type. The key under which the package hash of the contract will be stored.
+  Odra's own deployers use `<name>_package_hash`, where `name` is the `name` argument of
+  `#[odra::module(name = "..")]` or, without one, the name of the module struct.
 - `odra_cfg_allow_key_override` - `Bool` type. If `true` and the key specified in `odra_cfg_package_hash_key_name` already exists, it will be overwritten.
 - `odra_cfg_is_upgradable` - `Bool` type. If `true`, the contract will be deployed as upgradable.
 - `odra_cfg_is_upgrade` - `Bool` type. If `true`, the contract will be upgraded. If we want to install a contract to should be set to `false`.
@@ -262,10 +264,10 @@ graph TD;
 [deploy]: https://docs.rs/casper-execution-engine/latest/casper_execution_engine/core/engine_state/deploy_item/struct.DeployItem.html
 [Casper Event Standard]: https://github.com/make-software/casper-event-standard
 [Casper's 'Writing On-Chain Code']: https://docs.casper.network/writing-contracts/
-[proxy_caller.wasm]: https://github.com/odradev/odra/blob/release/2.9.0/odra-casper/test-vm/resources/proxy_caller.wasm
+[proxy_caller.wasm]: https://github.com/odradev/odra/blob/release/2.10.0/odra-casper/test-vm/resources/proxy_caller.wasm
 [CasperPackageHash]: https://docs.rs/casper-types/latest/casper_types/contracts/struct.ContractPackageHash.html
 [RuntimeArgs]: https://docs.rs/casper-types/latest/casper_types/runtime_args/struct.RuntimeArgs.html
 [Bytes]: https://docs.rs/casper-types/latest/casper_types/bytesrepr/struct.Bytes.html
-[ERC721]: https://github.com/odradev/odra/blob/release/2.9.0/modules/src/erc721_token.rs
-[ERC1155]: https://github.com/odradev/odra/blob/release/2.9.0/modules/src/erc1155_token.rs
+[ERC721]: https://github.com/odradev/odra/blob/release/2.10.0/modules/src/erc721_token.rs
+[ERC1155]: https://github.com/odradev/odra/blob/release/2.10.0/modules/src/erc1155_token.rs
 [Tutorial section]: ../tutorials/using-proxy-caller

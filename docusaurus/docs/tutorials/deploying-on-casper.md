@@ -58,6 +58,7 @@ In your contract code, create a new file in the bin folder:
 //! Deploys a new OurToken contract on the Casper livenet and mints some tokens for the tutorial
 //! creator.
 use std::str::FromStr;
+use std::time::Duration;
 
 use odra::casper_types::U256;
 use odra::host::{Deployer, HostEnv, HostRefLoader};
@@ -90,7 +91,7 @@ fn main() {
     // we set the voting time to 10 minutes.
     // OH NO! It is the Livenet, so we need to wait real time...
     // Hopefully you are not in a hurry.
-    env.advance_block_time(11 * 60 * 1000);
+    env.advance_block_time(Duration::from_secs(11 * 60));
 
     // Tally the votes.
     token.tally();
@@ -147,15 +148,15 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-odra = { version = "2.9.0", features = [], default-features = false }
-odra-modules = { version = "2.9.0", features = [], default-features = false }
-odra-casper-livenet-env = { version = "2.9.0", optional = true }
+odra = { version = "2.10.0", features = [], default-features = false }
+odra-modules = { version = "2.10.0", features = [], default-features = false }
+odra-casper-livenet-env = { version = "2.10.0", optional = true }
 
 [dev-dependencies]
-odra-test = { version = "2.9.0", features = [], default-features = false }
+odra-test = { version = "2.10.0", features = [], default-features = false }
 
 [build-dependencies]
-odra-build = { version = "2.9.0", features = [], default-features = false }
+odra-build = { version = "2.10.0", features = [], default-features = false }
 
 [features]
 default = []
@@ -326,4 +327,4 @@ provides. Feel free to explore them on [casperecosystem.io].
 [cspr.live]: https://cspr.live/
 [Casper Testnet Faucet]: https://testnet.cspr.live/tools/faucet
 [casperecosystem.io]: https://casperecosystem.io/
-[`InstallConfig`]: https://docs.rs/odra/2.9.0/odra/host/struct.InstallConfig.html
+[`InstallConfig`]: https://docs.rs/odra/2.10.0/odra/host/struct.InstallConfig.html

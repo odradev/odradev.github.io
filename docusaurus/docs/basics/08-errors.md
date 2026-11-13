@@ -123,6 +123,12 @@ In our example, we are calling `try_change_name` and expecting an error to be th
 For assertions, we are using a standard `assert_eq!` macro. As the contract call returns an `OdraError`, 
 we need to convert our custom error to `OdraError` using `Into::into()`.
 
+:::note
+On livenet the node reports only the error code; Odra names it using the
+[contract schemas](./casper-contract-schema), so keep them up to date with `cargo odra schema`. See
+[Livenet errors](../backends/04-livenet.md#errors).
+:::
+
 ## Error codes
 
 When a transaction fails on Casper, the node reports only a number, for example:
@@ -135,7 +141,7 @@ Odra maps every error, both yours and its own, to a single `u16` code that is pa
 Casper `User` error. Two ranges are used:
 
 - **User errors** - the discriminants you define in enums annotated with `#[odra::odra_error]` are reported as-is.
-  Codes must be lower than `64535` (`MaxUserError`); a higher value is replaced with `UserErrorTooHigh` (`64536`).
+  Keep them below `64535` (`MaxUserError`); a code of `64536` or higher is replaced with `UserErrorTooHigh` (`64536`).
 - **Internal Odra errors** - `ExecutionError` variants raised by the framework itself. Their on-chain code is
   `64536 + <internal code>`, so any code above `64536` is an internal Odra error.
 
@@ -190,6 +196,7 @@ the raw code, for example from a block explorer or the node RPC.
 | `FactoryModuleCall` | 135 | 64671 | Factory module function should not be called directly |
 | `CannotGetAnImmediateCaller` | 136 | 64672 | Cannot get an immediate caller |
 | `PathIndexOutOfBounds` | 137 | 64673 | Path index out of bounds |
+| `InvalidArg` | 138 | 64674 | A named argument is present but cannot be read as the expected type |
 
 Two more codes are reserved:
 
@@ -201,6 +208,6 @@ Two more codes are reserved:
 ## What's next
 We will learn how to emit and test events using Odra.
 
-[`OdraResult`]: https://docs.rs/odra/2.9.0/odra/type.OdraResult.html
-[`OdraError`]: https://docs.rs/odra/2.9.0/odra/enum.OdraError.html
+[`OdraResult`]: https://docs.rs/odra/2.10.0/odra/type.OdraResult.html
+[`OdraError`]: https://docs.rs/odra/2.10.0/odra/enum.OdraError.html
 [`schema`]: ./casper-contract-schema

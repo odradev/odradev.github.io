@@ -79,7 +79,11 @@ Defining an error in Odra, you must keep in mind a few rules:
 3. Avoid implicit discriminants.
 
 :::note
-In your project you can define as many error enums as you wish, but you must ensure that the discriminants are unique across the project!
+In your project you can define as many error enums as you wish, but the discriminants must be unique
+within a contract: a failed call reports only the number, and the errors of all the modules a
+contract is composed of share one range of codes. Since Odra 2.11.0, `cargo odra schema` and
+`cargo odra build` stop when two errors of a contract use the same code, and name both. Using the
+same enum in several modules is fine.
 :::
 
 ## Testing errors

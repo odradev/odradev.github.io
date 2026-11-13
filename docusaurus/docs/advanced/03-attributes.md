@@ -144,6 +144,9 @@ the error, so `try_all_balances()` returns `Err` instead of panicking.
 
 ## Mixing attributes
 
+The attributes belong on entry points, the `pub` functions of a module. Since Odra 2.11.0 an
+attribute on any other function is a compile error; before, it was accepted and did nothing.
+
 A function can accept more than one attribute, with one exception: a constructor cannot be payable.
 
 :::caution

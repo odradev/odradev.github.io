@@ -5,7 +5,7 @@ description: Migration guide to v2.11.0
 
 # Migration guide to v2.11.0 from 2.10
 
-Odra v2.11.0 needs no changes in contract code. Bump the version:
+Most projects need no changes in contract code for Odra v2.11.0. Bump the version:
 
 ```toml
 odra = "2.11.0"
@@ -17,12 +17,61 @@ and install the matching build tool. `cargo-odra` 0.2.1 goes with Odra 2.11:
 cargo install cargo-odra --locked
 ```
 
-Two things are worth a look:
+Two mistakes that used to pass in silence stop the build now:
+
+- [`#[odra(..)]` on a function that is not an entry point](#attributes-on-private-functions) is a
+  compile error.
+- [Two errors with the same code in one contract](#shared-error-codes) fail `cargo odra schema` and
+  `cargo odra build`.
+
+Two more things are worth a look:
 
 - [`cargo odra test -- <args>`](#test-arguments) passes the arguments to the test binary. A command
   that passed arguments to `cargo test` itself needs a small change.
 - [`odra::link_contract_crates!()`](#link-contract-crates) is one optional line that replaces the
   hand-written `use` of a dependency whose contracts you build.
+
+## `#[odra(..)]` on a function that is not an entry point {#attributes-on-private-functions}
+
+`#[odra(payable)]`, `#[odra(non_reentrant)]` and `#[odra(offchain)]` are applied by the entry point
+Odra generates for a `pub` function. On any other function of a module they compiled and did
+nothing, so a helper marked `non_reentrant` was not guarded:
+
+```rust
+#[odra::module]
+impl Vault {
+    pub fn withdraw(&mut self) {
+        self.pay_out();
+    }
+
+    #[odra(non_reentrant)] // had no effect
+    fn pay_out(&mut self) { /* ... */ }
+}
+```
+
+This is a compile error now:
+
+```
+error: `#[odra(non_reentrant)]` has no effect on `pay_out`, which is not an entry point: only entry points are guarded against reentrancy; make the function `pub` or remove the attribute
+```
+
+Move the attribute to the entry point that calls the helper (`withdraw` above), or remove it.
+
+## Error codes shared within a contract {#shared-error-codes}
+
+A failed call reports only a number (`User error: 1`), and the errors of all the modules of a
+contract share one range of codes. If two modules of a contract use the same code for different
+errors, nothing can tell which one reverted. Generating the schema of such a contract fails now:
+
+```
+Contract `OwnedToken`: error code 1 is shared by `InsufficientBalance` and `NotAnOwner`; a failed call reports only the code, so these errors cannot be told apart. ...
+```
+
+Give one of the errors another discriminant. Changing a discriminant changes the code an already
+deployed contract reports after its next upgrade, so update whatever matches on the number.
+
+The same error enum used by several modules is not a collision. The check runs for the contracts
+listed in `Odra.toml`, when their schema is generated; OdraVM tests do not run it.
 
 ## Arguments of `cargo odra test` {#test-arguments}
 

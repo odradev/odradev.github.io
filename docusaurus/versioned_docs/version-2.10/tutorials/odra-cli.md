@@ -835,6 +835,102 @@ Types are shown as the CLI value hints you would type on the command line, not a
 
 Running `inspect` without a contract name describes every registered contract. Combined with `--json`, this is a convenient way to feed the contract interface to other tooling.
 
+### Storage command
+
+The `storage` command reads the state of a contract straight from the storage, without calling any
+entry point. It is handy when a value has no getter, or when you want to see exactly what is stored
+and where.
+
+Run it with a contract name only to print the storage layout - every field with its index in the
+module and the kind of storage behind it, followed by the paths you can read:
+
+```bash
+cargo run --bin odra_cli -- storage DogContract
+```
+
+```bash
+💁  INFO : Storage layout of DogContract (DogContract):
+💁  INFO :   barks [1]: true|false
+💁  INFO :   weight [2]: UINT
+💁  INFO :   name [3]: TEXT
+💁  INFO :   walks [4]: UINT (repeatable)
+💁  INFO : Read with `storage DogContract <path> [-k <key>]...`:
+💁  INFO :   barks: true|false
+💁  INFO :   weight: UINT
+💁  INFO :   name: TEXT
+💁  INFO :   walks: UINT (repeatable)
+```
+
+The layout comes from the contract's code, so this works before anything is deployed. Submodules
+are printed as nested trees, and the path of a field is the dotted chain of names down the tree
+(`ownable.owner`). Pass a path to read the value:
+
+```bash
+cargo run --bin odra_cli -- storage DogContract name
+```
+
+```bash
+💁  INFO : Contract: DogContract
+💁  INFO : Path:     name
+💁  INFO : Type:     TEXT
+💁  INFO : Location: state[d236fca2b92ca42da90327820d7fe73c8ad22ea13cd8d761adc6e98822195c77]
+💁  INFO : Value:    <contract not deployed>
+```
+
+`Location` tells where the value lives: an item of the Odra `state` dictionary (with its key), a
+named key, or an item of a named dictionary. That is exactly what you would query with the node
+RPC or a block explorer, and it is printed even when the contract is not deployed, as above. For a
+deployed contract `Value` is what is stored there, or `<not set>` if nothing is.
+
+Whenever the path goes through a `Mapping`, a `List` item or a dictionary, provide the key with
+`--key` (or `-k`), using the same value syntax as for entry point arguments. Repeat it for nested
+containers, in path order. The layout lists the key each path needs. For the `Cep18` module, which
+keeps its data under Casper named keys and dictionaries:
+
+```bash
+💁  INFO : Read with `storage Cep18 <path> [-k <key>]...`:
+💁  INFO :   decimals: 0-255|0x00|0b00000000
+💁  INFO :   symbol: TEXT
+💁  INFO :   name: TEXT
+💁  INFO :   total_supply: DECIMAL
+💁  INFO :   balances -k <hash-...|account-hash-...>: DECIMAL
+💁  INFO :   allowances -k <hash-...|account-hash-...:hash-...|account-hash-...>: DECIMAL
+```
+
+```bash
+# A value under a named key.
+cargo run --bin odra_cli -- storage Cep18 total_supply
+# A dictionary entry.
+cargo run --bin odra_cli -- storage Cep18 balances -k account-hash-...
+# An entry with a tuple key: the parts are joined with `:`.
+cargo run --bin odra_cli -- storage Cep18 allowances -k account-hash-...:account-hash-...
+```
+
+For a `List` field, `<field>.len` is the number of items and `-k <index>` reads one of them.
+
+[`inspect`](#inspect-command) prints the same storage layout next to the entry points, and the
+[Storage Layout](../advanced/04-storage-layout.md#reading-the-storage-from-the-outside) article shows
+how to resolve a path in your own code.
+
+Add `--raw` to print the stored bytes hex-encoded instead of decoding them, and `--json` to get a
+machine-readable report:
+
+```bash
+cargo run --bin odra_cli -- storage DogContract name --json
+```
+
+```json
+{
+  "contract": "DogContract",
+  "path": "name",
+  "type": "TEXT",
+  "location": "state",
+  "key": "d236fca2b92ca42da90327820d7fe73c8ad22ea13cd8d761adc6e98822195c77",
+  "deployed": false,
+  "value": null
+}
+```
+
 ### Config command
 
 The `config` command prints the livenet configuration the CLI resolved, so you can confirm which network and account you are about to talk to before sending anything.

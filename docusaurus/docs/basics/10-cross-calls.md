@@ -87,7 +87,9 @@ pub trait Adder {
 }
 ```
 
-Odra automatically creates the `AdderContractRef` struct. Having an address, in the module context we can call:
+Odra automatically creates the `AdderContractRef` struct (and `AdderHostRef` for tests). The `Adder` trait
+itself is kept and both refs implement it, so it can be used as a bound (`fn sum<T: Adder>(adder: &T)`) or
+implemented by one of your modules. Having an address, in the module context we can call:
 
 ```rust
 struct Contract {
@@ -110,17 +112,59 @@ AdderContractRef::new(self.env(), address).add(3, 5)
 construct a `...ContractRef` by hand.
 :::
 
+### Helpers on the refs
+A convenience function built from entry point calls is often needed both in a contract (on the
+`ContractRef`) and in tests (on the `HostRef`). Instead of writing it twice, put it in an inherent impl
+block named after the module or the external contract trait and mark it with `#[odra::ref_helpers]`:
+
+```rust
+#[odra::external_contract]
+pub trait NameToken {
+    fn metadata(&self, id: Maybe<u64>, hash: Maybe<String>) -> String;
+}
+
+#[odra::ref_helpers]
+impl NameToken {
+    pub fn metadata_by_hash(&self, hash: String) -> String {
+        self.metadata(Maybe::None, Maybe::Some(hash))
+    }
+}
+```
+
+The block is copied into `impl NameTokenContractRef` and `impl NameTokenHostRef` (the latter only
+outside wasm), so `token.metadata_by_hash(hash)` works in a contract and in a test alike. The helpers
+may call only what both refs have - the entry points and `contract_address()`. A helper calling an entry point that takes
+`&mut self` has to take `&mut self` too.
+
+`self.contract_address()` returns the address of the contract the ref points at, as an `Address`, on
+both sides: `HostRef` has always had it, and the `ContractAddress` trait from `odra::prelude` gives it to
+every `ContractRef`. The helper needs no imports for it - the generated impls bring the right trait into
+scope themselves:
+
+```rust title="examples/src/contracts/balance_checker.rs"
+#[odra::ref_helpers]
+impl Token {
+    /// Returns the tokens the token contract holds itself.
+    pub fn own_balance(&self) -> U256 {
+        self.balance_of(&self.contract_address())
+    }
+}
+```
+
 ### Loading the contract
 Sometimes it is useful to load the deployed contract instead of deploying it by ourselves. This is especially useful when we want to test
 our contracts in [Livenet](../backends/04-livenet.md) backend. We can load the contract using `load` method on the `Deployer`:
 
-```rust title="examples/bin/erc20_on_livenet.rs"
-fn _load_erc20(env: &HostEnv) -> Erc20HostRef {
+```rust
+fn load_erc20(env: &HostEnv) -> Erc20HostRef {
     let address = "hash-d26fcbd2106e37be975d2045c580334a6d7b9d0a241c2358a4db970dfd516945";
     let address = Address::from_str(address).unwrap();
     Erc20::load(env, address)
 }
 ```
+
+With the [Odra CLI](../tutorials/odra-cli.md) the address does not have to be pasted at all:
+`Erc20::load_from_default_file(&env)` reads it from the contracts file the `deploy` command wrote.
 
 ## Testing
 Let's see how we can test our cross calls using this knowledge:

@@ -387,10 +387,17 @@ A `u128` reaches roughly `3.4 * 10^38`, comfortably beyond any realistic token s
 fills the low half of the `U256` and the high half stays zero. Values above that range still need a
 runtime conversion.
 
-:::note
-There is no `u512` counterpart. CSPR amounts are `U512`, but they generally arrive from the host at
-runtime rather than being written as constants.
-:::
+`u512` does the same for `U512`, the type of CSPR amounts. Together with `cspr!` from `odra-cli`,
+which converts a literal amount of CSPR to motes at compile time, a fixed CSPR amount can be a constant
+too:
+
+```rust
+use odra::casper_types::U512;
+use odra::prelude::*;
+
+const MIN_DEPOSIT: U512 = u512(1_000_000_000); // 1 CSPR in motes
+const STAKE: U512 = u512(odra_cli::cspr!(500) as u128);
+```
 
 ## What's next
 In the next article, we'll see how to query the host for information about the world and our contract.

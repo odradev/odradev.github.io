@@ -22,6 +22,15 @@ ODRA_MODULE=my_contract cargo build --release --target wasm32-unknown-unknown --
 Odra uses the environment variable `ODRA_MODULE` to determine which contract to build.
 :::
 
+:::note
+`cargo odra` (0.2.1 and newer) sets two more variables: `ODRA_MODULE__<crate>=<Contract>`, named after
+the crate that defines the contract (`ODRA_MODULE__my_project=MyContract`), and
+`ODRA_BUILD_PROTOCOL=2`. With them Odra 2.11.0 rebuilds only that crate when you switch to another
+contract, not every crate that uses the `odra-build` build script (`odra-modules`, for example),
+which makes building many contracts faster. A manual build works with `ODRA_MODULE` alone. When you
+mix manual builds with `cargo odra`, expect one extra rebuild each time you switch between them.
+:::
+
 Assuming that project's crate is named `my_project`, this command will build
 the `my_contract` contract in release mode and generate the wasm file.
 The file will be put into the `target/wasm32-unknown-unknown/release` directory under

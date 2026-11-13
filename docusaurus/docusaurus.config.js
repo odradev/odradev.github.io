@@ -90,13 +90,16 @@ const config = {
                     sidebarPath: require.resolve('./sidebars.js'),
                     includeCurrentVersion: true,
                     showLastUpdateTime: true,
-                    lastVersion: '2.9',
+                    lastVersion: '2.10',
                     versions: {
                         current: {
                             label: 'next',
                         },
                         // Snapshots cover a minor line, not a patch release - fixes are copied
                         // into the existing snapshot instead of cutting a new one per patch.
+                        '2.10': {
+                            label: '2.10.*',
+                        },
                         '2.9': {
                             label: '2.9.*',
                         },

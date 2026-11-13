@@ -15,13 +15,13 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-odra = "2.9.0"
+odra = "2.10.0"
 
 [dev-dependencies]
-odra-test = "2.9.0"
+odra-test = "2.10.0"
 
 [build-dependencies]
-odra-build = "2.9.0"
+odra-build = "2.10.0"
 
 [[bin]]
 name = "my_project_build_contract"
@@ -45,8 +45,8 @@ To use `odra-modules`, edit your `dependency` and `features` sections.
 
 ```toml title=Cargo.toml
 [dependencies]
-odra = "2.9.0"
-odra-modules = "2.9.0"
+odra = "2.10.0"
+odra-modules = "2.10.0"
 ```
 
 Now, the only thing left is to add a module to your contract.
@@ -205,6 +205,17 @@ Ownership can be transferred in a two-step process by using `transfer_ownership(
 #### Pauseable
 
 A module allowing to implement an emergency stop mechanism that can be triggered by any account.
+
+### Dapp
+
+#### Dapp registry
+
+The `dapp` modules group the contracts of one dapp. `DappRegistryBase` stores the dapp metadata and the
+list of its contracts, and verifies every contract it adds by calling the contract's `get_dapp_registry`.
+`DappContractBase` stores the registry a contract belongs to. Neither module checks the caller, so they
+compose with `Ownable` or `AccessControl`. `OwnedDappRegistry` is a ready-to-deploy registry managed by
+its owner, where contracts registered as registrars may add the contracts they deploy. Read more in the
+[Dapp Registry](../tutorials/dapp-registry.md) tutorial.
 
 [Installation guide]: ../getting-started/installation.md
 [Odra repository]: https://github.com/odradev/odra

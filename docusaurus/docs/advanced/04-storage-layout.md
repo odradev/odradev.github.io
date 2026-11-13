@@ -142,10 +142,11 @@ example under named keys, declare their layout explicitly with the `layout`
 argument of the module attribute:
 
 ```rust
-#[odra::module(layout = odra::schema::StorageKind::named_key::<u8>("decimals"))]
+#[odra::module(layout = odra::schema::named_key::<u8>("decimals"))]
 pub struct Decimals;
 ```
 
 The named-key storage macros (`single_value_storage!`, `key_value_storage!`,
-`base64_encoded_key_value_storage!` and `compound_key_value_storage!`) do this
+`base64_encoded_key_value_storage!`, `dictionary_value_storage!` and
+`compound_key_value_storage!`) do this
 for you.

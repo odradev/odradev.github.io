@@ -837,12 +837,12 @@ Running `inspect` without a contract name describes every registered contract. C
 
 ### Storage command
 
-The `storage` command reads the state of a deployed contract straight from the storage, without
-calling any entry point. It is handy when a value has no getter, or when you want to see exactly
-what is stored and where.
+The `storage` command reads the state of a contract straight from the storage, without calling any
+entry point. It is handy when a value has no getter, or when you want to see exactly what is stored
+and where.
 
 Run it with a contract name only to print the storage layout - every field with its index in the
-module and the kind of storage behind it:
+module and the kind of storage behind it, followed by the paths you can read:
 
 ```bash
 cargo run --bin odra_cli -- storage DogContract
@@ -854,10 +854,16 @@ cargo run --bin odra_cli -- storage DogContract
 💁  INFO :   weight [2]: UINT
 💁  INFO :   name [3]: TEXT
 💁  INFO :   walks [4]: UINT (repeatable)
+💁  INFO : Read with `storage DogContract <path> [-k <key>]...`:
+💁  INFO :   barks: true|false
+💁  INFO :   weight: UINT
+💁  INFO :   name: TEXT
+💁  INFO :   walks: UINT (repeatable)
 ```
 
-Submodules are printed as nested trees, so the path of any field is the dotted chain of names
-down the tree. Pass such a path to read the value:
+The layout comes from the contract's code, so this works before anything is deployed. Submodules
+are printed as nested trees, and the path of a field is the dotted chain of names down the tree
+(`ownable.owner`). Pass a path to read the value:
 
 ```bash
 cargo run --bin odra_cli -- storage DogContract name
@@ -867,37 +873,63 @@ cargo run --bin odra_cli -- storage DogContract name
 💁  INFO : Contract: DogContract
 💁  INFO : Path:     name
 💁  INFO : Type:     TEXT
-💁  INFO : Location: state[8a1f3c...]
-💁  INFO : Value:    "Mantus"
+💁  INFO : Location: state[d236fca2b92ca42da90327820d7fe73c8ad22ea13cd8d761adc6e98822195c77]
+💁  INFO : Value:    <contract not deployed>
 ```
 
 `Location` tells where the value lives: an item of the Odra `state` dictionary (with its key), a
 named key, or an item of a named dictionary. That is exactly what you would query with the node
-RPC or a block explorer.
+RPC or a block explorer, and it is printed even when the contract is not deployed, as above. For a
+deployed contract `Value` is what is stored there, or `<not set>` if nothing is.
 
 Whenever the path goes through a `Mapping`, a `List` item or a dictionary, provide the key with
 `--key` (or `-k`), using the same value syntax as for entry point arguments. Repeat it for nested
-containers, in path order. For an [OwnedToken](../examples/using-odra-modules) that composes
-`Ownable` and `Erc20`:
+containers, in path order. The layout lists the key each path needs. For the `Cep18` module, which
+keeps its data under Casper named keys and dictionaries:
 
 ```bash
-# A Var in a submodule.
-cargo run --bin odra_cli -- storage OwnedToken ownable.owner
-# A Mapping entry.
-cargo run --bin odra_cli -- storage OwnedToken erc20.balances --key account-hash-...
-# A Mapping with a tuple key.
-cargo run --bin odra_cli -- storage OwnedToken erc20.allowances --key account-hash-...:account-hash-...
-# The number of items in a List, and the item at index 2.
-cargo run --bin odra_cli -- storage OwnedToken holders.len
-cargo run --bin odra_cli -- storage OwnedToken holders --key 2
+💁  INFO : Read with `storage Cep18 <path> [-k <key>]...`:
+💁  INFO :   decimals: 0-255|0x00|0b00000000
+💁  INFO :   symbol: TEXT
+💁  INFO :   name: TEXT
+💁  INFO :   total_supply: DECIMAL
+💁  INFO :   balances -k <hash-...|account-hash-...>: DECIMAL
+💁  INFO :   allowances -k <hash-...|account-hash-...:hash-...|account-hash-...>: DECIMAL
 ```
 
-Modules that store data under Casper named keys or dictionaries (like the `Cep18` module) are
-described the same way, and the command reads them from the right place.
+```bash
+# A value under a named key.
+cargo run --bin odra_cli -- storage Cep18 total_supply
+# A dictionary entry.
+cargo run --bin odra_cli -- storage Cep18 balances -k account-hash-...
+# An entry with a tuple key: the parts are joined with `:`.
+cargo run --bin odra_cli -- storage Cep18 allowances -k account-hash-...:account-hash-...
+```
+
+For a `List` field, `<field>.len` is the number of items and `-k <index>` reads one of them.
+
+[`inspect`](#inspect-command) prints the same storage layout next to the entry points, and the
+[Storage Layout](../advanced/04-storage-layout.md#reading-the-storage-from-the-outside) article shows
+how to resolve a path in your own code.
 
 Add `--raw` to print the stored bytes hex-encoded instead of decoding them, and `--json` to get a
-machine-readable report. `inspect` also includes the storage layout, so both are available to
-external tooling.
+machine-readable report:
+
+```bash
+cargo run --bin odra_cli -- storage DogContract name --json
+```
+
+```json
+{
+  "contract": "DogContract",
+  "path": "name",
+  "type": "TEXT",
+  "location": "state",
+  "key": "d236fca2b92ca42da90327820d7fe73c8ad22ea13cd8d761adc6e98822195c77",
+  "deployed": false,
+  "value": null
+}
+```
 
 ### Config command
 

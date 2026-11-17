@@ -165,8 +165,9 @@ import init, {
     TransactionResult,
 } from "counter-wasm-client";
 
-const RPC_URL = "...";
-const SPECULATIVE_RPC_URL = "...";
+// Testnet proxies a browser may call, see "Reading contract state" below.
+const RPC_URL = "https://testnet-rpc.odra.dev";
+const SPECULATIVE_RPC_URL = "https://testnet-speculative-rpc.odra.dev";
 const CHAIN_NAME = "casper-test";
 
 // ---------- Types ----------
@@ -251,6 +252,69 @@ about low-level details such as constructing transactions or handling signatures
 
 Additionally, it provides built-in support for basic operations such as signing transactions, and querying account information, 
 connecting/disconnecting wallets making it easier to work with Odra contracts in a TypeScript environment.
+
+## Reading contract state
+
+A call of a non-mutating entry point (`counter.read()`) sends no transaction. The client simulates the
+call on a node with the `speculative_exec` RPC and returns the value the entry point returned. Nothing is
+paid and the wallet is not involved, so a page can show contract state before the user connects. Three
+things have to be in place.
+
+### Nodes a browser can call
+
+The client needs two JSON-RPC addresses: a node, and a node that serves `speculative_exec`. Public nodes
+do not allow cross-origin requests and do not serve `speculative_exec`, so a page cannot use them
+directly. The Odra team runs proxies for both networks:
+
+| Network | Chain name | Node | Speculative node |
+| --- | --- | --- | --- |
+| Testnet | `casper-test` | `https://testnet-rpc.odra.dev` | `https://testnet-speculative-rpc.odra.dev` |
+| Mainnet | `casper` | `https://mainnet-rpc.odra.dev` | `https://mainnet-speculative-rpc.odra.dev` |
+
+Pass the address without the `/rpc` suffix, the client appends it. The NCTL docker image does not serve
+`speculative_exec`, so reads do not work against a local node.
+
+### The reader key
+
+A simulated call is a signed transaction like any other, and has to be signed by an account that exists
+on the network. The key of that account is compiled into the client: set `WASM_CLIENT_SK` to the content
+of a secret key file when generating it.
+
+```sh
+WASM_CLIENT_SK="$(cat reader_secret_key.pem)" cargo odra generate-client
+```
+
+:::warning
+The key is part of the `.wasm` file every visitor downloads, so it is public. Create a key for this
+purpose only, never use the key that deploys your contracts, and keep no more CSPR on it than the first
+transfer that created the account (2.5 CSPR is the smallest transfer).
+:::
+
+Without `WASM_CLIENT_SK` the client builds, and every read fails with `WASM_CLIENT_SK was empty at build
+time`. If the account has never received CSPR on the network, a read fails with `no such addressable
+entity`. With Odra 2.10 the PEM has to be put on one line (`"$(tr -d '\n' < reader_secret_key.pem)"`),
+or reads fail with `Invalid secret key`.
+
+### The addresses of the contracts
+
+`Contracts.fromPath` loads a JSON file with the same content as the `resources/<chain>-contracts.toml` the
+[Odra CLI](../tutorials/odra-cli.md) writes when it deploys:
+
+```json title="contracts.json"
+{
+  "last_updated": "2026-11-16T13:02:05Z",
+  "contracts": [
+    { "name": "Counter", "package_hash": "hash-85261f49f18ff74adb4bf027516770e3ff126498d85d4dc4626898dbd0a567f6" }
+  ]
+}
+```
+
+### What a read returns
+
+`U256`, `U512` and `Address` are objects of the client (`value.toString()`, `address.value`), a `u64` is a
+`bigint`, an `Option` is the value or `undefined`. An entry point that reverts rejects the promise with
+`Speculative execution failed for '<entry point>': ...` and the error code of the contract. A gas limit
+has to be set before a read as well (`setGas`), although nothing is charged.
 
 ## Interacting with the Contract
 

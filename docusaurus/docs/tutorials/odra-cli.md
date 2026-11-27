@@ -1036,6 +1036,6 @@ lifetime of the REPL - choose the file when starting it, e.g.
 
 The Odra CLI library provides a powerful and convenient way to create command-line tools for your Odra contracts. It simplifies the process of deploying, interacting with, and testing your contracts, allowing you to focus on the business logic of your application. By following the examples in this tutorial, you can create your own CLI tools and streamline your development workflow.
 
-[`InstallConfig`]: https://docs.rs/odra/2.10.0/odra/host/struct.InstallConfig.html
+[`InstallConfig`]: https://docs.rs/odra/2.11.0/odra/host/struct.InstallConfig.html
 [`ContractLoaderExt`]: https://docs.rs/odra-cli/latest/odra_cli/trait.ContractLoaderExt.html
-[`DeployerExt`]: https://docs.rs/odra-cli/2.10.0/odra_cli/trait.DeployerExt.html
+[`DeployerExt`]: https://docs.rs/odra-cli/2.11.0/odra_cli/trait.DeployerExt.html

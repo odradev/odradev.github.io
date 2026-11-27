@@ -212,6 +212,6 @@ Two more codes are reserved:
 ## What's next
 We will learn how to emit and test events using Odra.
 
-[`OdraResult`]: https://docs.rs/odra/2.10.0/odra/type.OdraResult.html
-[`OdraError`]: https://docs.rs/odra/2.10.0/odra/enum.OdraError.html
+[`OdraResult`]: https://docs.rs/odra/2.11.0/odra/prelude/type.OdraResult.html
+[`OdraError`]: https://docs.rs/odra/2.11.0/odra/prelude/enum.OdraError.html
 [`schema`]: ./casper-contract-schema

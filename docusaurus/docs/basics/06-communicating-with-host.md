@@ -99,7 +99,7 @@ On OdraVM it always prints. For the Casper VM the contract has to be built with 
 feature of `odra`, which compiles the call into Casper's `casper_print` host function:
 
 ```toml title="Cargo.toml"
-odra = { version = "2.10.0", features = ["test-support"] }
+odra = { version = "2.11.0", features = ["test-support"] }
 ```
 
 Run the tests with `cargo odra test -b casper -- --nocapture` to see the output. Without the feature
@@ -115,6 +115,6 @@ You will learn more functions that Odra exposes from host and types it uses in f
 In the next article, we'll dive into testing your contracts with Odra, so you can check that the code
 we presented in fact works!
 
-[`Module::env()`]: https://docs.rs/odra/2.10.0/odra/module/trait.Module.html#tymethod.env
-[`ContractEnv`]: https://docs.rs/odra/2.10.0/odra/struct.ContractEnv.html
+[`Module::env()`]: https://docs.rs/odra/2.11.0/odra/module/trait.Module.html#tymethod.env
+[`ContractEnv`]: https://docs.rs/odra/2.11.0/odra/struct.ContractEnv.html
 [`Backend section`]: ../backends/01-what-is-a-backend.md#contract-env

@@ -1,0 +1,403 @@
+---
+sidebar_position: 5
+description: How to write data into blockchain's storage
+---
+
+# Storage interaction
+The Odra framework implements multiple types of data that can be stored on the blockchain. Let's go
+through all of them and explain their pros and cons.
+
+## Var
+The `Var` is the simplest storage type available in the Odra framework. It serializes the data and stores it under a single key in the blockchain storage. To use it, just wrap your
+variable in the `Var` type. Let's look at a "real world" example of a contract that represents a dog:
+
+```rust title="examples/src/features/storage/variable.rs"
+use odra::prelude::*;
+
+#[odra::module]
+pub struct DogContract {
+    barks: Var<bool>,
+    weight: Var<u32>,
+    name: Var<String>,
+    walks: Var<Vec<u32>>,
+}
+```
+
+You can see the `Var` wrapping the data. Even complex types like `Vec` can be wrapped (with some caveats)!
+
+Let's make this contract usable, by providing a constructor and some getter functions:
+
+```rust title="examples/src/features/storage/variable.rs"
+#[odra::module]
+impl DogContract {
+    pub fn init(&mut self, barks: bool, weight: u32, name: String) {
+        self.barks.set(barks);
+        self.weight.set(weight);
+        self.name.set(name);
+        self.walks.set(Vec::<u32>::default());
+    }
+
+    pub fn barks(&self) -> bool {
+        self.barks.get_or_default()
+    }
+
+    pub fn weight(&self) -> u32 {
+        self.weight.get_or_default()
+    }
+
+    pub fn name(&self) -> String {
+        self.name.get_or_default()
+    }
+
+    pub fn walks_amount(&self) -> u32 {
+        let walks = self.walks.get_or_default();
+        walks.len() as u32
+    }
+
+    pub fn walks_total_length(&self) -> u32 {
+        let walks = self.walks.get_or_default();
+        walks.iter().sum()
+    }
+}
+```
+
+As you can see, you can access the data, by using `get_or_default` function:
+
+```rust title="examples/src/features/storage/variable.rs"
+...
+self.barks.get_or_default()
+...
+```
+
+:::note
+Keep in mind that using `get()` will result in an Option that you'll need to unwrap - the variable
+doesn't have to be initialized!
+:::
+
+:::caution
+`get_or_default()` is only available when the stored type implements `Default`. Some common types -
+`Address` among them - do not, so for those you need `get()` (and handle the `Option` yourself) or
+`get_or_revert_with(SomeError)`. The same applies to your own [custom types](#custom-types) unless
+they derive `Default`.
+:::
+
+To modify the data, use the `set()` function:
+
+```rust title="examples/src/features/storage/variable.rs"
+self.barks.set(barks);
+```
+
+A `Var` is easy to use and efficient for simple data types. One of its downsides is that it
+serializes the data as a whole, so when you're using complex types like `Vec` or `HashMap`,
+each time you `get` or `set` the whole data is read and written to the blockchain storage.
+
+In the example above, if we want to see how many walks our dog had, we would use the function:
+```rust title="examples/src/features/storage/variable.rs"
+pub fn walks_amount(&self) -> u32 {
+    let walks = self.walks.get_or_default();
+    walks.len() as u32
+}
+```
+But to do so, we need to extract the whole serialized vector from the storage, which would inefficient,
+especially for larger sets of data.
+
+To tackle this issue following two types were created.
+
+## Mapping
+
+The `Mapping` is used to store and access data as key-value pairs. To define a `Mapping`, you need to
+pass two values - the key type and the value type. Let's look at the variation of the Dog contract, that
+uses `Mapping` to store information about our dog's friends and how many times they visited:
+
+```rust title="examples/src/features/storage/mapping.rs"
+use odra::prelude::*;
+
+#[odra::module]
+pub struct DogContract2 {
+    name: Var<String>,
+    friends: Mapping<String, u32>,
+}
+```
+
+In the example above, our key is a String (it is a name of the friend) and we are storing u32 values
+(amount of visits). To read and write values from and into a `Mapping` we use a similar approach
+to the one shown in the Vars section with one difference - we need to pass a key:
+
+```rust title="examples/src/features/storage/mapping.rs"
+pub fn visit(&mut self, friend_name: String) {
+    let visits = self.visits(friend_name.clone());
+    self.friends.set(&friend_name, visits + 1);
+}
+
+pub fn visits(&self, friend_name: String) -> u32 {
+    self.friends.get_or_default(&friend_name)
+}
+```
+
+The biggest improvement over a `Var` is that we can model functionality of a `HashMap` using `Mapping`.
+The amount of data written to and read from the storage is minimal. However, we cannot iterate over `Mapping`.
+We could implement such behavior by using a numeric type key and saving the length of the set in a
+separate variable. Thankfully Odra comes with a prepared solution - the `List` type.
+
+Besides `get`/`get_or_default`/`set`, a `Mapping` holding a numeric value also offers `add()` and
+`subtract()`, which read, modify and write a single key in one step:
+
+```rust title="examples/src/features/storage/mapping.rs"
+pub fn visit(&mut self, friend_name: String) {
+    self.friends.add(&friend_name, 1);
+}
+```
+
+### Nested storage
+
+A `Mapping` value can be a module rather than a plain value. Use `module(&key)` to get a
+[sub-module](../advanced/02-advanced-storage.md) that has its own, isolated storage for that key -
+this is how you build nested mappings:
+
+```rust
+use odra::prelude::*;
+
+#[odra::module]
+pub struct FriendBook {
+    visits: Mapping<String, u32>,
+}
+
+#[odra::module]
+impl FriendBook {
+    pub fn visit(&mut self, friend_name: String) {
+        self.visits.add(&friend_name, 1);
+    }
+
+    pub fn visits(&self, friend_name: String) -> u32 {
+        self.visits.get_or_default(&friend_name)
+    }
+}
+
+#[odra::module]
+pub struct DogContract4 {
+    books: Mapping<Address, FriendBook>,
+}
+
+#[odra::module]
+impl DogContract4 {
+    pub fn visit(&mut self, owner: Address, friend_name: String) {
+        self.books.module(&owner).visit(friend_name);
+    }
+
+    pub fn visits(&self, owner: Address, friend_name: String) -> u32 {
+        self.books.module(&owner).visits(friend_name)
+    }
+}
+```
+
+Each key gets its own `FriendBook` with completely separate storage.
+
+:::note
+If you take a look into List implementation in Odra, you'll see that in fact it is just a Mapping with
+a Var working together (the real struct also carries the contract env and a storage index, omitted here):
+
+```rust title="core/src/list.rs"
+use odra::prelude::*;
+
+pub struct List<T> {
+    values: Mapping<u32, T>,
+    current_index: Var<u32>
+}
+```
+:::
+
+## List
+Going back to our DogContract example - let's revisit the walk case. This time, instead of `Vec`,
+we'll use the list:
+
+```rust title="examples/src/features/storage/list.rs"
+use odra::prelude::*;
+
+#[odra::module]
+pub struct DogContract3 {
+    name: Var<String>,
+    walks: List<u32>,
+}
+```
+
+As you can see, the notation is very similar to the `Vec`. To understand the usage, take a look
+at the reimplementation of the functions with an additional function that takes our dog for a walk
+(it writes the data to the storage):
+
+```rust title="examples/src/features/storage/list.rs"
+#[odra::module]
+impl DogContract3 {
+    pub fn init(&mut self, name: String) {
+        self.name.set(name);
+    }
+
+    pub fn name(&self) -> String {
+        self.name.get_or_default()
+    }
+
+    pub fn walks_amount(&self) -> u32 {
+        self.walks.len()
+    }
+
+    pub fn walks_total_length(&self) -> u32 {
+        self.walks.iter().sum()
+    }
+
+    pub fn walk_the_dog(&mut self, length: u32) {
+        self.walks.push(length);
+    }
+}
+```
+
+Now, we can know how many walks our dog had without loading the whole vector from the storage.
+We need to do this to sum the length of all the walks, but the Odra framework cannot (yet) handle all
+the cases for you.
+
+A `Mapping` value can also be a `List`, reached with `list(&key)` instead of `module(&key)`. Each key
+then owns a separate, growable collection:
+
+```rust
+use odra::prelude::*;
+
+#[odra::module]
+pub struct DogContract5 {
+    walks: Mapping<Address, List<u32>>,
+}
+
+#[odra::module]
+impl DogContract5 {
+    pub fn walk_the_dog(&mut self, owner: Address, length: u32) {
+        self.walks.list(&owner).push(length);
+    }
+
+    pub fn walks_amount(&self, owner: Address) -> u32 {
+        self.walks.list(&owner).len()
+    }
+}
+```
+
+See [advanced storage](../advanced/02-advanced-storage.md) for the details, including why a `List`
+can be a mapping value but never a mapping key.
+
+## Sequence
+When all you need is a counter - the next token id, the next proposal number - reach for `Sequence<T>`
+instead of hand-rolling it on top of a `Var`. It stores a single number and hands out the next one on
+demand:
+
+```rust
+use odra::prelude::*;
+
+#[odra::module]
+pub struct TokenIds {
+    ids: Sequence<u32>,
+}
+
+#[odra::module]
+impl TokenIds {
+    pub fn mint(&mut self) -> u32 {
+        self.ids.next_value()
+    }
+
+    pub fn last_id(&self) -> u32 {
+        self.ids.get_current_value()
+    }
+}
+```
+
+`get_current_value()` reads the stored number without changing it. `next_value()` advances the sequence
+and returns the new value.
+
+:::caution
+The first call to `next_value()` returns `0`, not `1` - the sequence starts at zero and only increments
+from the second call onwards (`0, 1, 2, ...`). Note also that `get_current_value()` returns `0` both for
+an untouched sequence and after the first `next_value()`, so it cannot be used on its own to tell whether
+the sequence has been used yet.
+:::
+
+:::info
+All of the above examples, alongside the tests, are available in the Odra repository in the `examples/src/features/` folder.
+:::
+
+## Custom Types
+
+By default you can store only built-in types like numbers, Options, Results, Strings, Vectors.
+
+Implementing custom types is straightforward, your type must add `#[odra::odra_type]` attribute. Let's see how to implement a `Dog` type: 
+
+```rust
+use odra::prelude::*;
+
+#[odra::odra_type]
+pub struct Dog {
+    pub name: String,
+    pub age: u8,
+    pub owner: Option<Address>
+}
+```
+
+`#[odra_type]` is applicable to named field structs and enums. It generates serialization, deserialization and schema code for your type.
+`CLType` of a custom type is `CLType::Any`, except for an unit-only enum, which is `CLType::U8`.
+
+```rust title="unit_only_enum.rs"
+use odra::prelude::*;
+
+#[odra::odra_type]
+#[derive(Default)]
+pub enum Enum {
+    #[default]
+    Foo = 3,
+    Bar = 2,
+    Baz = 1,
+}
+```
+
+:::note
+The `Default` derive is not required by `#[odra::odra_type]` itself, but without it the enum cannot be
+read back with `Var::get_or_default()`.
+:::
+
+:::note
+Each custom typed field of your struct must be marked with the `#[odra::odra_type]` attribute .
+:::
+
+## Numeric constants
+
+`U256` comes from `casper_types`, and its conversions are ordinary trait implementations, which
+cannot run at compile time. That makes the obvious spelling illegal:
+
+```rust
+// error[E0015]: cannot call non-const associated function
+// `<U256 as From<u64>>::from` in constants
+const ONE_TOKEN: U256 = U256::from(1_000_000_000_000_000_000u64);
+```
+
+For this, the prelude provides `u256` - a `const fn` that builds a `U256` from a `u128`. Token
+amounts, supply caps and other fixed limits can then live in a `const` or `static` instead of being
+rebuilt on every call:
+
+```rust
+use odra::casper_types::U256;
+use odra::prelude::*;
+
+const ONE_TOKEN: U256 = u256(1_000_000_000_000_000_000);
+static MAX_SUPPLY: U256 = u256(21_000_000_000_000_000_000_000_000);
+```
+
+A `u128` reaches roughly `3.4 * 10^38`, comfortably beyond any realistic token supply - the argument
+fills the low half of the `U256` and the high half stays zero. Values above that range still need a
+runtime conversion.
+
+`u512` does the same for `U512`, the type of CSPR amounts. Together with `cspr!` from `odra-cli`,
+which converts a literal amount of CSPR to motes at compile time, a fixed CSPR amount can be a constant
+too:
+
+```rust
+use odra::casper_types::U512;
+use odra::prelude::*;
+
+const MIN_DEPOSIT: U512 = u512(1_000_000_000); // 1 CSPR in motes
+const STAKE: U512 = u512(odra_cli::cspr!(500) as u128);
+```
+
+## What's next
+In the next article, we'll see how to query the host for information about the world and our contract.
